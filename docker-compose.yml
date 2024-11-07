@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: octos_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: octos_db
+      MYSQL_USER: octos_user
+      MYSQL_PASSWORD: octos_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - octos_network
+
+  web:
+    build: .
+    container_name: octos_web
+    command: >
+      sh -c "
+        until nc -z db 3307; do
+          echo 'Waiting for MySQL...';
+          sleep 1;
+        done;
+        python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - octos_network
+    environment:
+      - DB_NAME=octos_db
+      - DB_USER=octos_user
+      - DB_PASSWORD=octos_password
+      - DB_HOST=db
+
+volumes:
+  mysql_data:
+
+networks:
+  octos_network:
