@@ -21,7 +21,7 @@ services:
     container_name: octos_web
     command: >
       sh -c "
-        until nc -z db 3307; do
+        until mysqladmin ping -h db --silent; do
           echo 'Waiting for MySQL...';
           sleep 1;
         done;

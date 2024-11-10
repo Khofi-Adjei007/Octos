@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     #Custom Installed Apps
     'rest_framework',
     'corsheaders',
+    'tailwind',
+    'theme', 
 ]
 
 MIDDLEWARE = [
@@ -89,10 +91,11 @@ DATABASES = {
         'NAME': 'octos_db',  
         'USER': 'octos_user',
         'PASSWORD': 'octos_password', 
-        'HOST': 'db',
-        'PORT': '3307',
+        'HOST': 'db', 
+        'PORT': '3306', 
     }
 }
+
 
 
 
