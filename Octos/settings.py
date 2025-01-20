@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     #Custom Installed Apps
     'rest_framework',
     'corsheaders',
-    'tailwind',
-    'theme', 
+    'tailwind', 
 ]
 
 MIDDLEWARE = [
@@ -88,11 +87,10 @@ WSGI_APPLICATION = 'Octos.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'octos_db',  
-        'USER': 'octos_user',
-        'PASSWORD': 'octos_password', 
-        'HOST': 'db', 
-        'PORT': '3306', 
+        'NAME':'octos_db',
+        'HOST': 'localhost',
+        'USER': 'root',
+        'PASSWORD' : '@Tacitus0202'
     }
 }
 
