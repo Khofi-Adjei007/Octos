@@ -46,11 +46,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'tailwind',
-    'theme', 
+    'employees',
 ]
 
 MIDDLEWARE = [
-     'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,11 +88,10 @@ WSGI_APPLICATION = 'Octos.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'octos_db',  
-        'USER': 'octos_user',
-        'PASSWORD': 'octos_password', 
-        'HOST': 'db', 
-        'PORT': '3306', 
+        'NAME':'octos_db',
+        'HOST': 'localhost',
+        'USER': 'root',
+        'PASSWORD' : '@Tacitus0202'
     }
 }
 
