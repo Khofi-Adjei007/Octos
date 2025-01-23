@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'tailwind',
-    'theme', 
+    'theme',
+    'employees',
+    'django_browser_reload', 
 ]
 
 TAILWIND_APP_NAME = 'theme'
