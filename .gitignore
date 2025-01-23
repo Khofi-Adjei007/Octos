@@ -1,2 +1,3 @@
 octos_env/
 node_modules/
+.venv/
