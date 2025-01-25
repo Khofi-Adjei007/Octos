@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 # Login Form
 class EmployeeLoginForm(forms.Form):
     username = forms.CharField(
-        label="Username",
+        label="Username or Email",
         max_length=255,
         widget=forms.TextInput(
             attrs={

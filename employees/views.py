@@ -22,7 +22,7 @@ def employeesLogin(request):
 
 
 
-def employee_register(request):
+def employeeregistration(request):
     if request.method == 'POST':
         form = EmployeeRegistrationForm(request.POST)
         if form.is_valid():
@@ -30,8 +30,8 @@ def employee_register(request):
             return redirect('login')  # Redirect to login after successful registration
     else:
         form = EmployeeRegistrationForm()
+    return render(request, 'employeeregistration.html', {'form': form})
 
-    return render(request, 'register.html', {'form': form})
 
 def employee_logout(request):
     logout(request)
