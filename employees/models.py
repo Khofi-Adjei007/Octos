@@ -8,11 +8,28 @@ class Employee(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+
+    IT = 'IT'
+    HR = 'HR'
+    SALES = 'SALES'
+    MARKETING = 'MARKETING'
+    ACCOUNTING = 'ACCOUNTING'
+    DEPARTMENTS = [
+        (IT, 'IT'),
+        (HR, 'Human Resources'),
+        (SALES, 'Sales'),
+        (MARKETING, 'Marketing'),
+        (ACCOUNTING, 'Accounting'),
+    ]
     
     # Work-related Information
     employee_id = models.CharField(max_length=255, unique=True)
     position = models.CharField(max_length=255)
-    department = models.CharField(max_length=255)
+    department = models.CharField(
+        max_length=255,
+        choices=DEPARTMENTS,  # Use the choices defined above
+        default=IT,  # Optional: set a default value
+    )
     hire_date = models.DateField()
     salary = models.DecimalField(max_digits=10, decimal_places=2)
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)

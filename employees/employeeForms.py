@@ -41,17 +41,43 @@ class EmployeeLoginForm(forms.Form):
         return cleaned_data
 
 
-# Registration Form
 class EmployeeRegistrationForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, label='Password')
-    confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirm Password')
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+        label='Password'
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+        label='Confirm Password'
+    )
 
     class Meta:
         model = Employee
         fields = [
             'first_name', 'middle_name', 'last_name', 'employee_email', 'phone_number',
-            'date_of_birth', 'address', 'employee_id', 'position', 'department', 'hire_date', 'salary'
+            'date_of_birth', 'address', 'department', 'profile_picture', 'hire_date','contract_type',
         ]
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'middle_name': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'last_name': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'employee_email': forms.EmailInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'phone_number': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:outline-none', 'type': 'date'}),
+            'address': forms.TextInput(attrs={
+                'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none',
+                'style': 'height: 3rem;'
+            }),
+            'department': forms.Select(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'hire_date': forms.DateInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none', 'type': 'date'}),
+            'profile_picture': forms.ClearableFileInput(attrs={
+                'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-indigo-600 focus:outline-none',
+                'accept': 'image/*',  # Accept only image files
+                'id': 'profile-picture-input',  # For linking with preview script
+            }),
+            'contract_type': forms.Select(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+
+        }
 
     def clean(self):
         cleaned_data = super().clean()
@@ -74,6 +100,7 @@ class EmployeeRegistrationForm(forms.ModelForm):
             employee.save()
 
         return employee
+
 
 
 # Logout Function (No form needed here, we can handle this directly in views)
