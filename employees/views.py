@@ -24,12 +24,13 @@ def employeesLogin(request):
 
 def employeeregistration(request):
     if request.method == 'POST':
-        form = EmployeeRegistrationForm(request.POST)
+        form = EmployeeRegistrationForm(request.POST, request.FILES)  # Include request.FILES for file uploads
         if form.is_valid():
             form.save()
             return redirect('login')  # Redirect to login after successful registration
     else:
         form = EmployeeRegistrationForm()
+
     return render(request, 'employeeregistration.html', {'form': form})
 
 
