@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.db import models
-from django.contrib.auth.hashers import make_password
 
 
 class EmployeeManager(BaseUserManager):
@@ -116,7 +115,6 @@ class Employee(AbstractBaseUser, PermissionsMixin):
     notes = models.TextField(blank=True, null=True)
 
     # Authentication Fields
-    password = models.CharField(max_length=128)  # This will store hashed passwords
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

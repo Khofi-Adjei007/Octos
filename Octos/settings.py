@@ -45,7 +45,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+AUTH_USER_MODEL = 'employees.Employee'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
