@@ -43,8 +43,8 @@ class Employee(AbstractBaseUser, PermissionsMixin):
         (ACCOUNTING, 'Accounting'),
     ]
     
-    employee_id = models.CharField(max_length=255, unique=True)
-    position = models.CharField(max_length=255)
+    employee_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    position = models.CharField(max_length=255, null=False, blank=True)
     department = models.CharField(max_length=255, choices=DEPARTMENTS, default=IT)
     hire_date = models.DateField()
     salary = models.DecimalField(max_digits=10, decimal_places=2)
