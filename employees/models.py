@@ -19,12 +19,12 @@ class EmployeeManager(BaseUserManager):
 
 
 class Employee(AbstractBaseUser, PermissionsMixin):
-    first_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255, blank=False, null=False)
     middle_name = models.CharField(max_length=255, blank=True, null=True)
-    last_name = models.CharField(max_length=255)
-    employee_email = models.EmailField(unique=True)
+    last_name = models.CharField(max_length=255, blank=False, null=False)
+    employee_email = models.EmailField(unique=True, blank=False)
     phone_number = models.CharField(max_length=15, blank=False, null=False)
-    date_of_birth = models.DateField(blank=False, null=False)
+    date_of_birth = models.DateField(blank=False, null=False)   
     address = models.TextField(blank=False, null=False)
     groups = models.ManyToManyField(Group, related_name="employee_groups", blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name="employee_permissions", blank=True)
