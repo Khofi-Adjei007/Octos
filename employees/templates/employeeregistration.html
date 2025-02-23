@@ -25,30 +25,41 @@
             <form method="post" enctype="multipart/form-data" class="space-y-6 pl-8 pr-8 pb-8 shadow-lg rounded-lg">
                 {% csrf_token %}
                 
-                <!-- Loop over form fields dynamically -->
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     {% for field in form %}
                         <div>
-                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-cyan-600 ">{{ field.label }}</label>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-cyan-600">{{ field.label }}</label>
                             {{ field }}
-                        
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     {% endfor %}
+                    {% if form.non_field_errors %}
+                        <div class="col-span-1 sm:col-span-2">
+                            {% for error in form.non_field_errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
-        
+            
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex items-center">
                         <input type="checkbox" name="accept_terms" id="id_accept_terms" class="h-4 w-4 text-cyan-600 border-cyan-300 rounded">
                         <label for="id_accept_terms" class="ml-2 text-sm font-medium text-gray-600">I agree to the terms and conditions</label>
                     </div>
                 </div>
-        
+            
                 <div class="mt-6">
                     <button type="submit" class="w-full py-3 px-4 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Register Employee
                     </button>
                 </div>
             </form>
+
             <footer class="mt-6 text-center text-gray-500 text-xs">
                 <p>
                     <a href="/security-policy" class="hover:underline">Security Policy</a> |

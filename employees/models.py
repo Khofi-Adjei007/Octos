@@ -2,6 +2,20 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 
 
+class branch_station(models.Model):
+    name = models.CharField(max_length=50, unique=True)  # e.g., "FPP-Main", "FPP-120"
+    address = models.TextField()  # Full address
+    manager = models.ForeignKey('Employee', null=True, blank=True, on_delete=models.SET_NULL, related_name='managed_branch')  # Links to an Employee
+    distance_from_main = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)  # e.g., 5.20 km
+    phone = models.CharField(max_length=20, null=True, blank=True)  # e.g., "+1-555-1234"
+    email = models.EmailField(null=True, blank=True)  # e.g., "f120@farhart.com"
+    is_main = models.BooleanField(default=False)  # True for the main branch
+
+    def __str__(self):
+        return self.name
+
+
+
 class EmployeeManager(BaseUserManager):
     def create_user(self, employee_email, password=None, **extra_fields):
         if not employee_email:
@@ -43,11 +57,11 @@ class Employee(AbstractBaseUser, PermissionsMixin):
         (ACCOUNTING, 'Accounting'),
     ]
     
-    employee_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
-    position = models.CharField(max_length=255, null=False, blank=True)
-    department = models.CharField(max_length=255, choices=DEPARTMENTS, default=IT)
-    hire_date = models.DateField()
-    salary = models.DecimalField(max_digits=10, decimal_places=2)
+    employee_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    position = models.CharField(max_length=255, null=True, blank=True)
+    department = models.CharField(max_length=255, choices=DEPARTMENTS, default=IT, null= True, blank=True)
+    hire_date = models.DateField(null=True, blank=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
 
     # Employment Status
@@ -57,7 +71,7 @@ class Employee(AbstractBaseUser, PermissionsMixin):
         ('terminated', 'Terminated')
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
-    work_schedule = models.CharField(max_length=50)
+    work_schedule = models.CharField(max_length=50, null=True, blank=True)
     contract_type = models.CharField(max_length=50, choices=[('permanent', 'Permanent'), ('temporary', 'Temporary')])
 
     # Emergency Contact Information
@@ -113,6 +127,7 @@ class Employee(AbstractBaseUser, PermissionsMixin):
     profile_picture = models.ImageField(upload_to='employee_pics/', blank=True, null=True)
     date_of_last_performance_review = models.DateField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+    branch_station = models.ForeignKey(branch_station, null=True, blank=True, on_delete=models.SET_NULL)
 
     # Authentication Fields
     is_active = models.BooleanField(default=True)
@@ -125,3 +140,4 @@ class Employee(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.employee_email})"
+

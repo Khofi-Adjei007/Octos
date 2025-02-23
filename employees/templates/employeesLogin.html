@@ -1,85 +1,78 @@
-
 {% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Login </title>
+    <title>Employee Login</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet"/>
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet"/>
     {% tailwind_css %}
 </head>
-<body>
-
-    <body class="bg-gray-100 flex items-center justify-center h-screen">
-        <div class="flex flex-col md:flex-row shadow-lg w-full max-w-4xl mx-auto border-2 border-sky-600 rounded-md overflow-hidden">
-            
-            <!-- Image Section -->
-            <div class="md:w-1/2 w-full">
-              <img src="/media/Logo/Business_Logo.jpg" alt="Description of image" class="w-full h-full object-cover">
-            </div>
-          
-            <!-- Form Section -->
-            <div class="w-full md:w-1/2 p-8">
-              <div class="mb-10 mt-4">
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="flex flex-col md:flex-row shadow-lg w-full max-w-4xl mx-auto border-2 border-sky-600 rounded-md overflow-hidden">
+        
+        <!-- Image Section -->
+        <div class="md:w-1/2 w-full">
+            <img src="/media/Logo/Business_Logo.jpg" alt="Farhart Printing Press Logo" class="w-full h-full object-cover">
+        </div>
+        
+        <!-- Form Section -->
+        <div class="w-full md:w-1/2 p-8">
+            <div class="mb-10 mt-4">
                 <h2 class="text-lg font-bold">Octos Account Login - Welcome</h2>
                 <p class="italic">Welcome to your portal workflow where you matter</p>
-              </div>
-          
-              <form method="POST">
+            </div>
+            
+            <form method="POST" class="space-y-6">
                 {% csrf_token %}
-              
+                
                 {% if form.non_field_errors %}
-                  <div class="mb-4 text-red-600">
-                    {{ form.non_field_errors }}
-                  </div>
+                    <div class="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                        {% for error in form.non_field_errors %}
+                            <p class="text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
                 {% endif %}
-              
+                
                 <div class="mb-4">
-                  {{ form.username.label_tag }}
-                  {{ form.username }}
-                  {% if form.username.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.username.errors.0 }}</p>
-                  {% endif %}
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <p class="mt-1 text-sm text-red-500">{{ form.username.errors.0 }}</p>
+                    {% endif %}
                 </div>
-              
+                
                 <div class="mb-6">
-                  {{ form.password.label_tag }}
-                  {{ form.password }}
-                  {% if form.password.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.password.errors.0 }}</p>
-                  {% endif %}
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <p class="mt-1 text-sm text-red-500">{{ form.password.errors.0 }}</p>
+                    {% endif %}
                 </div>
-              
+                
                 <button type="submit" class="w-full bg-sky-600 text-white py-2 px-4 rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
-                  Login
+                    Login
                 </button>
-              
+                
                 <div class="mt-4 text-center">
-                  <a href="#" class="text-sm text-sky-600 hover:text-sky-700 underline">Forgot Password?</a>
+                    <a href="#" class="text-sm text-sky-600 hover:text-sky-700 underline">Forgot Password?</a>
                 </div>
-              </form>
-              
-          
-              <footer class="mt-6 text-center text-gray-500 text-xs">
+            </form>
+            
+            <footer class="mt-6 text-center text-gray-500 text-xs">
                 <p>
-                  <a href="/security-policy" class="hover:underline">Security Policy</a> |
-                  <a href="/privacy-policy" class="hover:underline">Privacy Policy</a> |
-                  <a href="/legal" class="hover:underline">Legal</a> |
-                  <a href="/technical-support" class="hover:underline">Technical Support</a>
+                    <a href="/security-policy" class="hover:underline">Security Policy</a> |
+                    <a href="/privacy-policy" class="hover:underline">Privacy Policy</a> |
+                    <a href="/legal" class="hover:underline">Legal</a> |
+                    <a href="/technical-support" class="hover:underline">Technical Support</a>
                 </p>
                 <p class="mt-3">
-                  &copy; 2025 Octos. All rights reserved.
+                    © 2025 Octos. All rights reserved.
                 </p>
-              </footer>
-            </div>
-          </div>
-                    
-
-<script>
-</script>
+            </footer>
+        </div>
+    </div>
 </body>
 </html>

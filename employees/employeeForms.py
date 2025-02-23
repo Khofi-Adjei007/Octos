@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 # Login Form
 class EmployeeLoginForm(forms.Form):
     username = forms.CharField(
-        label="Username or Email",
+        label="Email",  # Change label for clarity
         max_length=255,
         widget=forms.TextInput(
             attrs={
@@ -18,6 +18,7 @@ class EmployeeLoginForm(forms.Form):
             }
         ),
     )
+
     password = forms.CharField(
         label="Password",
         widget=forms.PasswordInput(
@@ -27,18 +28,17 @@ class EmployeeLoginForm(forms.Form):
             }
         ),
     )
+
     def clean(self):
         cleaned_data = super().clean()
-        email = cleaned_data.get("employee_email")
+        username = cleaned_data.get("username")  # Fix this to match field name
         password = cleaned_data.get("password")
-
-        # Try to authenticate the user
-        if email and password:
-            user = authenticate(username=email, password=password)
+        if username and password:
+            user = authenticate(username=username, password=password)
             if user is None:
                 raise forms.ValidationError("Invalid email or password.")
-        
         return cleaned_data
+    
 
 
 class EmployeeRegistrationForm(forms.ModelForm):
@@ -54,9 +54,9 @@ class EmployeeRegistrationForm(forms.ModelForm):
     class Meta:
         model = Employee
         fields = [
-            'first_name', 'middle_name', 'last_name', 'employee_email', 'phone_number',
-            'date_of_birth', 'address', 'department', 'profile_picture', 'hire_date','contract_type','emergency_contact_name','emergency_contact_phone',
-            'education_level', 'certifications', 'skills','equipment_assigned', 
+            'first_name', 'middle_name', 'last_name','date_of_birth','phone_number','employee_email',
+            'address', 'department', 'profile_picture',
+            'education_level', 'certifications', 'skills','emergency_contact_name','emergency_contact_phone',
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
@@ -70,36 +70,34 @@ class EmployeeRegistrationForm(forms.ModelForm):
             'style': 'height: 3rem;'
             }),
             'department': forms.Select(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
-            'hire_date': forms.DateInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none', 'type': 'date'}),
             'profile_picture': forms.ClearableFileInput(attrs={
                 'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-indigo-600 focus:outline-none',
                 'accept': 'image/*',  # Accept only image files
                 'id': 'profile-picture-input',  # For linking with preview script
             }),
-            'contract_type': forms.Select(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
-            'emergency_contact_name': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
-            'emergency_contact_phone': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
             'certifications': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
             'education_level': forms.Select(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
             'skills': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
-            'equipment_assigned': forms.Select(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
-
+            'emergency_contact_name': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
+            'emergency_contact_phone': forms.TextInput(attrs={'class': 'block w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none'}),
         }
 
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
-
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match.")
 
         return cleaned_data
 
+
     def save(self, commit=True):
+
         # Save the employee object first
         employee = super().save(commit=False)
-
+        employee.is_active = False
+        
         # Hash the password (you can add more specific logic here)
         employee.set_password(self.cleaned_data['password'])
 
