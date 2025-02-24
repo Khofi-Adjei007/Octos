@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('employees/', include('employees.urls')),
     path('__reload__/', include('django_browser_reload.urls')),
+    path('Human_Resources/', include('Human_Resources.urls')),
 ]
 
 if settings.DEBUG:

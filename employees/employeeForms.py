@@ -29,14 +29,20 @@ class EmployeeLoginForm(forms.Form):
         ),
     )
 
+    
+
     def clean(self):
         cleaned_data = super().clean()
-        username = cleaned_data.get("username")  # Fix this to match field name
+        username = cleaned_data.get("username")
         password = cleaned_data.get("password")
         if username and password:
             user = authenticate(username=username, password=password)
             if user is None:
+                from employees.models import Employee
+                if Employee.objects.filter(employee_email=username, is_active=False).exists():
+                    raise forms.ValidationError("Your Application Has Been Receieved and is Pending HR Approval, Please Look Out For A Confirmation Email")
                 raise forms.ValidationError("Invalid email or password.")
+            raise forms.ValidationError("Invalid Email or Password")
         return cleaned_data
     
 

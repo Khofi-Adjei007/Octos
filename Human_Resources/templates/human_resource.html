@@ -1,0 +1,50 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Dashboard - Octos</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet"/>
+    {% tailwind_css %}
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex flex-col">
+        <!-- Header with Profile -->
+        <header class="bg-white shadow-md p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-cyan-600">Octos HR Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                {% if request.user.is_authenticated %}
+                    <!-- Profile Picture and Username -->
+                    <div class="flex items-center space-x-2">
+                        {% if request.user.profile_picture %}
+                            <img src="{{ request.user.profile_picture.url }}" alt="{{ request.user.get_full_name }} Profile" class="w-10 h-10 rounded-full object-cover">
+                        {% else %}
+                            <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600">
+                                {{ request.user.get_full_name|slice:":1" }}
+                            </div>
+                        {% endif %}
+                        <span class="text-sm font-medium text-gray-800">{{ request.user.get_full_name|default:request.user.employee_email }}</span>
+                    </div>
+                    <!-- Logout Button -->
+                    <a href="{% url 'logout' %}" class="text-cyan-600 hover:text-cyan-700 flex items-center space-x-1">
+                        <i class="ri-logout-box-line"></i>
+                        <span>Logout</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'employeesLogin' %}" class="text-cyan-600 hover:text-cyan-700">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Main Content (Pending Approval Tab for now) -->
+        <main class="p-6 flex-1">
+            <h2 class="text-lg font-semibold mb-4 text-cyan-600">Pending Approval</h2>
+            <!-- Placeholder for pending employees list -->
+            <div class="bg-white p-4 rounded-lg shadow">
+                <p>Pending employees will be listed here...</p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

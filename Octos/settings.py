@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'employees',
-    'django_browser_reload', 
+    'django_browser_reload',
+    'Human_Resources',
 ]
 
 TAILWIND_APP_NAME = 'theme'
