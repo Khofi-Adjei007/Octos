@@ -31,18 +31,28 @@ class EmployeeLoginForm(forms.Form):
 
     
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)  # Optional request
+        self.pending_message = None
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
         username = cleaned_data.get("username")
         password = cleaned_data.get("password")
         if username and password:
-            user = authenticate(username=username, password=password)
+            # Use request only if it exists, otherwise omit it
+            user = authenticate(request=self.request if self.request else None, username=username, password=password)
+            print(f"Attempting to authenticate: {username}")  # Debug
+            print(f"Authenticate result: {user}")  # Debug
             if user is None:
                 from employees.models import Employee
+                print(f"Checking if user exists with is_active=False: {username}")  # Debug
                 if Employee.objects.filter(employee_email=username, is_active=False).exists():
-                    raise forms.ValidationError("Your Application Has Been Receieved and is Pending HR Approval, Please Look Out For A Confirmation Email")
-                raise forms.ValidationError("Invalid email or password.")
-            raise forms.ValidationError("Invalid Email or Password")
+                    self.pending_message = "Your account is pending HR approval."
+                else:
+                    print(f"User not found or invalid credentials: {username}")  # Debug
+                    raise forms.ValidationError("Invalid email or password.")
         return cleaned_data
     
 
