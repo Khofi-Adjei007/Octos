@@ -1,0 +1,177 @@
+<h2 class="text-lg font-semibold mb-4 text-gray-800">Branch Overview</h2>
+
+<!-- Top Row: Key Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Active Employees -->
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-blue-100 flex items-center justify-center">
+            <i class="ri-user-line text-blue-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Active Employees</h3>
+            <p class="text-2xl font-bold mt-2 text-gray-800">25</p>
+        </div>
+    </div>
+    <!-- Pending Approvals -->
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-yellow-100 flex items-center justify-center">
+            <i class="ri-time-line text-yellow-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Pending Approvals</h3>
+            <p class="text-2xl font-bold mt-2 text-gray-800">3</p>
+        </div>
+    </div>
+    <!-- Monthly Payroll -->
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-green-100 flex items-center justify-center">
+            <i class="ri-money-dollar-circle-line text-green-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Monthly Payroll</h3>
+            <p class="text-2xl font-bold mt-2 text-gray-800">$50,000</p>
+        </div>
+    </div>
+</div>
+
+<!-- New Row: Jobs Metrics -->
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Jobs Overview</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Left Column: Charts -->
+        <div>
+            <!-- Donut Chart: Jobs Status -->
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-medium text-gray-600">Jobs Status</h4>
+                <p class="text-sm text-gray-600">73% of Jobs Pass</p>
+            </div>
+            <div class="flex items-center justify-center mb-4">
+                <canvas id="jobsStatusChart" width="100" height="100"></canvas>
+            </div>
+            <!-- Bar Chart: Jobs Distribution -->
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-medium text-gray-600">Jobs Distribution</h4>
+                <p class="text-sm text-gray-600">100% Assigned</p>
+            </div>
+            <div>
+                <canvas id="jobsDistributionChart" width="200" height="80"></canvas>
+            </div>
+        </div>
+        <!-- Right Column: Jobs Metrics Table -->
+        <div>
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th class="text-left text-sm font-medium text-gray-600 pb-2">Metric</th>
+                        <th class="text-right text-sm font-medium text-gray-600 pb-2">Value</th>
+                        <th class="text-right text-sm font-medium text-gray-600 pb-2">Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="py-2 text-sm text-gray-600">Jobs Being Worked On</td>
+                        <td class="py-2 text-sm font-bold text-gray-800">10</td>
+                        <td class="py-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-orange-600 h-2 rounded-full" style="width: 50%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 text-sm text-gray-600">Job Hits</td>
+                        <td class="py-2 text-sm font-bold text-gray-800">45</td>
+                        <td class="py-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-pink-600 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Grid Section: Detailed Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Equipment Assigned -->
+    <div class="bg-white shadow flex flex-col w-full h-full">
+        <div class="bg-indigo-100 p-2 flex items-start justify-center">
+            <i class="ri-tools-line text-indigo-600 text-2xl"></i>
+        </div>
+        <div class="w-full pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Equipment Assigned</h3>
+            <p class="text-xl font-bold mt-2 text-gray-800 mb-2">15/20</p>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-indigo-600 h-2 rounded-full" style="width: 75%"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Branch Performance -->
+    <div class="bg-white shadow flex flex-col w-full h-full">
+        <div class="bg-purple-100 p-2 flex items-center justify-center">
+            <i class="ri-bar-chart-line text-purple-600 text-2xl"></i>
+        </div>
+        <div class="w-full pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Branch Performance</h3>
+            <p class="text-xl font-bold mt-2 text-gray-800 mb-2">85%</p>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-600 h-2 rounded-full" style="width: 85%"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Compliance Status with Chart -->
+    <div class="bg-white shadow flex flex-col w-full h-full">
+        <div class="bg-red-100 p-2 flex items-center justify-center">
+            <i class="ri-shield-check-line text-red-600 text-2xl"></i>
+        </div>
+        <div class="w-full pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Compliance Status</h3>
+            <div class="flex items-center justify-center">
+                <canvas id="complianceChart" width="100" height="100"></canvas>
+            </div>
+            <p class="text-center text-sm text-gray-600 mt-2">90% Compliant</p>
+        </div>
+    </div>
+    <!-- Recent HR Actions -->
+    <div class="bg-white shadow flex flex-col w-full h-full">
+        <div class="bg-teal-100 p-2 flex items-center justify-center">
+            <i class="ri-history-line text-teal-600 text-2xl"></i>
+        </div>
+        <div class="w-full pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Recent HR Actions</h3>
+            <p class="text-xl font-bold mt-2 text-gray-800 mb-2">5</p>
+            <ul class="text-sm text-gray-600">
+                <li>Approved: John Doe</li>
+                <li>Transferred: Jane Smith</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- Chart.js for Compliance Status -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('complianceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Compliant', 'Non-Compliant'],
+                datasets: [{
+                    data: [90, 10],
+                    backgroundColor: ['#EF4444', '#E5E7EB'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+</script>

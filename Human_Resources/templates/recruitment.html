@@ -1,0 +1,122 @@
+<!-- Recruitment & Onboarding Tab -->
+<h2 class="text-lg font-semibold mb-4 text-cyan-600">Recruitment & Onboarding</h2>
+
+<!-- Summary Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-cyan-100 flex items-center justify-center">
+            <i class="ri-user-add-line text-cyan-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Total Pending Approvals</h3>
+            <p class="text-2xl font-bold mt-2 text-gray-800">3</p>
+        </div>
+    </div>
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-cyan-100 flex items-center justify-center">
+            <i class="ri-time-line text-cyan-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 mt-5">
+            <h3 class="text-sm font-medium text-gray-600">Avg. Time to Approve</h3>
+            <p class="text-2xl font-bold mt-2 text-gray-800">5 Days</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <h3 class="text-sm font-medium text-gray-600 mb-2">Filters</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="text-sm text-gray-600">Department</label>
+            <select class="w-full p-2 border rounded-lg text-sm">
+                <option>All Departments</option>
+                <option>IT</option>
+                <option>Production</option>
+                <option>HR</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Branch</label>
+            <select class="w-full p-2 border rounded-lg text-sm">
+                <option>All Branches</option>
+                <option>Branch A</option>
+                <option>Branch B</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Submission Date Range</label>
+            <input type="text" placeholder="Select Date Range" class="w-full p-2 border rounded-lg text-sm">
+        </div>
+    </div>
+</div>
+
+<!-- Pending Approvals Table -->
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <h3 class="text-sm font-medium text-gray-600 mb-2">Pending Approvals</h3>
+    {% if pending_employees %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b">
+                    <th class="text-left py-2">Email</th>
+                    <th class="text-left py-2">Department</th>
+                    <th class="text-left py-2">Branch</th>
+                    <th class="text-left py-2">Submission Date</th>
+                    <th class="text-right py-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in pending_employees %}
+                    <tr class="border-b">
+                        <td class="py-2">{{ employee.employee_email }}</td>
+                        <td class="py-2">{{ employee.department }}</td>
+                        <td class="py-2">{{ employee.branch_station }}</td>
+                        <td class="py-2">{{ employee.created_at|date:"Y-m-d" }}</td>
+                        <td class="py-2 text-right">
+                            <button class="bg-green-500 text-white px-3 py-1 rounded mr-2">Approve</button>
+                            <button class="bg-red-500 text-white px-3 py-1 rounded">Reject</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-sm text-gray-600">No pending employees at the moment.</p>
+    {% endif %}
+</div>
+
+<!-- Chart: Pending Approvals by Department -->
+<div class="bg-white p-4 rounded-lg shadow">
+    <h3 class="text-sm font-medium text-gray-600 mb-2">Pending Approvals by Department</h3>
+    <canvas id="pendingByDepartmentChart" width="200" height="100"></canvas>
+</div>
+
+<!-- Chart.js for Pending Approvals Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Pending Approvals by Department Chart (Bar)
+        const ctxPending = document.getElementById('pendingByDepartmentChart').getContext('2d');
+        new Chart(ctxPending, {
+            type: 'bar',
+            data: {
+                labels: ['IT', 'Production', 'HR'],
+                datasets: [{
+                    label: 'Pending Approvals',
+                    data: [1, 1, 1],
+                    backgroundColor: '#06B6D4',
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true },
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+</script>

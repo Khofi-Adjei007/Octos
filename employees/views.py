@@ -41,7 +41,7 @@ def employeesLogin(request):
                 elif user.is_staff and user.department == 'HR':
                     return redirect('human_resources')
                 else:
-                    return redirect("employee_homepage")
+                    return redirect("employeeHomepage")
     else:
         form = EmployeeLoginForm()  # No request needed for GET
     return render(request, "employeesLogin.html", {"form": form})

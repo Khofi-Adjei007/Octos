@@ -12,7 +12,7 @@
     <div class="flex flex-col">
         <!-- Header with Profile -->
         <header class="bg-white shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-cyan-600">Octos HR Dashboard</h1>
+            <h1 class="text-xl font-bold text-cyan-600">Human Resource Manager</h1>
             <div class="flex items-center space-x-4">
                 {% if request.user.is_authenticated %}
                     <!-- Profile Picture and Username -->
@@ -37,13 +37,124 @@
             </div>
         </header>
 
-        <!-- Main Content (Pending Approval Tab for now) -->
+        <!-- Tabs with Home Button -->
+        <div class="bg-white shadow-md p-4">
+            <nav class="flex space-x-4 border-b">
+                <a href="#" class="tab-link flex items-center space-x-2 bg-cyan-600 text-white px-3 py-1 rounded-md" data-tab="home">
+                    <i class="ri-home-line"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="tab-link flex items-center space-x-2 text-gray-500 hover:text-cyan-600 pb-2" data-tab="recruitment">
+                    <i class="ri-user-add-line"></i>
+                    <span>Recruitment & Onboarding</span>
+                </a>
+                <a href="#" class="tab-link flex items-center space-x-2 text-gray-500 hover:text-cyan-600 pb-2" data-tab="employees">
+                    <i class="ri-user-line"></i>
+                    <span>Employee Management</span>
+                </a>
+                <a href="#" class="tab-link flex items-center space-x-2 text-gray-500 hover:text-cyan-600 pb-2" data-tab="branches">
+                    <i class="ri-building-line"></i>
+                    <span>Branch Coordination</span>
+                </a>
+                <a href="#" class="tab-link flex items-center space-x-2 text-gray-500 hover:text-cyan-600 pb-2" data-tab="payroll">
+                    <i class="ri-money-dollar-circle-line"></i>
+                    <span>Payroll</span>
+                </a>
+                <a href="#" class="tab-link flex items-center space-x-2 text-gray-500 hover:text-cyan-600 pb-2" data-tab="equipment">
+                    <i class="ri-tools-line"></i>
+                    <span>Equipment Management</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content (Tabs Content) -->
         <main class="p-6 flex-1">
-            <h2 class="text-lg font-semibold mb-4 text-cyan-600">Pending Approval</h2>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <p>Pending employees will be listed here...</p>
+            
+            <!-- Home Tab -->
+            <div id="home" class="tab-content">
+                {% include 'hr_homepage.html' %}
+            </div>
+
+
+            <!-- Recruitment & Onboarding Tab -->
+            <div id="recruitment" class="tab-content hidden">
+                {% include 'recruitment.html' %}
+            </div>
+
+        
+            <!-- Employee Management Tab -->
+            <div id="employees" class="tab-content hidden">
+                <h2 class="text-lg font-semibold mb-4 text-cyan-600">Employee Management</h2>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p>Active employees will be listed here...</p>
+                </div>
+            </div>
+
+            <!-- Branch Coordination Tab -->
+            <div id="branches" class="tab-content hidden">
+                <h2 class="text-lg font-semibold mb-4 text-cyan-600">Branch Coordination</h2>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p>Branch details will be listed here...</p>
+                </div>
+            </div>
+
+            <!-- Payroll Tab -->
+            <div id="payroll" class="tab-content hidden">
+                <h2 class="text-lg font-semibold mb-4 text-cyan-600">Payroll</h2>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p>Payroll information will be listed here...</p>
+                </div>
+            </div>
+
+            <!-- Equipment Management Tab -->
+            <div id="equipment" class="tab-content hidden">
+                <h2 class="text-lg font-semibold mb-4 text-cyan-600">Equipment Management</h2>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p>Equipment assignments will be listed here...</p>
+                </div>
             </div>
         </main>
     </div>
+
+    <!-- JavaScript for Tab Switching -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.tab-link');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    // Remove active styles from all tabs
+                    tabs.forEach(t => {
+                        if (t.getAttribute('data-tab') === 'home') {
+                            // Reset Home tab styles
+                            t.classList.remove('bg-cyan-600', 'text-white');
+                            t.classList.add('bg-gray-200', 'text-gray-500', 'hover:bg-cyan-600', 'hover:text-white');
+                        } else {
+                            // Reset other tabs
+                            t.classList.remove('text-cyan-600', 'border-b-2', 'border-cyan-600');
+                            t.classList.add('text-gray-500');
+                        }
+                    });
+
+                    // Add active styles to clicked tab
+                    if (this.getAttribute('data-tab') === 'home') {
+                        this.classList.remove('bg-gray-200', 'text-gray-500');
+                        this.classList.add('bg-cyan-600', 'text-white');
+                    } else {
+                        this.classList.add('text-cyan-600', 'border-b-2', 'border-cyan-600');
+                        this.classList.remove('text-gray-500');
+                    }
+
+                    // Hide all tab contents
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    // Show the selected tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.remove('hidden');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
