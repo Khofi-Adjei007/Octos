@@ -27,7 +27,7 @@
                         <span class="text-sm font-medium text-gray-800">{{ request.user.get_full_name|default:request.user.employee_email }}</span>
                     </div>
                     <!-- Logout Button -->
-                    <a href="{% url 'logout' %}" class="text-cyan-600 hover:text-cyan-700 flex items-center space-x-1">
+                    <a href="{% url 'employee_logout' %}" class="text-cyan-600 hover:text-cyan-700 flex items-center space-x-1">
                         <i class="ri-logout-box-line"></i>
                         <span>Logout</span>
                     </a>

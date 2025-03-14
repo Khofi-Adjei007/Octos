@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Homepage</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Welcome, {{ employee.first_name }} {{ employee.last_name }}</h1>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Your Profile</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Email:</strong> {{ employee.employee_email }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Phone Number:</strong> {{ employee.phone_number }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Department:</strong> {{ employee.department|default:"Not Assigned" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Branch:</strong> {{ employee.branch_station.name|default:"Not Assigned" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Position:</strong> {{ employee.position|default:"Not Assigned" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Hire Date:</strong> {{ employee.hire_date|default:"Not Set" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600"><strong>Status:</strong> {{ status_message }}</p>
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'employee_logout' %}" class="mt-4 inline-block bg-red-500 text-white px-4 py-2 rounded">Logout</a>
+    </div>
+</body>
+</html>

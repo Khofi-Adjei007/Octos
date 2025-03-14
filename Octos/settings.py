@@ -62,11 +62,18 @@ INSTALLED_APPS = [
     'employees',
     'django_browser_reload',
     'Human_Resources',
+    'services',
 ]
 
 TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
+
+# Twilio settings
+TWILIO_ACCOUNT_SID = 'AC990bb26287d486838c1bcef9213f2c19'
+TWILIO_AUTH_TOKEN = 'aa7c8526174a1a070f22b2780b1704b1'
+TWILIO_PHONE_NUMBER = '0556244194'
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
