@@ -10,6 +10,8 @@ class branch_station(models.Model):
     phone = models.CharField(max_length=20, null=True, blank=True)  # e.g., "+1-555-1234"
     email = models.EmailField(null=True, blank=True)  # e.g., "f120@farhart.com"
     is_main = models.BooleanField(default=False)  # True for the main branch
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -132,6 +134,8 @@ class Employee(AbstractBaseUser, PermissionsMixin):
     # Authentication Fields
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     objects = EmployeeManager()
 

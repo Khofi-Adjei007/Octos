@@ -12,8 +12,28 @@ logger = logging.getLogger(__name__)
 def human_resource(request):
     if not request.user.is_staff:
         return redirect('employeesLogin')
+    
+    # Get pending employees
     pending_employees = Employee.objects.filter(is_active=False)
-    return render(request, 'human_resource.html', {'user': request.user, 'pending_employees': pending_employees})
+    total_pending = pending_employees.count()
+
+    # Calculate average time to approve for approved employees
+    approved_employees = Employee.objects.filter(is_active=True, approved_at__isnull=False)
+    avg_days_to_approve = 0
+    if approved_employees.exists():
+        total_days = 0
+        for employee in approved_employees:
+            time_diff = employee.approved_at - employee.created_at
+            total_days += time_diff.days
+        avg_days_to_approve = round(total_days / approved_employees.count(), 1)
+
+    context = {
+        'user': request.user,
+        'pending_employees': pending_employees,
+        'total_pending': total_pending,
+        'avg_days_to_approve': avg_days_to_approve,
+    }
+    return render(request, 'human_resource.html', context)
 
 @csrf_exempt
 @login_required
