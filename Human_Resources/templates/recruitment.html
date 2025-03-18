@@ -3,7 +3,8 @@
 
 
 <!-- Summary Metrics -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+    <!-- Total Pending Approvals -->
     <div class="bg-white shadow flex w-full h-full">
         <div class="w-1/6 h-full bg-green-200 flex items-center justify-center">
             <i class="ri-user-add-line text-green-600 text-2xl"></i>
@@ -13,6 +14,8 @@
             <h3 class="text-sm font-medium text-gray-600">Total Pending Approvals</h3>
         </div>
     </div>
+
+    <!-- Avg. Time to Approve -->
     <div class="bg-white shadow flex w-full h-full">
         <div class="w-1/6 h-full bg-blue-200 flex items-center justify-center">
             <i class="ri-time-line text-blue-600 text-2xl"></i>
@@ -20,6 +23,39 @@
         <div class="w-5/6 pl-3 m-3">
             <p class="text-xl font-bold text-gray-800">{{ avg_days_to_approve }} Days</p>
             <h3 class="text-sm font-medium text-gray-600">Avg. Time to Approve</h3>
+        </div>
+    </div>
+
+    <!-- Total Employees -->
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-yellow-200 flex items-center justify-center">
+            <i class="ri-user-line text-yellow-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 m-3">
+            <p class="text-xl font-bold text-gray-800">{{ total_employees }}</p>
+            <h3 class="text-sm font-medium text-gray-600">Total Employees</h3>
+        </div>
+    </div>
+
+    <!-- Active Employees -->
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-purple-200 flex items-center justify-center">
+            <i class="ri-user-check-line text-purple-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 m-3">
+            <p class="text-xl font-bold text-gray-800">{{ active_employees }}</p>
+            <h3 class="text-sm font-medium text-gray-600">Active Employees</h3>
+        </div>
+    </div>
+
+    <!-- Total Branches -->
+    <div class="bg-white shadow flex w-full h-full">
+        <div class="w-1/6 h-full bg-red-200 flex items-center justify-center">
+            <i class="ri-building-line text-red-600 text-2xl"></i>
+        </div>
+        <div class="w-5/6 pl-3 m-3">
+            <p class="text-xl font-bold text-gray-800">{{ total_branches }}</p>
+            <h3 class="text-sm font-medium text-gray-600">Total Branches</h3>
         </div>
     </div>
 </div>

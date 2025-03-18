@@ -10,9 +10,20 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="flex flex-col">
+        
         <!-- Header with Profile -->
-        <header class="bg-white shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-cyan-600">Human Resource Manager</h1>
+
+    <header class="bg-cyan-500 shadow-md p-4 flex justify-between items-center">
+
+        <!-- Title Section with Branch Name -->
+    <div class="mb-2 md:mb-0">
+        <h1 class="text-xl font-bold text-white">Human Resource Manager</h1>
+        {% if request.user.is_authenticated and request.user.branch_station %}
+            <p class="text-sm text--600">{{ request.user.branch_station.name }}</p>
+        {% else %}
+            <p class="text-sm text-gray-600">No Branch Assigned</p>
+        {% endif %}
+    </div>
             <div class="flex items-center space-x-4">
                 {% if request.user.is_authenticated %}
                     <!-- Profile Picture and Username -->
@@ -67,6 +78,7 @@
             </nav>
         </div>
 
+        
         <!-- Main Content (Tabs Content) -->
         <main class="p-6 flex-1">
             
