@@ -1,0 +1,326 @@
+<!-- Human_Resources/templates/branch_manager/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Manager Dashboard - Farhart Printing Press</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Remix Icon CDN for icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            transition: width 0.3s ease;
+        }
+        .sidebar-collapsed {
+            width: 5rem;
+        }
+        .sidebar-expanded {
+            width: 16rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <a href="#" class="text-xl font-bold">Farhart</a>
+            <div class="relative">
+                <input type="text" placeholder="Search" class="bg-gray-700 text-white rounded-full px-4 py-2 focus:outline-none">
+                <i class="ri-search-line absolute right-3 top-2.5 text-gray-400"></i>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="relative">
+                <i class="ri-notification-3-line text-xl"></i>
+                {% if notifications %}
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {{ notifications|length }}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="flex items-center space-x-2">
+                <span>{{ user.first_name }} {{ user.last_name }}</span>
+                <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
+                <i class="ri-arrow-down-s-line"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar sidebar-expanded bg-white shadow h-screen sticky top-0">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold mb-4">Branch: {{ user.managed_branch.name|default:"N/A" }}</h2>
+                <ul>
+                    <li class="mb-2">
+                        <a href="#operations" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+                            <i class="ri-bar-chart-fill mr-2"></i>
+                            <span class="sidebar-text">Operations</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#employees" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+                            <i class="ri-user-fill mr-2"></i>
+                            <span class="sidebar-text">Employees</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#inventory" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+                            <i class="ri-box-3-fill mr-2"></i>
+                            <span class="sidebar-text">Inventory</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#metrics" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+                            <i class="ri-line-chart-fill mr-2"></i>
+                            <span class="sidebar-text">Metrics</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#hiring" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+                            <i class="ri-user-add-fill mr-2"></i>
+                            <span class="sidebar-text">Hiring</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+                            <i class="ri-logout-box-line mr-2"></i>
+                            <span class="sidebar-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <div class="container mx-auto">
+                <!-- Breadcrumb -->
+                <nav class="flex items-center text-gray-500 text-sm mb-4">
+                    <a href="#" class="hover:text-gray-700">Home</a>
+                    <span class="mx-2">></span>
+                    <a href="#" class="hover:text-gray-700">Branch Manager</a>
+                    <span class="mx-2">></span>
+                    <span class="text-gray-700">Dashboard</span>
+                </nav>
+
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="flex space-x-4">
+                        <a href="#operations" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Operations</a>
+                        <a href="#employees" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Employees</a>
+                        <a href="#inventory" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Inventory</a>
+                        <a href="#metrics" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Metrics</a>
+                        <a href="#hiring" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Hiring</a>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <!-- Operations Tab -->
+                <div id="operations" class="tab-content">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-xl font-semibold mb-4">Branch Operations</h2>
+                        <p class="text-gray-500">Overview of branch operations.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-medium">Tasks Completed</h3>
+                                <p class="text-2xl font-bold">{{ tasks_completed }}</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-medium">Pending Tasks</h3>
+                                <p class="text-2xl font-bold">{{ tasks_pending }}</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-medium">Production Status</h3>
+                                <p class="text-2xl font-bold">{{ production_status }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employees Tab -->
+                <div id="employees" class="tab-content hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-xl font-semibold mb-4">Branch Employees</h2>
+                        <p class="text-gray-500">List of employees in your branch.</p>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for employee in employees %}
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.first_name }} {{ employee.last_name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.position }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.is_active|yesno:"Active,Pending" }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No employees found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Tab -->
+                <div id="inventory" class="tab-content hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-xl font-semibold mb-4">Branch Inventory</h2>
+                        <p class="text-gray-500">Inventory details for your branch.</p>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for item in inventory %}
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ item.name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ item.quantity }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ item.status }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No inventory items found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Tab -->
+                <div id="metrics" class="tab-content hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-xl font-semibold mb-4">Branch Metrics</h2>
+                        <p class="text-gray-500">Key metrics for your branch.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-medium">Total Employees</h3>
+                                <p class="text-2xl font-bold">{{ total_employees }}</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-medium">Productivity Rate</h3>
+                                <p class="text-2xl font-bold">{{ productivity_rate|default:"N/A" }}</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-medium">Equipment Utilization</h3>
+                                <p class="text-2xl font-bold">{{ equipment_utilization|default:"N/A" }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hiring Tab -->
+                <div id="hiring" class="tab-content hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-xl font-semibold mb-4">Hiring Recommendations</h2>
+                        <p class="text-gray-500">Manage employee hiring recommendations.</p>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for employee in pending_employees %}
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.first_name }} {{ employee.last_name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.position }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.is_active|yesno:"Active,Pending" }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                {% if not employee.is_active %}
+                                                    <form method="post" action="{% url 'recommend_employee' employee.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Recommend</button>
+                                                    </form>
+                                                {% else %}
+                                                    <span class="text-gray-500">Already Active</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">No pending employees found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Sidebar Toggle and Tab Switching -->
+    <script>
+        // Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarTexts = document.querySelectorAll('.sidebar-text');
+        sidebar.addEventListener('mouseenter', () => {
+            sidebar.classList.remove('sidebar-collapsed');
+            sidebar.classList.add('sidebar-expanded');
+            sidebarTexts.forEach(text => text.style.display = 'inline');
+        });
+        sidebar.addEventListener('mouseleave', () => {
+            sidebar.classList.remove('sidebar-expanded');
+            sidebar.classList.add('sidebar-collapsed');
+            sidebarTexts.forEach(text => text.style.display = 'none');
+        });
+
+        // Tab Switching (for both top tabs and sidebar links)
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetTab = this.getAttribute('href').substring(1);
+
+                // Hide all tab contents
+                tabContents.forEach(content => content.classList.add('hidden'));
+                // Remove active class from all tab links
+                tabLinks.forEach(link => {
+                    link.classList.remove('border-blue-500', 'text-gray-700');
+                    link.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                // Show the selected tab content
+                document.getElementById(targetTab).classList.remove('hidden');
+                // Add active class to the selected tab link (both in top tabs and sidebar)
+                const matchingLinks = document.querySelectorAll(`.tab-link[href="#${targetTab}"]`);
+                matchingLinks.forEach(matchingLink => {
+                    matchingLink.classList.remove('border-transparent', 'text-gray-500');
+                    matchingLink.classList.add('border-blue-500', 'text-gray-700');
+                });
+            });
+        });
+
+        // Show the first tab by default
+        if (tabLinks.length > 0) {
+            tabLinks[0].click();
+        }
+    </script>
+</body>
+</html>

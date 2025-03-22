@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from employees.models import Employee
 from services.services import EmployeeService
+from Human_Resources.models import HiringRecommendation
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ def human_resource(request):
         'avg_days_to_approve': avg_days_to_approve,
     }
     return render(request, 'human_resource.html', context)
+
 
 @csrf_exempt
 @login_required
@@ -87,3 +89,59 @@ def approve_employee(request, employee_id):
         return JsonResponse({'success': True})
     logger.error(f"Invalid request method for employee_id: {employee_id}")
     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+
+# Human_Resources/views.py
+from django.shortcuts import render, redirect
+from employees.models import Employee
+
+def branch_manager_dashboard(request):
+    if not request.user.is_authenticated:
+        return redirect('employeesLogin')
+
+    try:
+        profile = request.user.userprofile
+        if profile.managed_branch is None:
+            return redirect('employeesLogin')  # No branch assigned
+        branch = profile.managed_branch
+    except request.user.userprofile.DoesNotExist:
+        return redirect('employeesLogin')  # No UserProfile
+
+    # Fetch employees for the branch
+    employees = Employee.objects.filter(branch=branch)
+    total_employees = employees.filter(is_active=True).count()
+    pending_employees = employees.filter(is_active=False)
+
+    # Mock data for tasks (since Task model isn't created yet)
+    tasks_completed = 0
+    tasks_pending = 0
+
+    # Mock data for production status (since Production model isn't created yet)
+    production_status = "N/A"
+
+    # Mock data for inventory (since Inventory model isn't created yet)
+    inventory = []
+
+    # Mock data for metrics (since Production and Inventory models aren't created yet)
+    productivity_rate = "N/A"
+    equipment_utilization = "N/A"
+
+    # Mock data for notifications (since Notification model isn't created yet)
+    notifications = []
+
+    # Context data for the template
+    context = {
+        'user': request.user,
+        'tasks_completed': tasks_completed,
+        'tasks_pending': tasks_pending,
+        'production_status': production_status,
+        'employees': employees,
+        'inventory': inventory,
+        'total_employees': total_employees,
+        'productivity_rate': productivity_rate,
+        'equipment_utilization': equipment_utilization,
+        'pending_employees': pending_employees,
+        'notifications': notifications,
+    }
+
+    return render(request, 'branch_manager_dashboard.html', context)

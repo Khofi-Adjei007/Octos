@@ -18,25 +18,72 @@ def employeeregistration(request):
         form = EmployeeRegistrationForm()
     return render(request, 'employeeregistration.html', {'form': form})
 
+# Human_Resources/views.py
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+
+# Human_Resources/views.py
+import logging
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+
+logger = logging.getLogger(__name__)
+
+# Human_Resources/views.py
+import logging
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+from Human_Resources.models import UserProfile
+
+logger = logging.getLogger(__name__)
+
 @never_cache
 def employeesLogin(request):
     if request.method == "POST":
         form = EmployeeLoginForm(request.POST, request=request)
         if form.is_valid():
-            username = form.cleaned_data["username"]
+            email = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
+                logger.info(f"User {email} logged in successfully")
+
+                # Superuser check
                 if user.is_superuser:
+                    logger.info(f"Redirecting superuser {email} to admin:index")
                     return redirect('admin:index')
-                elif user.is_staff and user.department == 'HR':
-                    return redirect('human_resources')
-                else:
-                    return redirect("employeeHomepage")
+
+                # Check for UserProfile
+                try:
+                    profile = user.userprofile
+
+                    # Branch Manager check
+                    if profile.managed_branch is not None:
+                        logger.info(f"User {email} is a branch manager for branch {profile.managed_branch.name}. Redirecting to branch_manager_dashboard")
+                        return redirect('branch_manager_dashboard')
+
+                    # HR check
+                    if user.is_staff and profile.department == 'HR':
+                        logger.info(f"Redirecting HR user {email} to human_resources")
+                        return redirect('human_resources')
+
+                except UserProfile.DoesNotExist:
+                    logger.warning(f"User {email} has no UserProfile")
+
+                # Default redirect for regular employees
+                logger.info(f"Redirecting employee {email} to employeeHomepage")
+                return redirect("employeeHomepage")
+
+            else:
+                logger.warning(f"Failed login attempt for email {email}")
     else:
         form = EmployeeLoginForm()
     return render(request, "employeesLogin.html", {"form": form})
+
 
 def employee_logout(request):
     logout(request)

@@ -5,57 +5,97 @@
 <!-- Summary Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
     <!-- Total Pending Approvals -->
-    <div class="bg-white shadow flex w-full h-full">
+    <div class="bg-white shadow flex w-full h-full relative">
         <div class="w-1/6 h-full bg-green-200 flex items-center justify-center">
-            <i class="ri-user-add-line text-green-600 text-2xl"></i>
+            <i class="ri-user-add-fill text-green-600 text-2xl"></i>
         </div>
-        <div class="w-5/6 pl-3 m-3">
-            <p class="text-xl font-bold text-gray-800">{{ total_pending }}</p>
+        <div class="w-5/6 pl-3 m-3 relative">
+            <p class="text-2xl font-bold text-gray-800 mt-2">{{ total_pending }}</p>
             <h3 class="text-sm font-medium text-gray-600">Total Pending Approvals</h3>
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">From Jan 01 - Mar 20, 2025</p>
+                <!-- Trend Indicator (Moved to Bottom Right) -->
+                <div class="bg-green-100 text-green-600 text-xs font-semibold px-2 py-1 rounded-full flex items-center space-x-1">
+                    <i class="ri-arrow-up-line"></i>
+                    <span>5%</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Avg. Time to Approve -->
-    <div class="bg-white shadow flex w-full h-full">
+    <div class="bg-white shadow flex w-full h-full relative">
         <div class="w-1/6 h-full bg-blue-200 flex items-center justify-center">
-            <i class="ri-time-line text-blue-600 text-2xl"></i>
+            <i class="ri-time-fill text-blue-600 text-2xl"></i>
         </div>
-        <div class="w-5/6 pl-3 m-3">
-            <p class="text-xl font-bold text-gray-800">{{ avg_days_to_approve }} Days</p>
+        <div class="w-5/6 pl-3 m-3 relative">
+            <p class="text-2xl font-bold text-gray-800 mt-2">{{ avg_days_to_approve }} Days</p>
             <h3 class="text-sm font-medium text-gray-600">Avg. Time to Approve</h3>
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">From Jan 01 - Mar 20, 2025</p>
+                <!-- Trend Indicator (Moved to Bottom Right) -->
+                <div class="bg-red-100 text-red-600 text-xs font-semibold px-2 py-1 rounded-full flex items-center space-x-1">
+                    <i class="ri-arrow-down-line"></i>
+                    <span>2%</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Total Employees -->
-    <div class="bg-white shadow flex w-full h-full">
+    <!-- Applicants In Last Month -->
+    <div class="bg-white shadow flex w-full h-full relative">
         <div class="w-1/6 h-full bg-yellow-200 flex items-center justify-center">
-            <i class="ri-user-line text-yellow-600 text-2xl"></i>
+            <i class="ri-user-fill text-yellow-600 text-2xl"></i>
         </div>
-        <div class="w-5/6 pl-3 m-3">
-            <p class="text-xl font-bold text-gray-800">{{ total_employees }}</p>
-            <h3 class="text-sm font-medium text-gray-600">Total Employees</h3>
+        <div class="w-5/6 pl-3 m-3 relative">
+            <p class="text-2xl font-bold text-gray-800 mt-2">{{ total_employees }}</p>
+            <h3 class="text-sm font-medium text-gray-600">Applicants In Last Month</h3>
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">From Jan 01 - Mar 20, 2025</p>
+                <!-- Trend Indicator (Moved to Bottom Right) -->
+                <div class="bg-green-100 text-green-600 text-xs font-semibold px-2 py-1 rounded-full flex items-center space-x-1">
+                    <i class="ri-arrow-up-line"></i>
+                    <span>10%</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Active Employees -->
-    <div class="bg-white shadow flex w-full h-full">
+    <!-- Approved Applicants -->
+    <div class="bg-white shadow flex w-full h-full relative">
         <div class="w-1/6 h-full bg-purple-200 flex items-center justify-center">
-            <i class="ri-user-check-line text-purple-600 text-2xl"></i>
+            <i class="ri-user-follow-fill text-purple-600 text-2xl"></i>
         </div>
-        <div class="w-5/6 pl-3 m-3">
-            <p class="text-xl font-bold text-gray-800">{{ active_employees }}</p>
-            <h3 class="text-sm font-medium text-gray-600">Active Employees</h3>
+        <div class="w-5/6 pl-3 m-3 relative">
+            <p class="text-2xl font-bold text-gray-800 mt-2">{{ active_employees }}</p>
+            <h3 class="text-sm font-medium text-gray-600">Approved Applicants</h3>
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">From Jan 01 - Mar 20, 2025</p>
+                <!-- Trend Indicator (Moved to Bottom Right) -->
+                <div class="bg-green-100 text-green-600 text-xs font-semibold px-2 py-1 rounded-full flex items-center space-x-1">
+                    <i class="ri-arrow-up-line"></i>
+                    <span>8%</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Total Branches -->
-    <div class="bg-white shadow flex w-full h-full">
+    <div class="bg-white shadow flex w-full h-full relative">
         <div class="w-1/6 h-full bg-red-200 flex items-center justify-center">
-            <i class="ri-building-line text-red-600 text-2xl"></i>
+            <i class="ri-building-fill text-red-600 text-2xl"></i>
         </div>
-        <div class="w-5/6 pl-3 m-3">
-            <p class="text-xl font-bold text-gray-800">{{ total_branches }}</p>
+        <div class="w-5/6 pl-3 m-3 relative">
+            <p class="text-2xl font-bold text-gray-800 mt-2">{{ total_branches }}</p>
             <h3 class="text-sm font-medium text-gray-600">Total Branches</h3>
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">From Jan 01 - Mar 20, 2025</p>
+                <!-- Trend Indicator (Moved to Bottom Right) -->
+                <div class="bg-red-100 text-red-600 text-xs font-semibold px-2 py-1 rounded-full flex items-center space-x-1">
+                    <i class="ri-arrow-down-line"></i>
+                    <span>3%</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

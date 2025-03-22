@@ -46,6 +46,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 AUTH_USER_MODEL = 'employees.Employee'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'tailwind',
     'theme',
+    'branches',
     'employees',
     'django_browser_reload',
     'Human_Resources',
@@ -74,6 +76,9 @@ TWILIO_ACCOUNT_SID = 'AC990bb26287d486838c1bcef9213f2c19'
 TWILIO_AUTH_TOKEN = 'aa7c8526174a1a070f22b2780b1704b1'
 TWILIO_PHONE_NUMBER = '0556244194'
 
+
+# project/settings.py
+LOGIN_URL = 'employeesLogin'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
