@@ -1,0 +1,239 @@
+<!-- Human_Resources/templates/employees.html -->
+<div class="p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">Employees</h2>
+    <p class="text-gray-600 mb-8">Manage your branch’s employees, assign tasks, and track performance.</p>
+
+    <!-- Employee Performance Overview -->
+    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex items-center space-x-2 mb-4">
+            <i class="ri-line-chart-line text-2xl text-indigo-700"></i>
+            <h3 class="text-lg font-semibold text-gray-800">Employee Performance Overview</h3>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Employees -->
+            <div class="relative bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
+                <i class="ri-group-line text-xl text-blue-600"></i>
+                <div class="flex-1">
+                    <h4 class="text-sm text-gray-600">Total Employees</h4>
+                    <p class="text-2xl font-bold text-blue-800">25</p>
+                </div>
+                <div class="absolute bottom-3 right-3 text-xs flex items-center space-x-1">
+                    <span class="text-green-600">+5%</span>
+                    <i class="ri-arrow-up-line text-green-600"></i>
+                </div>
+            </div>
+            <!-- Average Productivity -->
+            <div class="relative bg-gradient-to-br from-green-100 to-green-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
+                <i class="ri-bar-chart-line text-xl text-green-600"></i>
+                <div class="flex-1">
+                    <h4 class="text-sm text-gray-600">Average Productivity</h4>
+                    <p class="text-2xl font-bold text-green-800">82%</p>
+                </div>
+                <div class="absolute bottom-3 right-3 text-xs flex items-center space-x-1">
+                    <span class="text-red-600">-2%</span>
+                    <i class="ri-arrow-down-line text-red-600"></i>
+                </div>
+            </div>
+            <!-- Attendance Rate -->
+            <div class="relative bg-gradient-to-br from-purple-100 to-purple-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
+                <i class="ri-calendar-check-line text-xl text-purple-600"></i>
+                <div class="flex-1">
+                    <h4 class="text-sm text-gray-600">Attendance Rate</h4>
+                    <p class="text-2xl font-bold text-purple-800">95%</p>
+                </div>
+                <div class="absolute bottom-3 right-3 text-xs flex items-center space-x-1">
+                    <span class="text-green-600">+3%</span>
+                    <i class="ri-arrow-up-line text-green-600"></i>
+                </div>
+            </div>
+            <!-- Total Jobs Done This Month -->
+            <div class="relative bg-gradient-to-br from-orange-100 to-orange-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
+                <i class="ri-file-list-3-line text-xl text-orange-600"></i>
+                <div class="flex-1">
+                    <h4 class="text-sm text-gray-600">Jobs Done This Month</h4>
+                    <p class="text-2xl font-bold text-orange-800">120</p>
+                </div>
+                <div class="absolute bottom-3 right-3 text-xs flex items-center space-x-1">
+                    <span class="text-green-600">+10%</span>
+                    <i class="ri-arrow-up-line text-green-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee List (Card-Based) -->
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-2">
+                <i class="ri-team-line text-2xl text-blue-700"></i>
+                <h3 class="text-lg font-semibold text-gray-800">Employee List</h3>
+            </div>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                <i class="ri-star-line"></i>
+                <span>Recommend Employee</span>
+            </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Employee Card 1 -->
+            <div class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition-shadow min-h-[180px] flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-800">John Doe</h4>
+                            <p class="text-sm text-gray-600">Printer Operator</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="bg-green-200 text-green-800 text-xs font-medium px-2 py-0.5 rounded flex items-center space-x-1">
+                            <i class="ri-checkbox-circle-fill text-green-600"></i>
+                            <span>Active</span>
+                        </span>
+                        <span class="text-sm text-gray-600 flex items-center space-x-1">
+                            <i class="ri-bar-chart-line text-gray-500"></i>
+                            <span>Productivity: 85%</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors flex items-center space-x-1 flex-1 justify-center">
+                        <i class="ri-eye-line"></i>
+                        <span>View</span>
+                    </button>
+                    <button class="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors flex items-center space-x-1 flex-1 justify-center">
+                        <i class="ri-task-line"></i>
+                        <span>Assign Task</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Employee Card 2 -->
+            <div class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition-shadow min-h-[180px] flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-800">Jane Smith</h4>
+                            <p class="text-sm text-gray-600">Designer</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="bg-yellow-200 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded flex items-center space-x-1">
+                            <i class="ri-pause-circle-fill text-yellow-600"></i>
+                            <span>On Leave</span>
+                        </span>
+                        <span class="text-sm text-gray-600 flex items-center space-x-1">
+                            <i class="ri-bar-chart-line text-gray-500"></i>
+                            <span>Productivity: 78%</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors flex items-center space-x-1 flex-1 justify-center">
+                        <i class="ri-eye-line"></i>
+                        <span>View</span>
+                    </button>
+                    <button class="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors flex items-center space-x-1 flex-1 justify-center">
+                        <i class="ri-task-line"></i>
+                        <span>Assign Task</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Assignment -->
+    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex items-center space-x-2 mb-4">
+            <i class="ri-task-line text-2xl text-green-700"></i>
+            <h3 class="text-lg font-semibold text-gray-800">Task Assignment</h3>
+        </div>
+        <div class="space-y-4">
+            <!-- Sample Task 1 -->
+            <div class="border border-green-200 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-green-200 text-green-800 text-xs font-medium px-2 py-0.5 rounded flex items-center space-x-1">
+                            <i class="ri-play-circle-fill text-green-600"></i>
+                            <span>In Progress</span>
+                        </span>
+                        <span class="text-sm text-gray-600">Due: 03/25/2025</span>
+                    </div>
+                    <button class="text-blue-600 text-sm hover:text-blue-800 transition-colors flex items-center space-x-1">
+                        <i class="ri-user-shared-line"></i>
+                        <span>Reassign</span>
+                    </button>
+                </div>
+                <h4 class="text-md font-semibold text-gray-800">Print Brochures for Client A</h4>
+                <p class="text-sm text-gray-600 mt-1">Assigned to: John Doe</p>
+                <div class="mt-2 text-sm text-gray-700">
+                    <p><strong>Latest Update:</strong> Paper stock confirmed, starting print run. <span class="text-gray-500 text-xs">— 03/23/2025 10:00 AM</span></p>
+                </div>
+            </div>
+            <!-- Sample Task 2 -->
+            <div class="border border-yellow-200 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-yellow-200 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded flex items-center space-x-1">
+                            <i class="ri-time-line text-yellow-600"></i>
+                            <span>Pending</span>
+                        </span>
+                        <span class="text-sm text-gray-600">Due: 03/24/2025</span>
+                    </div>
+                    <button class="text-blue-600 text-sm hover:text-blue-800 transition-colors flex items-center space-x-1">
+                        <i class="ri-user-shared-line"></i>
+                        <span>Reassign</span>
+                    </button>
+                </div>
+                <h4 class="text-md font-semibold text-gray-800">Design Flyers for Client B</h4>
+                <p class="text-sm text-gray-600 mt-1">Assigned to: Jane Smith</p>
+                <div class="mt-2 text-sm text-gray-700">
+                    <p><strong>Latest Update:</strong> Awaiting client approval. <span class="text-gray-500 text-xs">— 03/22/2025 02:00 PM</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors flex items-center space-x-2">
+                <i class="ri-add-circle-line"></i>
+                <span>Assign New Task</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Attendance Tracking -->
+    <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-sm p-6">
+        <div class="flex items-center space-x-2 mb-4">
+            <i class="ri-calendar-2-line text-2xl text-red-700"></i>
+            <h3 class="text-lg font-semibold text-gray-800">Recent Attendance Issues</h3>
+        </div>
+        <div class="space-y-4">
+            <!-- Sample Attendance Issue 1 -->
+            <div class="flex justify-between items-center border-b border-red-200 pb-2">
+                <div class="flex items-center space-x-2">
+                    <i class="ri-user-unfollow-line text-red-600"></i>
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-800">John Doe - Absent</h4>
+                        <p class="text-sm text-gray-600">03/23/2025</p>
+                    </div>
+                </div>
+                <button class="text-blue-600 text-sm hover:text-blue-800 transition-colors flex items-center space-x-1">
+                    <i class="ri-eye-line"></i>
+                    <span>View Details</span>
+                </button>
+            </div>
+            <!-- Sample Attendance Issue 2 -->
+            <div class="flex justify-between items-center border-b border-red-200 pb-2">
+                <div class="flex items-center space-x-2">
+                    <i class="ri-timer-line text-red-600"></i>
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-800">Jane Smith - Late</h4>
+                        <p class="text-sm text-gray-600">03/22/2025 - Arrived at 10:00 AM</p>
+                    </div>
+                </div>
+                <button class="text-blue-600 text-sm hover:text-blue-800 transition-colors flex items-center space-x-1">
+                    <i class="ri-eye-line"></i>
+                    <span>View Details</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

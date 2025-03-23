@@ -1,0 +1,107 @@
+<!-- Operations Tab -->
+    <div class="p-6">
+        
+        <!-- Production Overview -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Production Overview</h3>
+                <select class="border border-blue-200 bg-white rounded-md px-3 py-1 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>Today</option>
+                    <option>Yesterday</option>
+                    <option>Last Week</option>
+                </select>
+            </div>
+            <div class="flex items-center space-x-6">
+                <!-- Colorful Gauge -->
+                <div class="relative w-24 h-24">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="10" stroke-dasharray="212 283" stroke-dashoffset="70.75" transform="rotate(-90 50 50)"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3b82f6;" />
+                                <stop offset="100%" style="stop-color:#14b8a6;" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-xl font-semibold text-gray-800">75%</span>
+                    </div>
+                </div>
+                <!-- Production Details -->
+                <div class="flex-1">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Daily Output</p>
+                            <p class="text-lg font-semibold text-blue-800">1,500 / 2,000 units</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Status</p>
+                            <p class="text-lg font-semibold text-green-700">On Track</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Management -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Active Tasks</h3>
+            <div class="space-y-4">
+                <!-- Task 1 -->
+                <div class="border border-green-200 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-green-200 text-green-800 text-xs font-medium px-2 py-0.5 rounded">In Progress</span>
+                            <span class="text-sm text-gray-600">Due: 03/25/2025</span>
+                        </div>
+                        <button class="text-blue-600 text-sm hover:text-blue-800 transition-colors">Update</button>
+                    </div>
+                    <h4 class="text-md font-semibold text-gray-800">Print Brochures for Client A</h4>
+                    <p class="text-sm text-gray-600 mt-1">Assigned to: John Doe, Jane Smith</p>
+                    <div class="mt-2 text-sm text-gray-700">
+                        <p><strong>Latest Update:</strong> Paper stock confirmed, starting print run. <span class="text-gray-500 text-xs">— 03/23/2025 10:00 AM</span></p>
+                    </div>
+                </div>
+                <!-- Task 2 -->
+                <div class="border border-yellow-200 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-yellow-200 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">Pending</span>
+                            <span class="text-sm text-gray-600">Due: 03/24/2025</span>
+                        </div>
+                        <button class="text-blue-600 text-sm hover:text-blue-800 transition-colors">Update</button>
+                    </div>
+                    <h4 class="text-md font-semibold text-gray-800">Calibrate Printing Machine</h4>
+                    <p class="text-sm text-gray-600 mt-1">Assigned to: Mike Johnson</p>
+                    <div class="mt-2 text-sm text-gray-700">
+                        <p><strong>Latest Update:</strong> No updates yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Downtime Tracking -->
+        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Downtime</h3>
+            <div class="space-y-4">
+                <!-- Downtime 1 -->
+                <div class="flex justify-between items-center border-b border-red-200 pb-2">
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-800">Machine #1 - Paper Jam</h4>
+                        <p class="text-sm text-gray-600">03/23/2025 09:00 AM - 09:30 AM</p>
+                    </div>
+                    <span class="text-sm text-red-700 font-medium">30 mins</span>
+                </div>
+                <!-- Downtime 2 -->
+                <div class="flex justify-between items-center border-b border-red-200 pb-2">
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-800">Machine #2 - Maintenance</h4>
+                        <p class="text-sm text-gray-600">03/22/2025 02:00 PM - 04:00 PM</p>
+                    </div>
+                    <span class="text-sm text-red-700 font-medium">2 hrs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

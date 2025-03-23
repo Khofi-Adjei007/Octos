@@ -10,27 +10,56 @@
     <!-- Remix Icon CDN for icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        .sidebar {
-            transition: width 0.3s ease;
+        /* Ensure the dropdown is hidden by default and shown on click */
+        .dropdown-menu {
+            display: none;
         }
-        .sidebar-collapsed {
-            width: 5rem;
+        .dropdown-menu.active {
+            display: block;
         }
-        .sidebar-expanded {
-            width: 16rem;
+
+        /* Sticky Header Styles */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background-color: #1f2937; /* Matches bg-gray-800 */
+        }
+
+        .sticky-subheader {
+            position: sticky;
+            top: 72px; /* Height of the nav bar (p-4 = 1rem padding top/bottom, roughly 64px + border) */
+            z-index: 40;
+            background-color: #f3f4f6; /* Matches bg-gray-100 */
+        }
+
+        /* Add padding to the main content to prevent overlap with the sticky headers */
+        .content-padding {
+            padding-top: 40px; /* Adjust based on the combined height of the sticky sections */
         }
     </style>
 </head>
 <body class="bg-gray-100">
-    <!-- Top Navigation Bar -->
-    <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
+    <!-- Top Navigation Bar (Sticky) -->
+    <nav class="sticky-header bg-gray-800 text-white p-4 flex justify-between items-center">
+        <!-- Left: Logo and Farhart Text -->
         <div class="flex items-center space-x-4">
+            <!-- Business Logo -->
+            <img src="/media/Logo/Business_Logo.jpg" alt="Farhart Logo" class="rounded-full w-10 h-10">
             <a href="#" class="text-xl font-bold">Farhart</a>
-            <div class="relative">
-                <input type="text" placeholder="Search" class="bg-gray-700 text-white rounded-full px-4 py-2 focus:outline-none">
+        </div>
+
+        <!-- Center: Search Bar -->
+        <div class="flex-1 flex justify-center">
+            <div class="relative w-1/3">
+                <input type="text" placeholder="Search" class="bg-gray-700 text-white rounded-full px-4 py-2 w-full focus:outline-none">
                 <i class="ri-search-line absolute right-3 top-2.5 text-gray-400"></i>
             </div>
         </div>
+
+        <!-- Right: Notifications and User Dropdown -->
         <div class="flex items-center space-x-4">
             <div class="relative">
                 <i class="ri-notification-3-line text-xl"></i>
@@ -40,72 +69,27 @@
                     </span>
                 {% endif %}
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="relative flex items-center space-x-2">
                 <span>{{ user.first_name }} {{ user.last_name }}</span>
-                <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
-                <i class="ri-arrow-down-s-line"></i>
+                <img src="https://static.vecteezy.com/system/resources/previews/014/194/219/non_2x/businessman-manager-boss-man-an-office-worker-illustration-flat-design-vector.jpg" alt="Profile" class="w-10 h-10 rounded-full">
+                <i class="ri-arrow-down-s-line cursor-pointer" id="dropdown-toggle"></i>
+                <!-- Dropdown Menu -->
+                <div id="dropdown-menu" class="dropdown-menu absolute right-0 top-12 bg-white text-gray-700 shadow-lg rounded-lg w-48 z-10">
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
+                    <a href="{% url 'employeesLogin' %}" class="block px-4 py-2 hover:bg-gray-100">Logout</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Layout -->
-    <div class="flex">
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar sidebar-expanded bg-white shadow h-screen sticky top-0">
-            <div class="p-4">
-                <h2 class="text-lg font-semibold mb-4">Branch: {{ user.managed_branch.name|default:"N/A" }}</h2>
-                <ul>
-                    <li class="mb-2">
-                        <a href="#operations" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
-                            <i class="ri-bar-chart-fill mr-2"></i>
-                            <span class="sidebar-text">Operations</span>
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#employees" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
-                            <i class="ri-user-fill mr-2"></i>
-                            <span class="sidebar-text">Employees</span>
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#inventory" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
-                            <i class="ri-box-3-fill mr-2"></i>
-                            <span class="sidebar-text">Inventory</span>
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#metrics" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
-                            <i class="ri-line-chart-fill mr-2"></i>
-                            <span class="sidebar-text">Metrics</span>
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#hiring" class="tab-link flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
-                            <i class="ri-user-add-fill mr-2"></i>
-                            <span class="sidebar-text">Hiring</span>
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
-                            <i class="ri-logout-box-line mr-2"></i>
-                            <span class="sidebar-text">Logout</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <!-- Main Content -->
+    <div class="p-6">
+        <div class="container mx-auto">
+            <!-- Subheader (Sticky): Breadcrumb, Branch Name, and Tabs -->
+            <div class="sticky-subheader px-6 pt-4">
 
-        <!-- Main Content -->
-        <div class="flex-1 p-6">
-            <div class="container mx-auto">
-                <!-- Breadcrumb -->
-                <nav class="flex items-center text-gray-500 text-sm mb-4">
-                    <a href="#" class="hover:text-gray-700">Home</a>
-                    <span class="mx-2">></span>
-                    <a href="#" class="hover:text-gray-700">Branch Manager</a>
-                    <span class="mx-2">></span>
-                    <span class="text-gray-700">Dashboard</span>
-                </nav>
+                <!-- Branch Name -->
+                <h2 class="text-lg font-semibold mb-4">Branch: {{ branch.name|default:"N/A" }}</h2>
 
                 <!-- Tabs -->
                 <div class="border-b border-gray-200 mb-6">
@@ -115,62 +99,21 @@
                         <a href="#inventory" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Inventory</a>
                         <a href="#metrics" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Metrics</a>
                         <a href="#hiring" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Hiring</a>
+                        <a href="#sendjob" class="tab-link py-2 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-blue-500">Send Job</a>
                     </nav>
                 </div>
+            </div>
 
-                <!-- Tab Content -->
+            <!-- Tab Content (Scrollable) -->
+            <div class="content-padding">
                 <!-- Operations Tab -->
                 <div id="operations" class="tab-content">
-                    <div class="bg-white shadow rounded-lg p-6">
-                        <h2 class="text-xl font-semibold mb-4">Branch Operations</h2>
-                        <p class="text-gray-500">Overview of branch operations.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                            <div class="bg-gray-100 p-4 rounded-lg">
-                                <h3 class="text-lg font-medium">Tasks Completed</h3>
-                                <p class="text-2xl font-bold">{{ tasks_completed }}</p>
-                            </div>
-                            <div class="bg-gray-100 p-4 rounded-lg">
-                                <h3 class="text-lg font-medium">Pending Tasks</h3>
-                                <p class="text-2xl font-bold">{{ tasks_pending }}</p>
-                            </div>
-                            <div class="bg-gray-100 p-4 rounded-lg">
-                                <h3 class="text-lg font-medium">Production Status</h3>
-                                <p class="text-2xl font-bold">{{ production_status }}</p>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'operations.html' %}
                 </div>
 
                 <!-- Employees Tab -->
                 <div id="employees" class="tab-content hidden">
-                    <div class="bg-white shadow rounded-lg p-6">
-                        <h2 class="text-xl font-semibold mb-4">Branch Employees</h2>
-                        <p class="text-gray-500">List of employees in your branch.</p>
-                        <div class="overflow-x-auto mt-4">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    {% for employee in employees %}
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.first_name }} {{ employee.last_name }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.position }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">{{ employee.is_active|yesno:"Active,Pending" }}</td>
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No employees found.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    {% include 'employees.html' %}
                 </div>
 
                 <!-- Inventory Tab -->
@@ -269,27 +212,18 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Send Job Tab -->
+                <div id="sendjob" class="tab-content">
+                    {% include 'jobs.html' %}
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript for Sidebar Toggle and Tab Switching -->
+    <!-- JavaScript for Tab Switching and Dropdown -->
     <script>
-        // Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const sidebarTexts = document.querySelectorAll('.sidebar-text');
-        sidebar.addEventListener('mouseenter', () => {
-            sidebar.classList.remove('sidebar-collapsed');
-            sidebar.classList.add('sidebar-expanded');
-            sidebarTexts.forEach(text => text.style.display = 'inline');
-        });
-        sidebar.addEventListener('mouseleave', () => {
-            sidebar.classList.remove('sidebar-expanded');
-            sidebar.classList.add('sidebar-collapsed');
-            sidebarTexts.forEach(text => text.style.display = 'none');
-        });
-
-        // Tab Switching (for both top tabs and sidebar links)
+        // Tab Switching
         const tabLinks = document.querySelectorAll('.tab-link');
         const tabContents = document.querySelectorAll('.tab-content');
 
@@ -308,11 +242,11 @@
 
                 // Show the selected tab content
                 document.getElementById(targetTab).classList.remove('hidden');
-                // Add active class to the selected tab link (both in top tabs and sidebar)
+                // Add active class to the selected tab link
                 const matchingLinks = document.querySelectorAll(`.tab-link[href="#${targetTab}"]`);
                 matchingLinks.forEach(matchingLink => {
-                    matchingLink.classList.remove('border-transparent', 'text-gray-500');
-                    matchingLink.classList.add('border-blue-500', 'text-gray-700');
+                    link.classList.remove('border-transparent', 'text-gray-500');
+                    link.classList.add('border-blue-500', 'text-gray-700');
                 });
             });
         });
@@ -321,6 +255,21 @@
         if (tabLinks.length > 0) {
             tabLinks[0].click();
         }
+
+        // Dropdown Toggle
+        const dropdownToggle = document.getElementById('dropdown-toggle');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+
+        dropdownToggle.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>

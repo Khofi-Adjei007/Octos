@@ -22,7 +22,7 @@ class EmployeeService:
     def __init__(self):
             self.branch_codes = {
                 'FPP-Main': 'MA',
-                'FPP-North': 'NTH',
+                'FPP-Madina': 'NTH',
                 'FPP-South': 'STH',
                 'FPP-East': 'EST',
                 'FPP-West': 'WST',

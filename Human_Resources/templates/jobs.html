@@ -1,0 +1,153 @@
+<!-- Human_Resources/templates/jobs.html -->
+<div class="p-6">
+
+    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-sm p-6">
+        <div class="flex items-start">
+            <!-- Left Half: Detailed Form -->
+            <div class="w-1/2 pr-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Job Details</h3>
+                <div class="space-y-4">
+                    <!-- Job Type and Job Count -->
+                    <div class="flex space-x-4">
+                        <!-- Job Type -->
+                        <div class="w-1/2">
+                            <label for="job-type" class="block text-sm font-medium text-gray-700">Job Type</label>
+                            <select id="job-type" class="mt-1 block w-full border border-purple-200 bg-white rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="brochure">Brochure</option>
+                                <option value="sticker">Sticker</option>
+                                <option value="banner">Banner</option>
+                                <option value="flyer">Flyer</option>
+                            </select>
+                        </div>
+                        <!-- Job Count -->
+                        <div class="w-1/2">
+                            <label for="job-count" class="block text-sm font-medium text-gray-700">Job Count (Pieces/Sets)</label>
+                            <input type="number" id="job-count" placeholder="e.g., 500" class="mt-1 block w-full border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                        </div>
+                    </div>
+
+                    <!-- Dimensions -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Dimensions (cm)</label>
+                        <div class="flex space-x-2 mt-1">
+                            <input type="text" placeholder="Width (e.g., 2)" class="w-1/2 border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                            <span class="flex items-center text-gray-600">×</span>
+                            <input type="text" placeholder="Height (e.g., 2)" class="w-1/2 border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                        </div>
+                    </div>
+
+                    <!-- Deadline and Priority Level -->
+                    <div class="flex space-x-4">
+                        <!-- Deadline -->
+                        <div class="w-1/2">
+                            <label for="deadline" class="block text-sm font-medium text-gray-700">Deadline</label>
+                            <input type="date" id="deadline" class="mt-1 block w-full border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                        </div>
+                        <!-- Priority Level -->
+                        <div class="w-1/2">
+                            <label for="priority" class="block text-sm font-medium text-gray-700">Priority Level</label>
+                            <select id="priority" class="mt-1 block w-full border border-purple-200 bg-white rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Material Requirements -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Material Requirements</label>
+                        <!-- Paper Type and Ink Colors -->
+                        <div class="flex space-x-4 mt-1">
+                            <!-- Paper Type -->
+                            <div class="w-1/2">
+                                <label for="paper-type" class="block text-xs text-gray-600">Paper Type</label>
+                                <select id="paper-type" class="mt-1 block w-full border border-purple-200 bg-white rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="glossy">Glossy</option>
+                                    <option value="matte">Matte</option>
+                                    <option value="recycled">Recycled</option>
+                                    <option value="cardstock">Cardstock</option>
+                                </select>
+                            </div>
+                            <!-- Ink Colors -->
+                            <div class="w-1/2">
+                                <label for="ink-colors" class="block text-xs text-gray-600">Ink Colors</label>
+                                <select id="ink-colors" class="mt-1 block w-full border border-purple-200 bg-white rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="cmyk">CMYK (Full Color)</option>
+                                    <option value="black">Black Only</option>
+                                    <option value="custom">Custom (Specify in Notes)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Finishing and Additional Notes -->
+                        <div class="flex space-x-4 mt-2">
+                            <!-- Finishing -->
+                            <div class="w-1/2">
+                                <label for="finishing" class="block text-xs text-gray-600">Finishing</label>
+                                <select id="finishing" class="mt-1 block w-full border border-purple-200 bg-white rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="none">None</option>
+                                    <option value="lamination">Lamination</option>
+                                    <option value="uv-coating">UV Coating</option>
+                                    <option value="folding">Folding</option>
+                                </select>
+                            </div>
+                            <!-- Additional Notes -->
+                            <div class="w-1/2">
+                                <label for="material-notes" class="block text-xs text-gray-600">Additional Notes</label>
+                                <textarea id="material-notes" placeholder="e.g., Use eco-friendly ink" rows="2" class="mt-1 block w-full border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client Information -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Client Information</label>
+                        <div class="flex space-x-4 mt-1">
+                            <!-- Client Name -->
+                            <div class="w-1/2">
+                                <label for="client-name" class="block text-xs text-gray-600">Client Name</label>
+                                <input type="text" id="client-name" placeholder="e.g., ABC Corp" class="mt-1 block w-full border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                            </div>
+                            <!-- Client Contact -->
+                            <div class="w-1/2">
+                                <label for="client-contact" class="block text-xs text-gray-600">Client Contact (Email/Phone)</label>
+                                <input type="text" id="client-contact" placeholder="e.g., client@abccorp.com" class="mt-1 block w-full border border-purple-200 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Half: Plus Icon and Button -->
+            <div class="w-1/2 flex flex-col items-center justify-center space-y-6 mt-12">
+                <!-- Plus Icon with File Input -->
+                <label for="job-file" class="cursor-pointer">
+                    <div class="bg-purple-200 rounded-full p-8 hover:bg-purple-300 transition-colors">
+                        <i class="ri-add-line text-8xl text-purple-700"></i>
+                    </div>
+                </label>
+                <input type="file" id="job-file" accept=".pdf,.jpg,.png" class="hidden" />
+                <!-- File Name Display -->
+                <p id="file-name" class="text-sm text-gray-600">No file selected</p>
+                <!-- Request Job Pass Button -->
+                <button class="bg-purple-600 text-white px-8 py-3 rounded-md hover:bg-purple-700 transition-colors text-lg font-medium">
+                    Request Job Pass
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Display Selected File Name -->
+<script>
+    const fileInput = document.getElementById('job-file');
+    const fileNameDisplay = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            fileNameDisplay.textContent = fileInput.files[0].name;
+        } else {
+            fileNameDisplay.textContent = 'No file selected';
+        }
+    });
+</script>

@@ -91,10 +91,8 @@ def approve_employee(request, employee_id):
     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
 
 
-# Human_Resources/views.py
-from django.shortcuts import render, redirect
-from employees.models import Employee
 
+# Human_Resources/views.py
 def branch_manager_dashboard(request):
     if not request.user.is_authenticated:
         return redirect('employeesLogin')
@@ -132,6 +130,7 @@ def branch_manager_dashboard(request):
     # Context data for the template
     context = {
         'user': request.user,
+        'branch': branch,  # Add branch to context
         'tasks_completed': tasks_completed,
         'tasks_pending': tasks_pending,
         'production_status': production_status,
@@ -145,3 +144,5 @@ def branch_manager_dashboard(request):
     }
 
     return render(request, 'branch_manager_dashboard.html', context)
+
+    
