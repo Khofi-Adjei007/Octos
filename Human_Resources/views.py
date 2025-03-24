@@ -5,7 +5,12 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from employees.models import Employee
 from services.services import EmployeeService
-from Human_Resources.models import HiringRecommendation
+
+from django.contrib import messages
+from .RecommendationForm import RecommendationForm
+from .models import Recommendation, AuditLog
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +97,7 @@ def approve_employee(request, employee_id):
 
 
 
+
 # Human_Resources/views.py
 def branch_manager_dashboard(request):
     if not request.user.is_authenticated:
@@ -127,10 +133,13 @@ def branch_manager_dashboard(request):
     # Mock data for notifications (since Notification model isn't created yet)
     notifications = []
 
+    # Create the RecommendationForm instance
+    form = RecommendationForm(user=request.user)
+
     # Context data for the template
     context = {
         'user': request.user,
-        'branch': branch,  # Add branch to context
+        'branch': branch,
         'tasks_completed': tasks_completed,
         'tasks_pending': tasks_pending,
         'production_status': production_status,
@@ -141,8 +150,37 @@ def branch_manager_dashboard(request):
         'equipment_utilization': equipment_utilization,
         'pending_employees': pending_employees,
         'notifications': notifications,
+        'form': form,  # Add the form to the context
     }
 
     return render(request, 'branch_manager_dashboard.html', context)
 
-    
+
+
+
+
+@login_required
+def recommend_employee(request):
+    if request.method == 'POST':
+        form = RecommendationForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            # Save the recommendation
+            recommendation = form.save(commit=False)
+            recommendation.created_by = request.user
+            recommendation.status = 'pending'
+            recommendation.save()
+
+            # Log the action
+            AuditLog.objects.create(
+                action='recommendation_created',
+                user=request.user,
+                recommendation=recommendation,
+                details=f"Recommendation created for {recommendation.first_name} {recommendation.last_name} by {request.user.username}"
+            )
+
+            messages.success(request, "Recommendation submitted successfully. HR will review it.")
+            return redirect('employees')
+    else:
+        form = RecommendationForm(user=request.user)
+
+    return render(request, 'recommend_employee.html', {'form': form})

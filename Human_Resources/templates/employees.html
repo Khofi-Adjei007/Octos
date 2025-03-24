@@ -1,15 +1,16 @@
 <!-- Human_Resources/templates/employees.html -->
-<div class="p-6">
-    <h2 class="text-2xl font-bold text-gray-800 mb-2">Employees</h2>
-    <p class="text-gray-600 mb-8">Manage your branch’s employees, assign tasks, and track performance.</p>
+<div class="p-6" id="main-content">
 
     <!-- Employee Performance Overview -->
     <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl shadow-sm p-6 mb-6">
+
         <div class="flex items-center space-x-2 mb-4">
             <i class="ri-line-chart-line text-2xl text-indigo-700"></i>
             <h3 class="text-lg font-semibold text-gray-800">Employee Performance Overview</h3>
         </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
             <!-- Total Employees -->
             <div class="relative bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
                 <i class="ri-group-line text-xl text-blue-600"></i>
@@ -22,6 +23,7 @@
                     <i class="ri-arrow-up-line text-green-600"></i>
                 </div>
             </div>
+
             <!-- Average Productivity -->
             <div class="relative bg-gradient-to-br from-green-100 to-green-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
                 <i class="ri-bar-chart-line text-xl text-green-600"></i>
@@ -34,6 +36,7 @@
                     <i class="ri-arrow-down-line text-red-600"></i>
                 </div>
             </div>
+
             <!-- Attendance Rate -->
             <div class="relative bg-gradient-to-br from-purple-100 to-purple-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
                 <i class="ri-calendar-check-line text-xl text-purple-600"></i>
@@ -46,6 +49,7 @@
                     <i class="ri-arrow-up-line text-green-600"></i>
                 </div>
             </div>
+
             <!-- Total Jobs Done This Month -->
             <div class="relative bg-gradient-to-br from-orange-100 to-orange-200 p-4 rounded-lg shadow-sm flex items-start space-x-3">
                 <i class="ri-file-list-3-line text-xl text-orange-600"></i>
@@ -61,18 +65,24 @@
         </div>
     </div>
 
+
     <!-- Employee List (Card-Based) -->
     <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm p-6 mb-6">
+
+        <!-- Employee List Section (where the button exists) -->
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center space-x-2">
                 <i class="ri-team-line text-2xl text-blue-700"></i>
                 <h3 class="text-lg font-semibold text-gray-800">Employee List</h3>
             </div>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
+
+            <!-- Recommend Employee Button -->
+            <button id="recommend-employee-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
                 <i class="ri-star-line"></i>
                 <span>Recommend Employee</span>
             </button>
         </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Employee Card 1 -->
             <div class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition-shadow min-h-[180px] flex flex-col justify-between">
@@ -127,6 +137,7 @@
                         </span>
                     </div>
                 </div>
+
                 <div class="flex space-x-2">
                     <button class="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors flex items-center space-x-1 flex-1 justify-center">
                         <i class="ri-eye-line"></i>
@@ -137,7 +148,110 @@
                         <span>Assign Task</span>
                     </button>
                 </div>
+
             </div>
+        </div>
+    </div>
+
+    <!-- Modal for Recommend Employee -->
+    <div id="recommend-employee-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center hidden transition-opacity duration-300 z-50">
+        <div class="bg-gray-100 rounded-xl shadow-2xl w-full max-w-3xl transform scale-95 opacity-0 transition-all duration-300">
+            <!-- Colorful Header -->
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-xl p-6 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="ri-star-line text-2xl text-white"></i>
+                    <h3 class="text-xl font-semibold text-white">Recommend Employee</h3>
+                </div>
+                <button id="close-modal-btn" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Form Content -->
+            <form method="POST" action="{% url 'recommend_employee' %}" enctype="multipart/form-data" class="p-8 space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- First Name and Middle Name -->
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-user-line text-blue-600"></i>
+                            <span>{{ form.first_name.label }}</span>
+                        </label>
+                        {{ form.first_name }}
+                    </div>
+                    <div>
+                        <label for="{{ form.middle_name.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-user-line text-blue-600"></i>
+                            <span>{{ form.middle_name.label }}</span>
+                        </label>
+                        {{ form.middle_name }}
+                    </div>
+
+                    <!-- Last Name and Email -->
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-user-line text-blue-600"></i>
+                            <span>{{ form.last_name.label }}</span>
+                        </label>
+                        {{ form.last_name }}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-mail-line text-blue-600"></i>
+                            <span>{{ form.email.label }}</span>
+                        </label>
+                        {{ form.email }}
+                    </div>
+
+                    <!-- Recommended Role and Branch -->
+                    <div>
+                        <label for="{{ form.recommended_role.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-briefcase-line text-blue-600"></i>
+                            <span>{{ form.recommended_role.label }}</span>
+                        </label>
+                        {{ form.recommended_role }}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.branch.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-building-line text-blue-600"></i>
+                            <span>{{ form.branch.label }}</span>
+                        </label>
+                        {{ form.branch }}
+                    </div>
+
+                    <!-- Notes (Full Width) -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.notes.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-sticky-note-line text-blue-600"></i>
+                            <span>{{ form.notes.label }}</span>
+                        </label>
+                        {{ form.notes }}
+                    </div>
+
+                    <!-- Resume (Full Width) -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.resume.id_for_label }}" class="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                            <i class="ri-file-upload-line text-blue-600"></i>
+                            <span>{{ form.resume.label }}</span>
+                        </label>
+                        {{ form.resume }}
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" id="cancel-modal-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors flex items-center space-x-2">
+                        <i class="ri-close-circle-line"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                        <i class="ri-check-line"></i>
+                        <span>Submit Recommendation</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -147,7 +261,9 @@
             <i class="ri-task-line text-2xl text-green-700"></i>
             <h3 class="text-lg font-semibold text-gray-800">Task Assignment</h3>
         </div>
+
         <div class="space-y-4">
+
             <!-- Sample Task 1 -->
             <div class="border border-green-200 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center mb-2">
@@ -169,6 +285,7 @@
                     <p><strong>Latest Update:</strong> Paper stock confirmed, starting print run. <span class="text-gray-500 text-xs">— 03/23/2025 10:00 AM</span></p>
                 </div>
             </div>
+
             <!-- Sample Task 2 -->
             <div class="border border-yellow-200 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center mb-2">
@@ -191,6 +308,7 @@
                 </div>
             </div>
         </div>
+
         <div class="mt-4">
             <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors flex items-center space-x-2">
                 <i class="ri-add-circle-line"></i>
@@ -206,6 +324,7 @@
             <h3 class="text-lg font-semibold text-gray-800">Recent Attendance Issues</h3>
         </div>
         <div class="space-y-4">
+
             <!-- Sample Attendance Issue 1 -->
             <div class="flex justify-between items-center border-b border-red-200 pb-2">
                 <div class="flex items-center space-x-2">
@@ -220,6 +339,7 @@
                     <span>View Details</span>
                 </button>
             </div>
+            
             <!-- Sample Attendance Issue 2 -->
             <div class="flex justify-between items-center border-b border-red-200 pb-2">
                 <div class="flex items-center space-x-2">
@@ -237,3 +357,43 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript to Handle Modal -->
+<script>
+    const recommendBtn = document.getElementById('recommend-employee-btn');
+    const modal = document.getElementById('recommend-employee-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+    const mainContent = document.getElementById('main-content');
+
+    // Open modal, blur background, and prevent scrolling
+    recommendBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('opacity-100');
+        modal.querySelector('div').classList.remove('scale-95', 'opacity-0');
+        modal.querySelector('div').classList.add('scale-100', 'opacity-100');
+        mainContent.classList.add('blur-sm');
+        document.body.classList.add('overflow-hidden');
+    });
+
+    // Close modal, remove blur, and restore scrolling
+    const closeModal = () => {
+        modal.classList.remove('opacity-100');
+        modal.classList.add('hidden');
+        mainContent.classList.remove('blur-sm');
+        document.body.classList.remove('overflow-hidden');
+    };
+
+    // Close modal when close button is clicked
+    closeModalBtn.addEventListener('click', closeModal);
+
+    // Close modal when cancel button is clicked
+    cancelModalBtn.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside the modal content
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+</script>
