@@ -1,5 +1,7 @@
+# employees/models.py
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.db import models
+from Human_Resources.models import Role
 
 class EmployeeManager(BaseUserManager):
     def create_user(self, employee_email, password=None, **extra_fields):
@@ -7,7 +9,7 @@ class EmployeeManager(BaseUserManager):
             raise ValueError("Employees must have an email address")
         email = self.normalize_email(employee_email)
         user = self.model(employee_email=email, **extra_fields)
-        user.set_password(password)  # Hashes the password
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -28,25 +30,35 @@ class Employee(AbstractBaseUser, PermissionsMixin):
     user_permissions = models.ManyToManyField(Permission, related_name="employee_permissions", blank=True)
 
     # Work-related Information
-    IT = 'IT'
     HR = 'HR'
+    IT = 'IT'
     SALES = 'SALES'
     MARKETING = 'MARKETING'
     ACCOUNTING = 'ACCOUNTING'
+    MANAGEMENT = 'MANAGEMENT'
+    OPERATIONS = 'OPERATIONS'
+    DELIVERY = 'DELIVERY'
+    QUALITY_CONTROL = 'QUALITY_CONTROL'
+
     DEPARTMENTS = [
-        (IT, 'IT'),
         (HR, 'Human Resources'),
+        (IT, 'Information Technology'),
         (SALES, 'Sales'),
         (MARKETING, 'Marketing'),
         (ACCOUNTING, 'Accounting'),
+        (MANAGEMENT, 'Management'),
+        (OPERATIONS, 'Operations'),
+        (DELIVERY, 'Delivery'),
+        (QUALITY_CONTROL, 'Quality Control'),
     ]
     
     employee_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     position = models.CharField(max_length=255, null=True, blank=True)
-    department = models.CharField(max_length=255, choices=DEPARTMENTS, default=IT, null=True, blank=True)
+    department = models.CharField(max_length=255, choices=DEPARTMENTS, null=True, blank=True)
     hire_date = models.DateField(null=True, blank=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    requested_role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees_requesting')
 
     # Employment Status
     STATUS_CHOICES = [

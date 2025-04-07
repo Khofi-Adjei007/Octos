@@ -1,3 +1,4 @@
+# employees/views.py
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import never_cache
 from django.db import IntegrityError
@@ -6,6 +7,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .employeeForms import EmployeeLoginForm, EmployeeRegistrationForm
 from .models import Employee
+import logging
+from Human_Resources.models import UserProfile
+
+logger = logging.getLogger(__name__)
 
 @never_cache
 def employeeregistration(request):
@@ -17,28 +22,6 @@ def employeeregistration(request):
     else:
         form = EmployeeRegistrationForm()
     return render(request, 'employeeregistration.html', {'form': form})
-
-# Human_Resources/views.py
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.views.decorators.cache import never_cache
-
-# Human_Resources/views.py
-import logging
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.views.decorators.cache import never_cache
-
-logger = logging.getLogger(__name__)
-
-# Human_Resources/views.py
-import logging
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.views.decorators.cache import never_cache
-from Human_Resources.models import UserProfile
-
-logger = logging.getLogger(__name__)
 
 @never_cache
 def employeesLogin(request):
@@ -67,7 +50,7 @@ def employeesLogin(request):
                         return redirect('branch_manager_dashboard')
 
                     # HR check
-                    if user.is_staff and profile.department == 'HR':
+                    if user.is_staff and profile.role and profile.role.name == 'regional_hr_manager':
                         logger.info(f"Redirecting HR user {email} to human_resources")
                         return redirect('human_resources')
 
@@ -84,11 +67,9 @@ def employeesLogin(request):
         form = EmployeeLoginForm()
     return render(request, "employeesLogin.html", {"form": form})
 
-
 def employee_logout(request):
     logout(request)
     return redirect('employeesLogin')
-
 
 # Employees Homepage Redirect
 @never_cache

@@ -1,57 +1,58 @@
 # Human_Resources/models.py
 from django.db import models
-from django.contrib.auth import get_user_model
-from django.utils import timezone
+from django.conf import settings
 from django.core.exceptions import ValidationError
+import uuid
 
-User = get_user_model()
-
-# Validate that the uploaded file is a PDF
+# Validator for PDF files
 def validate_pdf_file(value):
     if not value.name.endswith('.pdf'):
         raise ValidationError('Only PDF files are allowed.')
     if value.size > 10 * 1024 * 1024:  # 10MB limit
         raise ValidationError('File size must be less than 10MB.')
 
-# Role Model (still needed for role-based access control)
+# Role Model
 class Role(models.Model):
-    name = models.CharField(max_length=50, unique=True)  # e.g., "Branch Manager", "Employee", "HR"
+    name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
 
-# Existing UserProfile Model (aligned with Employee model)
+# UserProfile Model
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    managed_branch = models.ForeignKey(
-        'branches.Branch',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='manager_userprofile'
-    )
-    department = models.CharField(max_length=50, blank=True, null=True)
-    # Additional fields for registration process (aligned with Employee)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='userprofile')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
-    employee = models.OneToOneField(
-        'employees.Employee',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='user_profile'
-    )  # Link to Employee model
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    department = models.CharField(max_length=50, blank=True)  # Matches Employee.department
+    managed_branch = models.ForeignKey('branches.Branch', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.role.name if self.role else 'No Role'}"
+        return f"Profile for {self.user}"
 
 # Updated Recommendation Model
 class Recommendation(models.Model):
+    ROLE_CHOICES = (
+        ('branch_manager', 'Branch Manager'),
+        ('regional_hr_manager', 'Regional Human Resource Manager'),
+        ('general_attendant', 'General Attendant'),
+        ('cashier', 'Cashier'),
+        ('graphic_designer', 'Graphic Designer'),
+        ('large_format_machine_operator', 'Large Format/Machine Operator'),
+        ('zonal_delivery_dispatch_rider', 'Zonal Delivery/Dispatch Rider'),
+        ('field_officer', 'Field Officer'),
+        ('cleaner', 'Cleaner'),
+        ('secretary', 'Secretary'),
+        ('marketer', 'Marketer'),
+        ('accountant', 'Accountant'),
+        ('it_support_technician', 'IT Support/Technician'),
+        ('inventory_manager', 'Inventory Manager'),
+        ('quality_control_inspector', 'Quality Control Inspector'),
+    )
+
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('approved', 'Approved'),
+        ('completed', 'Completed'),
         ('rejected', 'Rejected'),
     )
 
@@ -59,21 +60,25 @@ class Recommendation(models.Model):
     middle_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
-    recommended_role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
+    recommended_role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     branch = models.ForeignKey('branches.Branch', on_delete=models.SET_NULL, null=True)
     notes = models.TextField(blank=True)
     resume = models.FileField(upload_to='recommendation_resumes/', validators=[validate_pdf_file], null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    form_url = models.CharField(max_length=255, blank=True)
-    form_url_expiry = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recommendations_made')
+    token = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='recommendations_made')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = str(uuid.uuid4())
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Recommendation for {self.first_name} {self.last_name} - {self.status}"
 
-# Audit Log Model
+# AuditLog Model
 class AuditLog(models.Model):
     ACTION_CHOICES = (
         ('recommendation_created', 'Recommendation Created'),
@@ -86,7 +91,7 @@ class AuditLog(models.Model):
     )
 
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_logs')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_logs')
     recommendation = models.ForeignKey(Recommendation, on_delete=models.SET_NULL, null=True, blank=True)
     details = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)

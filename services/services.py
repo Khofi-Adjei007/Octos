@@ -8,8 +8,10 @@ from branches.models import Branch  # Updated import
 from twilio.rest import Client
 from django.conf import settings
 import phonenumbers
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time  # Add 'time' to imports
 from dateutil.relativedelta import relativedelta
+from django.core.mail import send_mail
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +22,13 @@ class EmployeeService:
     """
 
     def __init__(self):
-            self.branch_codes = {
-                'FPP-Main': 'MA',
-                'FPP-Madina': 'NTH',
-                'FPP-South': 'STH',
-                'FPP-East': 'EST',
-                'FPP-West': 'WST',
-            }
+        self.branch_codes = {
+            'FPP-Main': 'MA',
+            'FPP-Madina': 'NTH',
+            'FPP-South': 'STH',
+            'FPP-East': 'EST',
+            'FPP-West': 'WST',
+        }
 
     def generate_employee_id(self, employee):
         """
@@ -112,6 +114,35 @@ class EmployeeService:
             logger.error(f"Failed to send SMS to {to_number} for employee {employee.id}: {str(e)}")
             return False
 
+    def send_registration_link(self, email, link, first_name, last_name):
+        """
+        Send a registration link email to the potential employee.
+
+        Args:
+            email (str): The recipient's email address
+            link (str): The registration link
+            first_name (str): The recipient's first name
+            last_name (str): The recipient's last name
+
+        Returns:
+            bool: True if email was sent successfully, False otherwise
+        """
+        try:
+            subject = "Complete Your Registration"
+            message = f"Dear {first_name} {last_name},\n\nYou have been recommended to join our team. Please complete your registration by clicking the link below:\n\n{link}\n\nThis link will expire in 7 days.\n\nBest regards,\nHR Team"
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            logger.info(f"Registration link sent to {email}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send registration link to {email}: {str(e)}")
+            return False
+
     def _increment_alphanumeric(self, current):
         """Increment an alphanumeric sequence (e.g., A1A -> A1B)."""
         chars = list(current)
@@ -130,22 +161,8 @@ class EmployeeService:
                 chars.insert(0, 'A')
         return ''.join(chars)
 
-
 class MetricsService:
-    """
-    A service class to handle metrics-related calculations across the system.
-    Designed for reusability and scalability in an enterprise SaaS.
-    """
-
     def calculate_recruitment_metrics(self, date_filter, today):
-        """
-        Calculate recruitment metrics, trends, and date range based on the given date filter.
-        Args:
-            date_filter (str): 'this_month', 'last_month', or 'this_year'
-            today (datetime.date): The current date for calculations
-        Returns:
-            dict: Metrics, trends, and date range
-        """
         try:
             # Handle Date Range
             if date_filter == 'this_month':
@@ -161,6 +178,10 @@ class MetricsService:
                 start_date = today.replace(month=1, day=1)
                 end_date = today
 
+            # Convert dates to timezone-aware datetimes
+            start_datetime = timezone.make_aware(datetime.combine(start_date, time.min))
+            end_datetime = timezone.make_aware(datetime.combine(end_date, time.max))
+
             # Format the date range for display
             date_range = f"From {start_date.strftime('%b %d, %Y')} - {end_date.strftime('%b %d, %Y')}"
 
@@ -175,10 +196,14 @@ class MetricsService:
                 prev_end_date = start_date - timedelta(days=1)
                 prev_start_date = prev_end_date.replace(month=1, day=1)
 
+            # Convert previous dates to timezone-aware datetimes
+            prev_start_datetime = timezone.make_aware(datetime.combine(prev_start_date, time.min))
+            prev_end_datetime = timezone.make_aware(datetime.combine(prev_end_date, time.max))
+
             # Calculate Metrics
             # 1. Total Pending Approvals
             total_pending = Employee.objects.filter(
-                is_active=False,  # Updated to use is_active
+                is_active=False,
                 created_at__date__gte=start_date,
                 created_at__date__lte=end_date
             ).count()
@@ -191,9 +216,9 @@ class MetricsService:
 
             # 2. Avg. Time to Approve
             approved_employees = Employee.objects.filter(
-                is_active=True,  # Updated to use is_active
-                approved_at__gte=start_date,  # Updated to use approved_at
-                approved_at__lte=end_date,
+                is_active=True,
+                approved_at__gte=start_datetime,
+                approved_at__lte=end_datetime,
                 created_at__isnull=False,
                 approved_at__isnull=False
             )
@@ -203,11 +228,12 @@ class MetricsService:
                     avg_time=Avg('approved_at', output_field=models.DurationField()) - Avg('created_at', output_field=models.DurationField())
                 )['avg_time']
                 avg_days_to_approve = round(avg_days.total_seconds() / (60 * 60 * 24), 1) if avg_days else 0
+
             # Previous period for trend
             approved_employees_prev = Employee.objects.filter(
                 is_active=True,
-                approved_at__gte=prev_start_date,
-                approved_at__lte=prev_end_date,
+                approved_at__gte=prev_start_datetime,
+                approved_at__lte=prev_end_datetime,
                 created_at__isnull=False,
                 approved_at__isnull=False
             )
@@ -235,19 +261,19 @@ class MetricsService:
 
             # 4. Approved Applicants
             active_employees = Employee.objects.filter(
-                is_active=True,  # Updated to use is_active
-                approved_at__gte=start_date,
-                approved_at__lte=end_date
+                is_active=True,
+                approved_at__gte=start_datetime,
+                approved_at__lte=end_datetime
             ).count()
             active_employees_prev = Employee.objects.filter(
                 is_active=True,
-                approved_at__gte=prev_start_date,
-                approved_at__lte=prev_end_date
+                approved_at__gte=prev_start_datetime,
+                approved_at__lte=prev_end_datetime
             ).count()
             active_employees_trend = self._calculate_trend(active_employees, active_employees_prev)
 
             # 5. Total Branches
-            total_branches = Branch.objects.count()  # Updated to use Branch
+            total_branches = Branch.objects.count()
             total_branches_prev = total_branches  # Assuming branches don't change frequently
             total_branches_trend = self._calculate_trend(total_branches, total_branches_prev)
 
@@ -271,14 +297,6 @@ class MetricsService:
             raise
 
     def _calculate_trend(self, current, previous):
-        """
-        Calculate the percentage trend between current and previous values.
-        Args:
-            current (float): Current value
-            previous (float): Previous value
-        Returns:
-            float: Percentage change
-        """
         if previous == 0:
             return 0 if current == 0 else 100 if current > 0 else -100
         return round(((current - previous) / previous) * 100, 1)

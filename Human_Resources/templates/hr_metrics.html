@@ -1,0 +1,91 @@
+<div class="grid grid-cols-5 gap-4">
+    <!-- Total Pending Approvals -->
+    <div class="bg-orange-100 p-3 rounded-lg shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-medium text-orange-700">Total Pending Approvals</h3>
+                <p class="text-lg font-semibold text-orange-800">{{ metrics.total_pending }}</p>
+            </div>
+            <div class="text-xl text-orange-500">
+                <i class="ri-user-add-line"></i>
+            </div>
+        </div>
+        <div class="mt-1">
+            <span class="text-xs {% if metrics.total_pending_trend > 0 %}text-green-600{% elif metrics.total_pending_trend < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                {% if metrics.total_pending_trend > 0 %}+{% endif %}{{ metrics.total_pending_trend }}% from last period
+            </span>
+        </div>
+    </div>
+
+    <!-- Average Time to Approve -->
+    <div class="bg-red-100 p-3 rounded-lg shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-medium text-red-700">Avg. Time to Approve</h3>
+                <p class="text-lg font-semibold text-red-800">{{ metrics.avg_days_to_approve }} days</p>
+            </div>
+            <div class="text-xl text-red-500">
+                <i class="ri-time-line"></i>
+            </div>
+        </div>
+        <div class="mt-1">
+            <span class="text-xs {% if metrics.avg_days_to_approve_trend > 0 %}text-red-600{% elif metrics.avg_days_to_approve_trend < 0 %}text-green-600{% else %}text-gray-600{% endif %}">
+                {% if metrics.avg_days_to_approve_trend > 0 %}+{% endif %}{{ metrics.avg_days_to_approve_trend }}% from last period
+            </span>
+        </div>
+    </div>
+
+    <!-- Applicants in Last 30 Days -->
+    <div class="bg-blue-100 p-3 rounded-lg shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-medium text-blue-700">Applicants (Last 30 Days)</h3>
+                <p class="text-lg font-semibold text-blue-800">{{ metrics.total_employees }}</p>
+            </div>
+            <div class="text-xl text-blue-500">
+                <i class="ri-group-line"></i>
+            </div>
+        </div>
+        <div class="mt-1">
+            <span class="text-xs {% if metrics.total_employees_trend > 0 %}text-green-600{% elif metrics.total_employees_trend < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                {% if metrics.total_employees_trend > 0 %}+{% endif %}{{ metrics.total_employees_trend }}% from last period
+            </span>
+        </div>
+    </div>
+
+    <!-- Approved Applicants -->
+    <div class="bg-green-100 p-3 rounded-lg shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-medium text-green-700">Approved Applicants</h3>
+                <p class="text-lg font-semibold text-green-800">{{ metrics.active_employees }}</p>
+            </div>
+            <div class="text-xl text-green-500">
+                <i class="ri-check-double-line"></i>
+            </div>
+        </div>
+        <div class="mt-1">
+            <span class="text-xs {% if metrics.active_employees_trend > 0 %}text-green-600{% elif metrics.active_employees_trend < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                {% if metrics.active_employees_trend > 0 %}+{% endif %}{{ metrics.active_employees_trend }}% from last period
+            </span>
+        </div>
+    </div>
+
+    <!-- Total Branches -->
+    <div class="bg-purple-100 p-3 rounded-lg shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-medium text-purple-700">Total Branches</h3>
+                <p class="text-lg font-semibold text-purple-800">{{ metrics.total_branches }}</p>
+            </div>
+            <div class="text-xl text-purple-500">
+                <i class="ri-building-line"></i>
+            </div>
+        </div>
+        <div class="mt-1">
+            <span class="text-xs {% if metrics.total_branches_trend > 0 %}text-green-600{% elif metrics.total_branches_trend < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                {% if metrics.total_branches_trend > 0 %}+{% endif %}{{ metrics.total_branches_trend }}% from last period
+            </span>
+        </div>
+    </div>
+</div>

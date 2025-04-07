@@ -12,18 +12,16 @@
     <div class="flex flex-col">
         
         <!-- Header with Profile -->
-
-    <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-
-        <!-- Title Section with Branch Name -->
-    <div class="mb-2 md:mb-0">
-        <h1 class="text-xl font-bold text-white">Human Resource Manager</h1>
-        {% if request.user.is_authenticated and request.user.branch_station %}
-            <p class="text-sm text--600">{{ request.user.branch_station.name }}</p>
-        {% else %}
-            <p class="text-sm text-gray-600">No Branch Assigned</p>
-        {% endif %}
-    </div>
+        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
+            <!-- Title Section with Branch Name -->
+            <div class="mb-2 md:mb-0">
+                <h1 class="text-xl font-bold text-white">Human Resource Manager</h1>
+                {% if request.user.is_authenticated and request.user.branch_station %}
+                    <p class="text-sm text--600">{{ request.user.branch_station.name }}</p>
+                {% else %}
+                    <p class="text-sm text-gray-600">No Branch Assigned</p>
+                {% endif %}
+            </div>
             <div class="flex items-center space-x-4">
                 {% if request.user.is_authenticated %}
                     <!-- Profile Picture and Username -->
@@ -78,22 +76,35 @@
             </nav>
         </div>
 
-        
         <!-- Main Content (Tabs Content) -->
         <main class="p-6 flex-1">
-            
+            <!-- Messages -->
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="p-4 mb-2 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <!-- Home Tab -->
             <div id="home" class="tab-content">
                 {% include 'hr_homepage.html' %}
             </div>
 
-
             <!-- Recruitment & Onboarding Tab -->
             <div id="recruitment" class="tab-content hidden">
-                {% include 'recruitment.html' %}
+                <h2 class="text-lg font-semibold mb-4 text-cyan-600">Recruitment & Onboarding</h2>
+                
+                {% include 'hr_metrics.html' %}
+
+                {% include 'pending_recommendation.html'%}
+                {% include 'pending_approval.html' %}
+             
             </div>
 
-        
             <!-- Employee Management Tab -->
             <div id="employees" class="tab-content hidden">
                 <h2 class="text-lg font-semibold mb-4 text-cyan-600">Employee Management</h2>
@@ -125,12 +136,44 @@
                     <p>Equipment assignments will be listed here...</p>
                 </div>
             </div>
+
+            <!-- Modal for Employee Details -->
+            {% for employee in pending_employees %}
+                <div id="modal-{{ employee.id }}" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Applicant Details</h3>
+                            <button class="close-modal text-gray-500 hover:text-gray-700">
+                                <i class="ri-close-line text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <p><strong>Full Name:</strong> {{ employee.first_name }} {{ employee.last_name }}</p>
+                            <p><strong>Email:</strong> {{ employee.employee_email }}</p>
+                            <p><strong>Requested Role:</strong> {{ employee.requested_role.name }}</p>
+                            <p><strong>Branch:</strong> {{ employee.branch.name }}</p>
+                            <p><strong>Phone Number:</strong> {{ employee.phone_number|default:"Not provided" }}</p>
+                            <p><strong>Date of Birth:</strong> {{ employee.date_of_birth|default:"Not provided" }}</p>
+                            <p><strong>Address:</strong> {{ employee.address|default:"Not provided" }}</p>
+                            {% if employee.profile_picture %}
+                                <p><strong>Profile Picture:</strong></p>
+                                <img src="{{ employee.profile_picture.url }}" alt="Profile Picture" class="w-32 h-32 object-cover rounded">
+                            {% endif %}
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <a href="{% url 'approve_employee' employee.id %}" class="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700">Approve</a>
+                            <button class="close-modal bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Close</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </main>
     </div>
 
-    <!-- JavaScript for Tab Switching -->
+    <!-- JavaScript for Tab Switching and Modal -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Tab Switching
             const tabs = document.querySelectorAll('.tab-link');
             const tabContents = document.querySelectorAll('.tab-content');
 
@@ -140,11 +183,9 @@
                     // Remove active styles from all tabs
                     tabs.forEach(t => {
                         if (t.getAttribute('data-tab') === 'home') {
-                            // Reset Home tab styles
                             t.classList.remove('bg-cyan-600', 'text-white');
                             t.classList.add('bg-gray-200', 'text-gray-500', 'hover:bg-cyan-600', 'hover:text-white');
                         } else {
-                            // Reset other tabs
                             t.classList.remove('text-cyan-600', 'border-b-2', 'border-cyan-600');
                             t.classList.add('text-gray-500');
                         }
@@ -164,6 +205,35 @@
                     // Show the selected tab content
                     const tabId = this.getAttribute('data-tab');
                     document.getElementById(tabId).classList.remove('hidden');
+                });
+            });
+
+            // Modal Handling
+            const reviewButtons = document.querySelectorAll('.review-btn');
+            const modals = document.querySelectorAll('.modal');
+            const closeButtons = document.querySelectorAll('.close-modal');
+
+            reviewButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const employeeId = this.getAttribute('data-employee-id');
+                    const modal = document.getElementById(`modal-${employeeId}`);
+                    modal.classList.remove('hidden');
+                });
+            });
+
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const modal = this.closest('.modal');
+                    modal.classList.add('hidden');
+                });
+            });
+
+            // Close modal when clicking outside
+            modals.forEach(modal => {
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
                 });
             });
         });

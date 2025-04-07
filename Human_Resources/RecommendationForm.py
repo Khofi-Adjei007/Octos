@@ -1,7 +1,7 @@
 # Human_Resources/forms.py
 from django import forms
-from .models import Recommendation, Role
-from branches.models import Branch  # Import Branch model
+from .models import Recommendation  # Removed Role import
+from branches.models import Branch
 
 class RecommendationForm(forms.ModelForm):
     class Meta:
@@ -61,31 +61,20 @@ class RecommendationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Pre-fill branch based on the branch manager's managed_branch
         if user and hasattr(user, 'userprofile') and user.userprofile.managed_branch:
-            # Use a QuerySet with filter to include only the manager's branch
             self.fields['branch'].initial = user.userprofile.managed_branch
-            self.fields['branch'].widget.attrs['readonly'] = True  # Make branch read-only
+            self.fields['branch'].widget.attrs['readonly'] = True
             self.fields['branch'].queryset = Branch.objects.filter(id=user.userprofile.managed_branch.id)
         else:
             self.fields['branch'].queryset = Branch.objects.all()
-        # Set queryset for recommended_role
-        self.fields['recommended_role'].queryset = Role.objects.all()
+        # Removed: self.fields['recommended_role'].queryset = Role.objects.all()
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        # Check if email already exists in Recommendation
         if Recommendation.objects.filter(email=email).exists():
             raise forms.ValidationError("This email is already registered. Please use a different email.")
-        # Check if email exists in Employee model
         from employees.models import Employee
         if Employee.objects.filter(employee_email=email).exists():
             raise forms.ValidationError("This email is already associated with an employee.")
         return email
 
-    def clean_resume(self):
-        resume = self.cleaned_data.get('resume')
-        if resume:
-            if not resume.name.endswith('.pdf'):
-                raise forms.ValidationError("Only PDF files are allowed.")
-            if resume.size > 10 * 1024 * 1024:  # 10MB limit
-                raise forms.ValidationError("File size must be less than 10MB.")
-        return resume
+    # Removed clean_resume method since the model validator handles this
