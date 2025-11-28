@@ -1,0 +1,43 @@
+{% if pending_recommendations %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border rounded-lg">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">First Name</th>
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Last Name</th>
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Email</th>
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Recommended Role</th>
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Branch</th>
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Date Submitted</th>
+                    <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for recommendation in pending_recommendations %}
+                    <tr class="border-b">
+                        <td class="py-2 px-4 text-sm text-gray-700">{{ recommendation.first_name }}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">{{ recommendation.last_name }}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">{{ recommendation.email }}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">{{ recommendation.recommended_role }}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">{{ recommendation.branch.name }}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">{{ recommendation.created_at|date:"M d, Y" }}</td>
+                        <td class="py-2 px-4 text-sm">
+                            <form method="POST" action="{% url 'human_resources' %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="recommendation_id" value="{{ recommendation.id }}">
+                                <button type="submit" name="approve_recommendation" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Approve</button>
+                            </form>
+                            <form method="POST" action="{% url 'human_resources' %}" class="inline ml-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="recommendation_id" value="{{ recommendation.id }}">
+                                <button type="submit" name="reject_recommendation" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-gray-600">No pending recommendations at this time.</p>
+{% endif %}

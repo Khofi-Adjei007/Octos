@@ -1,0 +1,10 @@
+<!doctype html><html><body>
+<h2>Farhat Printing Press — Job Receipt</h2>
+<p>Receipt: {{ job.id }} — Issued: {{ job.created_at }}</p>
+<p>Customer: {{ job.customer_name }} | Phone: {{ job.customer_phone }}</p>
+<p>Service: {{ job.service.name }} | Qty: {{ job.quantity }} | Priority: {{ job.priority }}</p>
+<p>Deposit: {{ job.deposit_amount }} | Price: {{ job.price }}</p>
+<p>ETA: {{ job.expected_ready_at }}</p>
+<hr>
+<p>Branch: {{ job.branch.name }} — Contact: {{ job.branch.phone }}</p>
+</body></html>

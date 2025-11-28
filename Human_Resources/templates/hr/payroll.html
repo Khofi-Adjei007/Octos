@@ -1,0 +1,38 @@
+ <section id="payroll" class="tab-panel panel hidden mb-4">
+  <div class="flex items-center justify-between mb-3">
+    <div>
+      <h2 class="font-semibold">Payroll &amp; benefits</h2>
+      <div class="small-muted text-sm">Payroll totals, upcoming runs, and benefits enrollment snapshot.</div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="reload-payroll" class="btn-outline">Reload</button>
+      <a href="#" class="btn-outline">Open Payroll</a>
+    </div>
+  </div>
+
+  <div class="grid-1 grid-3" style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(180px,1fr));">
+    <div class="panel">
+      <div class="text-sm small-muted">Next payroll run</div>
+      <div id="next-payroll" class="k mt-2">—</div>
+      <div class="text-xs small-muted mt-2">Date / status</div>
+    </div>
+
+    <div class="panel">
+      <div class="text-sm small-muted">Payroll cost (this month)</div>
+      <div id="payroll-cost" class="k mt-2">—</div>
+      <div class="text-xs small-muted mt-2">Net wages + benefits</div>
+    </div>
+
+    <div class="panel">
+      <div class="text-sm small-muted">Benefits enrollment</div>
+      <div id="benefits-enrolled" class="k mt-2">—</div>
+      <div class="text-xs small-muted mt-2">Employees enrolled / eligible</div>
+    </div>
+  </div>
+
+  <!-- small payroll details table -->
+  <div class="panel mt-4">
+    <div class="text-sm small-muted mb-2">Recent payroll activity</div>
+    <div id="payroll-activity" class="small-muted text-sm">Loading…</div>
+  </div>
+</section>

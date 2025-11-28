@@ -17,6 +17,11 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
+#### Start HR Dashboard View ####
+def hr_dashboard(request):
+    return render(request, 'dashboard.html')
+
+#### End HR Dashboard View ####
 @login_required
 def human_resource(request):
     if not request.user.is_staff:
@@ -75,10 +80,10 @@ def human_resource(request):
         'user': request.user,
         'pending_employees': pending_employees,
         'total_pending': total_pending,
-        'metrics': metrics,  # Add metrics to context
+        'metrics': metrics, 
         'pending_recommendations': pending_recommendations,
     }
-    return render(request, 'human_resource.html', context)
+    return render(request, 'hr/dashboard.html', context)
 
 @csrf_exempt
 @login_required

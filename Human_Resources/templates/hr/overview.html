@@ -1,0 +1,25 @@
+ <section id="overview" class="tab-panel panel mb-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">Overview</h2>
+          <p class="small-muted mt-1">HR quick glance — approve public applications, manage staff and complaints.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="refresh-overview" class="btn-outline">Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-1 grid-2 mt-4" style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));">
+        <div class="panel">
+          <div class="text-sm small-muted">Employees by department</div>
+          <div id="dept-breakdown" class="mt-3 text-sm small-muted">Loading…</div>
+        </div>
+
+        <div class="panel">
+          <div class="text-sm small-muted">Recent activity</div>
+          <ul id="recent-activity" class="mt-3 text-sm small-muted">
+            <li>No activity yet.</li>
+          </ul>
+        </div>
+      </div>
+    </section>

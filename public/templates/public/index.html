@@ -1,0 +1,310 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farhat Printing Press — Quality printing, on time</title>
+  <link rel="stylesheet" href="{% static 'public/site.css' %}">
+
+  <!-- Tailwind (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --page-bg: #F9EFF0;
+      --accent-red: #FF0A14;
+      --brand-green: #0F3E33;
+      --text: #1F2937;
+    }
+    body { background: var(--page-bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    /* subtle header blur on scroll (works in modern browsers) */
+    .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+  <!-- NAVIGATION (mobile-friendly) -->
+  <header class="bg-red-500 shadow fixed w-full z-20">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <img src="{% static 'public/logo-square.png' %}" alt="Farhat logo" class="h-9 w-9 object-contain rounded-md bg-gray-100"/>
+        <span class="text-lg font-semibold" style="color: var(--brand-green)">Farhat Printing Press</span>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="/" class="text-sm text-white hover:text-[var(--accent-red)]">Home</a>
+        <a href="{% url 'public:services' %}" class="text-sm text-white hover:text-[var(--accent-red)]">Services</a>
+        <a href="{% url 'public:careers' %}" class="text-sm text-white hover:text-[var(--accent-red)]">Careers</a>
+        <a href="{% url 'public:contact' %}" class="text-sm text-white hover:text-[var(--accent-red)]">Contact</a>
+        <a href="#" class="ml-4 inline-flex items-center px-4 py-2 bg-white text-[var(--accent-red)] rounded shadow-sm text-sm">Send a Whatsapp</a>
+      </nav>
+
+      <!-- Mobile hamburger -->
+      <div class="md:hidden">
+        <button id="mobile-menu-button" aria-expanded="false" aria-controls="mobile-menu" class="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--brand-green)]">
+          <svg id="hamburger-open" class="h-6 w-6 text-[var(--brand-green)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
+          <svg id="hamburger-close" class="h-6 w-6 text-[var(--brand-green)] hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu panel -->
+    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+      <div class="px-4 pb-4 pt-2 space-y-2">
+        <a href="/" class="block py-2">Home</a>
+        <a href="{% url 'public:services' %}" class="block py-2">Services</a>
+        <a href="{% url 'public:careers' %}" class="block py-2">Careers</a>
+        <a href="{% url 'public:contact' %}" class="block py-2">Contact</a>
+        <a href="#" class="block mt-2 py-2 px-3 rounded bg-[var(--accent-red)] text-white text-center">Send a Whatsapp</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- spacer for fixed header -->
+  <div class="h-16 md:h-20"></div>
+
+  <!-- HERO -->
+  <main class="flex-grow max-w-6xl mx-auto px-4 py-8">
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <!-- left -->
+      <div class="px-2">
+        <p class="text-sm font-medium text-[var(--brand-green)] mb-3">Farhat Printing Press</p>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mb-4" style="color:var(--brand-green)">
+          High-quality printing<br><span class="text-[var(--accent-red)]">— on time, where you need it</span>
+        </h1>
+
+        <p class="text-gray-700 max-w-xl mb-6">Large-format, digital and finishing services. We combine skilled operators, preventive maintenance, and color management to deliver dependable, color-accurate results.</p>
+
+        
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="{% url 'public:services' %}" class="inline-flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-md shadow-sm text-sm hover:bg-red-500">Our services</a>
+          <a href="{% url 'public:apply' %}" class="inline-flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-md shadow-sm text-sm hover:bg-red-500">Apply / Join our team</a>
+        </div>
+      </div>
+
+      <!-- right (image / card) -->
+      <div class="px-2">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <img loading="lazy" src="https://i.pinimg.com/736x/e8/20/b7/e820b79c507e7b805c20d7330439eb8d.jpg" alt="Printing hero" class="w-full h-64 sm:h-80 object-cover">
+          <div class="p-4">
+            <h3 class="font-semibold text-lg mb-1">Large format & finishing</h3>
+            <p class="text-sm text-gray-700">From banners to vehicle wraps — precision color control and fast turnarounds.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HORIZONTAL SCROLLER (Turntabl-style) -->
+    <section class="mt-10">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="scroller">
+        <!-- Track container holds two copies for seamless loop -->
+        <div class="scroller-track" aria-hidden="true">
+            <!-- Item 1 -->
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Fast Turnaround</h4>
+            <p class="text-xs text-gray-600 mt-1">48-hour turnaround on urgent digital print jobs.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Color Management</h4>
+            <p class="text-xs text-gray-600 mt-1">ICC-proofed color for consistent brand output.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Large Format</h4>
+            <p class="text-xs text-gray-600 mt-1">Banners, billboards & vehicle wraps.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Installation</h4>
+            <p class="text-xs text-gray-600 mt-1">We deliver & install — hassle free.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Certified Operators</h4>
+            <p class="text-xs text-gray-600 mt-1">Trained staff for quality finishing.</p>
+            </div>
+
+            <!-- duplicate same items for seamless loop (can be same markup repeated) -->
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Fast Turnaround</h4>
+            <p class="text-xs text-gray-600 mt-1">48-hour turnaround on urgent digital print jobs.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Color Management</h4>
+            <p class="text-xs text-gray-600 mt-1">ICC-proofed color for consistent brand output.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Large Format</h4>
+            <p class="text-xs text-gray-600 mt-1">Banners, billboards & vehicle wraps.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Installation</h4>
+            <p class="text-xs text-gray-600 mt-1">We deliver & install — hassle free.</p>
+            </div>
+
+            <div class="scroller-item">
+            <h4 class="font-semibold text-sm text-[var(--brand-green)]">Certified Operators</h4>
+            <p class="text-xs text-gray-600 mt-1">Trained staff for quality finishing.</p>
+            </div>
+        </div>
+        </div>
+    </div>
+    </section>
+
+
+<!-- SERVICES PREVIEW (with custom gradient classes) -->
+<section class="mt-16">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+    <p class="text-sm font-medium text-[var(--accent-red)] uppercase tracking-wide mb-2">What We Do Best</p>
+    <h2 class="text-3xl sm:text-4xl font-extrabold text-[var(--brand-green)] mb-6">Our Core Printing Services</h2>
+    <p class="max-w-2xl mx-auto text-gray-700 mb-10">
+      We bring ideas to life — from concept and design through to print, finishing, and installation.
+      Every project is handled with precision, speed, and consistency.
+    </p>
+
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Large Format (red tint) -->
+      <article class="service-card group shadow-sm hover:shadow-lg transition transform hover:-translate-y-1 bg-yellow-400">
+        <div class="panel">
+          <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-white/80 mb-5 mx-auto">
+            <!-- SVG uses currentColor so .icon-red applies -->
+            <svg class="h-6 w-6 icon-red" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10h18V7M5 7V5a2 2 0 012-2h10a2 2 0 012 2v2" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-[var(--brand-green)] mb-2">Large Format Printing</h3>
+          <p class="text-sm text-gray-700">
+            Billboards, banners, signage, and vehicle wraps — made vivid and durable for outdoor impact.
+          </p>
+        </div>
+      </article>
+
+      <!-- Digital Print (green tint) -->
+      <article class="service-card group  shadow-sm hover:shadow-lg transition transform hover:-translate-y-1 bg-purple-600">
+        <div class="panel">
+          <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-white/80 mb-5 mx-auto">
+            <svg class="h-6 w-6 icon-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6m2 4H7a2 2 0 01-2-2V7a2 2 0 012-2h7" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-[var(--brand-green)] mb-2">Digital Print</h3>
+          <p class="text-sm text-gray-700">
+            Fast, cost-effective short-run printing for flyers, brochures, business cards, and personalized materials.
+          </p>
+        </div>
+      </article>
+
+      <!-- Finishing & Binding (cream tint) -->
+      <article class="service-card group service-bg-cream shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
+        <div class="panel">
+          <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-white/80 mb-5 mx-auto">
+            <svg class="h-6 w-6 icon-yellow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-[var(--brand-green)] mb-2">Finishing & Binding</h3>
+          <p class="text-sm text-gray-700">
+            From lamination to trimming and perforation — precision finishing that enhances presentation quality.
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+
+
+    <!-- WHY CHOOSE US -->
+    <section class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+        <h3 class="font-semibold text-lg mb-2 text-[var(--brand-green)]">Why businesses choose Farhat</h3>
+        <p class="text-sm text-gray-700 mb-3">Experienced operators, preventive maintenance and a regionally distributed network ensure consistent and reliable print delivery.</p>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
+          <li>• Color-managed output</li>
+          <li>• Onsite machine maintenance</li>
+          <li>• Regional distribution & delivery</li>
+          <li>• Training & operator certifications</li>
+        </ul>
+      </div>
+
+      <aside class="bg-white p-6 rounded-lg shadow-sm">
+        <h4 class="font-semibold mb-2 text-[var(--brand-green)]">Quick contact</h4>
+        <p class="text-sm text-gray-700">Head Station - Accra</p>
+        <p class="text-sm text-gray-700">Phone: +233 20 123 4567</p>
+        <p class="text-sm text-gray-700">Email: hello@farhat.local</p>
+        <a href="{% url 'public:contact' %}" class="inline-block mt-3 text-sm text-[var(--accent-red)] hover:underline">Contact us</a>
+      </aside>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="mt-12">
+      <h2 class="text-xl font-semibold mb-4 text-[var(--brand-green)]">What our clients say</h2>
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        <div class="bg-white p-4 rounded-lg shadow-sm text-sm text-gray-700">“Great quality and reliable delivery.” — Client A</div>
+        <div class="bg-white p-4 rounded-lg shadow-sm text-sm text-gray-700">“Color matching was excellent.” — Client B</div>
+        <div class="bg-white p-4 rounded-lg shadow-sm text-sm text-gray-700">“Supportive team and quick turnaround.” — Client C</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t">
+    <div class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-600">
+      <div>
+        <a href="/" class="font-semibold text-[var(--brand-green)]">Farhat Printing Press</a>
+        <p class="mt-2">Large format, digital printing & finishing</p>
+      </div>
+
+      <div>
+        <h5 class="font-semibold mb-2 text-[var(--brand-green)]">Services</h5>
+        <ul>
+          <li><a href="{% url 'public:services' %}" class="hover:underline">Large format</a></li>
+          <li><a href="{% url 'public:services' %}" class="hover:underline">Digital print</a></li>
+          <li><a href="{% url 'public:services' %}" class="hover:underline">Finishing</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="font-semibold mb-2 text-[var(--brand-green)]">Contact</h5>
+        <p>hello@farhat.local</p>
+        <p>+233 20 123 4567</p>
+      </div>
+    </div>
+
+    <div class="border-t mt-4 py-4 text-center text-xs text-gray-500">
+      &copy; {{ now.year }} Farhat Printing Press — Built and Maintained by The Future People
+    </div>
+  </footer>
+
+  <!-- small JS for mobile menu -->
+  <script>
+    (function(){
+      const btn = document.getElementById('mobile-menu-button');
+      const menu = document.getElementById('mobile-menu');
+      const openIcon = document.getElementById('hamburger-open');
+      const closeIcon = document.getElementById('hamburger-close');
+
+      if (!btn || !menu) return;
+      btn.addEventListener('click', () => {
+        const isHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', !isHidden);
+        btn.setAttribute('aria-expanded', String(isHidden));
+        openIcon.classList.toggle('hidden', !isHidden);
+        closeIcon.classList.toggle('hidden', isHidden);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+/* ------- HR Dashboard — Mobile-first theme tweaks ------- */
+:root{
+  --accent-red: #FF0A14;
+  --accent-red-dark: #C50A10;
+  --brand-green: #0F3E33;
+  --muted: #6B7280;
+  --bg: #F8FAFC;
+  --card-shadow: 0 6px 20px rgba(15,62,51,0.03);
+}
+
+/* Base / mobile-first */
+html,body { height:100%; }
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: #0f1724;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Header */
+.hr-top {
+  background: #fff;
+  border-bottom: 1px solid #EEF2F6;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Utility */
+.small-muted { color: var(--muted); font-size: .92rem; }
+
+/* Panels & cards (mobile sizing first) */
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 1rem;
+}
+
+/* Metric card (compact mobile) */
+.metric {
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15,62,51,0.04);
+}
+.metric .k { font-size: 1.25rem; font-weight:700; color:#0f1724; }
+.metric .label { font-size: .875rem; color:var(--muted); }
+
+/* Tabs - mobile friendly (wrap) */
+.tab-btn {
+  display: inline-block;
+  padding: .5rem .75rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: transform .12s ease, color .12s ease, box-shadow .12s ease;
+  font-weight: 600;
+  margin-right: .5rem;
+  margin-bottom: .5rem;
+}
+.tab-btn.active {
+  background: #fff;
+  color: var(--brand-green);
+  box-shadow: 0 10px 30px rgba(15,62,51,0.06);
+  border-color: rgba(15,62,51,0.06);
+}
+
+/* Buttons (mobile) */
+.btn-approve {
+  background: var(--accent-red);
+  color: #fff;
+  padding: .5rem .8rem;
+  border-radius: 10px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .95rem;
+  cursor: pointer;
+}
+.btn-secondary {
+  background: transparent;
+  border:1px solid #E6EEF2;
+  padding: .45rem .65rem;
+  border-radius:10px;
+  color:var(--muted);
+  font-size:.92rem;
+  cursor:pointer;
+}
+
+/* Compact table (mobile stacking with horizontal scroll) */
+.table-fixed { width: 100%; border-collapse: collapse; }
+.table-fixed th, .table-fixed td {
+  padding: .55rem .6rem;
+  border-bottom: 1px solid #F1F5F9;
+  text-align: left;
+  font-size: .92rem;
+}
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Small screens: reduce panel spacing and font sizes slightly */
+@media (max-width: 480px) {
+  .panel { padding: 12px; border-radius: 10px; }
+  .metric .k { font-size: 1.15rem; }
+  .tab-btn { padding: .45rem .6rem; font-size: .92rem; }
+}
+
+/* Larger screens: scale up layout */
+@media (min-width: 860px) {
+  .panel { padding: 1.25rem; border-radius: 14px; }
+  .metric .k { font-size: 1.6rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .tab-btn { margin-bottom: 0; }
+}
+
+/* subtle focus + accessible outlines */
+.tab-btn:focus, .btn-approve:focus, .btn-secondary:focus {
+  outline: 3px solid rgba(15,62,51,0.08);
+  outline-offset: 2px;
+  box-shadow: 0 6px 18px rgba(15,62,51,0.06);
+}
+
+/* small helpers for alignment */
+.flex-center { display:flex; align-items:center; gap: .6rem; justify-content:flex-start; }

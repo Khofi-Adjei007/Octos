@@ -1,0 +1,90 @@
+[
+  {
+    "model": "Human_Resources.department",
+    "pk": 1,
+    "fields": {
+      "name": "Administration",
+      "code": "ADMIN",
+      "description": "HQ and admin functions"
+    }
+  },
+  {
+    "model": "Human_Resources.department",
+    "pk": 2,
+    "fields": {
+      "name": "Operations",
+      "code": "OPS",
+      "description": "Regional / branch operations"
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 1,
+    "fields": {
+      "name": "Chief Executive Officer",
+      "code": "CEO",
+      "description": "Overall company leadership",
+      "default_pay_grade": ""
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 2,
+    "fields": {
+      "name": "Managing Director",
+      "code": "MD",
+      "description": "National operations lead",
+      "default_pay_grade": ""
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 3,
+    "fields": {
+      "name": "Branch Manager",
+      "code": "BRANCH_MGR",
+      "description": "Leads a branch (technical + manager)",
+      "default_pay_grade": ""
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 4,
+    "fields": {
+      "name": "Assistant Branch Manager",
+      "code": "ASST_BRANCH_MGR",
+      "description": "Deputy manager, often dual-role",
+      "default_pay_grade": ""
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 5,
+    "fields": {
+      "name": "Designer",
+      "code": "DESIGNER",
+      "description": "Graphic designer, remote/onsite",
+      "default_pay_grade": ""
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 6,
+    "fields": {
+      "name": "Large Format Operator",
+      "code": "LARGE_OP",
+      "description": "Large format printing operator",
+      "default_pay_grade": ""
+    }
+  },
+  {
+    "model": "Human_Resources.role",
+    "pk": 7,
+    "fields": {
+      "name": "Cashier",
+      "code": "CASHIER",
+      "description": "Branch cashier / MoMo agent",
+      "default_pay_grade": ""
+    }
+  }
+]
