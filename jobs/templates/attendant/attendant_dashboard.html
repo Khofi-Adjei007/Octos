@@ -1,0 +1,424 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendant · Farhat — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-red-50 text-gray-800 min-h-screen">
+
+  <!-- Top bar -->
+  <header class="bg-white border-b sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+      <div class="flex items-center gap-3">
+        <img src="{% static 'imgs/farhat-logo-small.png' %}" alt="Farhat" class="h-10 w-10 object-contain" onerror="this.style.display='none'">
+        <div>
+          <div class="text-base font-semibold text-red-700">Farhat Printing Press</div>
+          <div class="text-xs text-gray-500">Attendant Console</div>
+        </div>
+      </div>
+
+      <div class="flex-1"></div>
+
+      <div class="flex-none flex items-center gap-3">
+        <select id="branch-select" class="border border-red-200 rounded px-3 py-2 text-sm bg-white/95 shadow-sm">
+          {% for b in branches %}
+            <option value="{{ b.id }}" {% if active_branch and b.id == active_branch.id %}selected{% endif %}>{{ b.name }}</option>
+          {% empty %}
+            <option value="">No branch</option>
+          {% endfor %}
+        </select>
+
+        <input id="quick-search" placeholder="Search job / phone" class="border border-red-100 rounded px-3 py-2 text-sm w-40 bg-white/95" />
+
+        <div class="relative">
+          <button id="user-menu-btn" class="flex items-center gap-2 px-2 py-1 rounded hover:bg-red-50">
+            {% if user.profile_picture %}
+              <img src="{{ user.profile_picture.url }}" alt="photo" class="h-8 w-8 rounded-full object-cover border" />
+            {% else %}
+              <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-sm text-red-700 font-semibold">
+                {{ user.get_full_name|default:user.get_username|first|upper }}
+              </div>
+            {% endif %}
+            <span class="text-sm">{{ user.get_full_name|default:user.get_username }}</span>
+          </button>
+
+          <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-md py-1">
+            <a href="#" id="profile-link" class="block px-3 py-2 text-sm hover:bg-red-50">👤 Profile</a>
+            <a href="#" id="settings-link" class="block px-3 py-2 text-sm hover:bg-red-50">⚙️ Settings</a>
+            <a href="{% url 'employee_logout' %}" class="block px-3 py-2 text-sm hover:bg-red-50">🔌 Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tab bar -->
+  <div class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="py-2 flex items-center">
+        <div class="bg-red-50 rounded-lg inline-flex overflow-hidden border">
+          <button data-tab="job" class="tab-btn px-4 py-2 text-sm font-medium bg-white text-red-700">▶️ Job</button>
+          <button data-tab="overview" class="tab-btn px-4 py-2 text-sm font-medium text-gray-600">📊 Overview</button>
+          <button data-tab="history" class="tab-btn px-4 py-2 text-sm font-medium text-gray-600">🕘 History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto px-4 py-4 grid grid-cols-1 gap-4 md:grid-cols-12">
+
+    <!-- Left: tab panes -->
+    <section class="md:col-span-8 space-y-4">
+
+      <!-- Job panel -->
+      <div id="panel-job" class="tab-panel bg-white border rounded-lg p-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <!-- Create Walk-in Job -->
+          <div class="md:col-span-1 bg-white">
+            <h3 class="text-sm font-semibold mb-2 text-red-700">Create Walk-in Job</h3>
+
+            <form id="create-job-form" class="space-y-3" enctype="multipart/form-data">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Service</label>
+                <select id="service" name="service" class="w-full border rounded px-3 py-2 text-sm" required>
+                  <option value="">— select service —</option>
+                  {% for s in services %}
+                    <option value="{{ s.id }}" data-price="{{ s.price }}">{{ s.name }} — GHS {{ s.price }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2">
+                <div class="col-span-2">
+                  <label class="block text-xs text-gray-600 mb-1">Quantity</label>
+                  <input id="quantity" name="quantity" type="number" min="1" value="1" class="w-full border rounded px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 mb-1">Priority</label>
+                  <select id="priority" name="priority" class="w-full border rounded px-3 py-2 text-sm">
+                    <option value="normal" selected>Normal</option>
+                    <option value="express">Express</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Customer name</label>
+                <input id="customer_name" name="customer_name" type="text" class="w-full border rounded px-3 py-2 text-sm" placeholder="Customer full name" />
+              </div>
+
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Phone</label>
+                <input id="customer_phone" name="customer_phone" type="tel" class="w-full border rounded px-3 py-2 text-sm" placeholder="+233..." />
+              </div>
+
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Deposit (GHS)</label>
+                <input id="deposit_amount" name="deposit_amount" type="number" min="0" step="0.01" value="0.00" class="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Notes</label>
+                <textarea id="notes" name="description" rows="2" class="w-full border rounded px-3 py-2 text-sm" placeholder="Job details..."></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Attach file</label>
+                <input id="attachment" name="attachment" type="file" class="text-sm" accept="image/*,.pdf" />
+              </div>
+
+              <!-- price + total -->
+              <div class="flex items-center justify-between text-sm mt-1">
+                <div>Unit: GHS <span id="unit-price">0.00</span></div>
+                <div class="font-semibold">Total: GHS <span id="line-total">0.00</span></div>
+              </div>
+
+              <div class="flex items-center gap-2 pt-2">
+                <button id="btn-create-print" type="button" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded text-sm font-semibold">Create & Print</button>
+                <button id="btn-create-pay" type="button" class="flex-1 border border-red-200 hover:border-red-300 py-2 rounded text-sm">Create & Pay</button>
+              </div>
+
+              <div id="create-feedback" class="text-sm text-gray-600 mt-2"></div>
+            </form>
+          </div>
+
+          <!-- Queue -->
+          <div class="md:col-span-1 md:col-start-2 md:col-end-3">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold">Queue — <span id="queue-count">{{ queue|length }}</span></h3>
+              <div class="flex items-center gap-2">
+                <button id="btn-refresh-queue" class="text-sm px-2 py-1 border rounded border-red-100 hover:bg-red-50">Refresh</button>
+                <button id="btn-poll-toggle" class="text-sm px-2 py-1 border rounded border-red-100 hover:bg-red-50">Auto</button>
+              </div>
+            </div>
+
+            <div id="queue-list" class="space-y-2">
+              {% for job in queue %}
+                <article class="border rounded p-3 flex items-start justify-between bg-red-50/30">
+                  <div>
+                    <div class="text-sm font-medium">Job #{{ job.id }} — {{ job.customer_name }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Qty: {{ job.quantity }} • Pos: {{ job.queue_position }}</div>
+                  </div>
+
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-red-700">{{ job.expected_ready_at|default:"—" }}</div>
+                    <div class="text-xs mt-1">
+                      <span class="inline-block px-2 py-1 rounded bg-white text-red-700 text-xs border"> {{ job.status }} </span>
+                    </div>
+                  </div>
+                </article>
+              {% empty %}
+                <div class="text-sm text-gray-500">No queued jobs for this branch.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Quick info -->
+          <div class="md:col-span-1">
+            <div class="bg-white p-3 rounded border">
+              <h4 class="text-sm font-semibold mb-2 text-red-700">Quick Info ⚡</h4>
+              <div class="text-xs text-gray-600 mb-3">
+                <div>Recent</div>
+                <ul id="recent-jobs" class="mt-2 space-y-1">
+                  {% for j in queue|slice:":5" %}
+                    <li class="text-sm">#{{ j.id }} — {{ j.customer_name }}</li>
+                  {% empty %}
+                    <li class="text-sm text-gray-400">No recent jobs</li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <div class="text-xs text-gray-600">
+                <div class="font-medium">Today</div>
+                <div class="mt-2 space-y-2">
+                  <div class="flex justify-between text-sm"><span>Created</span><span id="stat-created">0</span></div>
+                  <div class="flex justify-between text-sm"><span>Completed</span><span id="stat-completed">0</span></div>
+                  <div class="flex justify-between text-sm"><span>Avg TAT</span><span id="stat-tat">—</span></div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <a href="/api/jobs/receipt/1/" target="_blank" class="text-sm text-red-700">Open sample receipt</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overview -->
+      <div id="panel-overview" class="tab-panel hidden bg-white border rounded-lg p-4">
+        <h3 class="text-sm font-semibold mb-3 text-red-700">Overview 📊</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3 border rounded">
+            <div class="text-xs text-gray-500">Total jobs today</div>
+            <div class="text-2xl font-bold" id="overview-today">0</div>
+          </div>
+          <div class="p-3 border rounded">
+            <div class="text-xs text-gray-500">Pending</div>
+            <div class="text-2xl font-bold" id="overview-pending">0</div>
+          </div>
+          <div class="p-3 border rounded">
+            <div class="text-xs text-gray-500">Avg TAT</div>
+            <div class="text-2xl font-bold" id="overview-tat">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div id="panel-history" class="tab-panel hidden bg-white border rounded-lg p-4">
+        <h3 class="text-sm font-semibold mb-3 text-red-700">History 🕘</h3>
+        <div id="history-list" class="space-y-2">
+          <div class="text-sm text-gray-500">No history yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: branch & shortcuts -->
+    <aside class="md:col-span-4 space-y-4">
+      <div class="bg-white border rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs text-gray-500">Active branch</div>
+            <div class="text-sm font-semibold text-red-700"></div>
+            <div class="text-xs text-gray-500"></div>
+          </div>
+          <div>
+            <a href="#" class="text-sm px-3 py-2 border rounded bg-red-50 text-red-700">Open Shift</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border rounded-lg p-4">
+        <h4 class="text-sm font-semibold mb-2 text-red-700">Shortcuts ⚡</h4>
+        <div class="flex flex-col gap-2">
+          <a href="#" class="text-sm px-3 py-2 border rounded">Go to Cashier</a>
+          <a href="#" class="text-sm px-3 py-2 border rounded">Pending Payments</a>
+          <a href="#" class="text-sm px-3 py-2 border rounded">Reports</a>
+        </div>
+      </div>
+
+      <div class="bg-white border rounded-lg p-4">
+        <h4 class="text-sm font-semibold mb-2 text-red-700">Help</h4>
+        <p class="text-xs text-gray-600">Press Create & Print to generate customer receipt. Use Queue to monitor ETA.</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- JS -->
+  <script>
+    // ---------- tabs ----------
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>{
+          b.classList.remove('bg-white','text-red-700');
+          b.classList.add('text-gray-600');
+        });
+        btn.classList.add('bg-white','text-red-700');
+        btn.classList.remove('text-gray-600');
+
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
+        const panel = document.getElementById('panel-' + tab);
+        if(panel) panel.classList.remove('hidden');
+      });
+    });
+    const initial = document.querySelector('.tab-btn[data-tab="job"]');
+    if(initial) initial.click();
+
+    // ---------- user menu ----------
+    const userBtn = document.getElementById('user-menu-btn');
+    const userMenu = document.getElementById('user-menu');
+
+    function isDescendant(parent, child) {
+      if (!parent || !child) return false;
+      let node = child;
+      while (node) {
+        if (node === parent) return true;
+        node = node.parentNode;
+      }
+      return false;
+    }
+
+    userBtn?.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      userMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e)=>{
+      const tgt = e.target;
+      if (isDescendant(userMenu, tgt) || isDescendant(userBtn, tgt)) return;
+      if (!userMenu.classList.contains('hidden')) userMenu.classList.add('hidden');
+    });
+
+    // ---------- helpers ----------
+    function getCookie(name) {
+      const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return v ? v.pop() : '';
+    }
+
+    // ---------- price calc ----------
+    const serviceSel = document.getElementById('service');
+    const qtyEl = document.getElementById('quantity');
+    const depositEl = document.getElementById('deposit_amount');
+    const unitEl = document.getElementById('unit-price');
+    const totalEl = document.getElementById('line-total');
+    const attachmentEl = document.getElementById('attachment');
+    const feedback = document.getElementById('create-feedback');
+
+    function parsePrice(v){ return Number(v||0); }
+
+    function calcTotal(){
+      const opt = serviceSel?.selectedOptions?.[0];
+      const price = opt ? parsePrice(opt.dataset.price) : 0;
+      const qty = Number(qtyEl.value || 1);
+      const deposit = Number(depositEl.value || 0);
+      const total = Math.max(0, (price * Math.max(1, qty)) - deposit);
+      unitEl.textContent = price.toFixed(2);
+      totalEl.textContent = total.toFixed(2);
+      return {price, qty, deposit, total};
+    }
+
+    serviceSel?.addEventListener('change', calcTotal);
+    qtyEl?.addEventListener('input', calcTotal);
+    depositEl?.addEventListener('input', calcTotal);
+    calcTotal();
+
+    // ---------- create & print (instant) ----------
+    document.getElementById('btn-create-print')?.addEventListener('click', async ()=>{
+      feedback.textContent = 'Creating job...';
+      const {price, qty, deposit} = calcTotal();
+      const branchId = document.getElementById('branch-select')?.value;
+      if(!branchId){ feedback.textContent = 'Select branch'; return; }
+      if(!serviceSel.value){ feedback.textContent = 'Select service'; return; }
+
+      try{
+        const fd = new FormData();
+        fd.append('branch', branchId);
+        fd.append('service', serviceSel.value);
+        fd.append('quantity', qty);
+        fd.append('type', 'instant');
+        fd.append('deposit_amount', deposit);
+        fd.append('description', document.getElementById('notes').value || '');
+        fd.append('customer_name', document.getElementById('customer_name').value || '');
+        fd.append('customer_phone', document.getElementById('customer_phone').value || '');
+        // attach file if any
+        if(attachmentEl.files && attachmentEl.files.length) fd.append('attachment', attachmentEl.files[0]);
+
+        const resp = await fetch('/api/jobs/jobs/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: fd
+        });
+
+        if(!resp.ok){
+          const txt = await resp.text();
+          feedback.textContent = 'Create failed: ' + resp.status;
+          console.error('create error', resp.status, txt);
+          return;
+        }
+
+        const data = await resp.json();
+        feedback.textContent = 'Created. Opening receipt...';
+        // open receipt (server should return receipt_url)
+        if(data.receipt_url){
+          window.open(data.receipt_url, '_blank');
+        } else if(data.id){
+          window.open(`/api/jobs/receipt/${data.id}/`, '_blank');
+        }
+        // clear form lightly
+        document.getElementById('create-job-form').reset();
+        calcTotal();
+        setTimeout(()=> feedback.textContent = '', 2000);
+      } catch(err){
+        console.error(err);
+        feedback.textContent = 'Network error';
+      }
+    });
+
+    // placeholders
+    document.getElementById('btn-refresh-queue')?.addEventListener('click', ()=>{
+      alert('Refresh queue (API not wired yet)');
+    });
+    document.getElementById('btn-create-pay')?.addEventListener('click', ()=>{
+      alert('Create & Pay (API not wired yet)');
+    });
+
+    // branch change (reload queue if needed)
+    document.getElementById('branch-select')?.addEventListener('change', ()=>{
+      // basic behaviour: reload page with ?branch=ID so server picks it up
+      const id = document.getElementById('branch-select').value;
+      const url = new URL(window.location.href);
+      url.searchParams.set('branch', id);
+      window.location.href = url.toString();
+    });
+  </script>
+
+</body>
+</html>

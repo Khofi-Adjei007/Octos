@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, JobRecord, JobAttachment
+from .models import Job, JobRecord, JobAttachment, DailySale
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
@@ -15,3 +15,9 @@ class JobRecordAdmin(admin.ModelAdmin):
 @admin.register(JobAttachment)
 class JobAttachmentAdmin(admin.ModelAdmin):
     list_display = ("id", "record", "uploaded_by", "file", "created_at")
+
+@admin.register(DailySale)
+class DailySaleAdmin(admin.ModelAdmin):
+    list_display = ("branch","date","total_amount","total_count")
+    list_filter = ("branch","date")
+    readonly_fields = ("updated_at",)

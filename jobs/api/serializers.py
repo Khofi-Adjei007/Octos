@@ -26,28 +26,31 @@ class JobRecordSerializer(serializers.ModelSerializer):
 
 
 class JobSerializer(serializers.ModelSerializer):
-    created_by = serializers.StringRelatedField(read_only=True)
-    queue_position = serializers.IntegerField(read_only=True)
-    expected_ready_at = serializers.DateTimeField(read_only=True)
-
     class Meta:
         model = Job
         fields = [
-            "id", "branch", "service", "customer_name", "customer_phone",
-            "description", "quantity", "price", "deposit_amount",
-            "expected_minutes_per_unit", "priority", "status",
-            "queue_position", "expected_ready_at", "created_by", "created_at"
+            "id","branch","service","customer_name","customer_phone","description",
+            "quantity","price","unit_price","total_amount","deposit_amount",
+            "expected_minutes_per_unit","priority","type","status",
+            "queue_position","expected_ready_at","completed_at","created_by","created_at",
         ]
+        read_only_fields = ["id","unit_price","total_amount","queue_position","expected_ready_at","completed_at","created_at","created_by","status"]
 
     def create(self, validated_data):
+        # don't create instant job here — use jobs_services.create_instant_job for atomic logic
         request = self.context.get("request")
-        if request and request.user and request.user.is_authenticated:
-            validated_data.setdefault("created_by", request.user)
-        job = super().create(validated_data)
-        # compute queue position and ETA
-        from .helpers import compute_queue_position_and_eta
-        queue_pos, eta = compute_queue_position_and_eta(job)
-        job.queue_position = queue_pos
-        job.expected_ready_at = eta
-        job.save(update_fields=["queue_position", "expected_ready_at"])
-        return job
+        if validated_data.get("type") == "instant":
+            # delegate to service to ensure snapshot + daily sale update
+            from jobs.jobs_services import create_instant_job
+            job = create_instant_job(
+                branch_id=validated_data["branch"].id,
+                service_id=validated_data["service"].id,
+                quantity=validated_data.get("quantity",1),
+                created_by=request.user if request else None,
+                customer_name=validated_data.get("customer_name"),
+                customer_phone=validated_data.get("customer_phone"),
+                deposit=validated_data.get("deposit_amount", 0),
+                description=validated_data.get("description",""),
+            )
+            return job
+        return super().create(validated_data)
