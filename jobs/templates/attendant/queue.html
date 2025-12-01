@@ -1,0 +1,30 @@
+   <!-- Queue -->
+          <div class="md:col-span-1 md:col-start-2 md:col-end-3">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold">Queue — <span id="queue-count">{{ queue|length }}</span></h3>
+              <div class="flex items-center gap-2">
+                <button id="btn-refresh-queue" class="text-sm px-2 py-1 border rounded border-red-100 hover:bg-red-50">Refresh</button>
+                <button id="btn-poll-toggle" class="text-sm px-2 py-1 border rounded border-red-100 hover:bg-red-50">Auto</button>
+              </div>
+            </div>
+
+            <div id="queue-list" class="space-y-2">
+              {% for job in queue %}
+                <article class="border rounded p-3 flex items-start justify-between bg-red-50/30">
+                  <div>
+                    <div class="text-sm font-medium">Job #{{ job.id }} — {{ job.customer_name }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Qty: {{ job.quantity }} • Pos: {{ job.queue_position }}</div>
+                  </div>
+
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-red-700">{{ job.expected_ready_at|default:"—" }}</div>
+                    <div class="text-xs mt-1">
+                      <span class="inline-block px-2 py-1 rounded bg-white text-red-700 text-xs border"> {{ job.status }} </span>
+                    </div>
+                  </div>
+                </article>
+              {% empty %}
+                <div class="text-sm text-gray-500">No queued jobs for this branch.</div>
+              {% endfor %}
+            </div>
+          </div>

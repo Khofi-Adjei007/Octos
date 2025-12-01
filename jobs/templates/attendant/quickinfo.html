@@ -1,0 +1,35 @@
+     <!-- Column B: Quick Info (now with Create Walk-In button) -->
+      <div class="md:col-span-1">
+        <div class="bg-white p-3 rounded border h-full flex flex-col justify-between">
+          <div>
+            <h4 class="text-sm font-semibold mb-2 text-red-700">Quick Info ⚡</h4>
+            <div class="text-xs text-gray-600 mb-3">
+              <div>Recent</div>
+              <ul id="recent-jobs" class="mt-2 space-y-1">
+                {% for j in queue|slice:":5" %}
+                  <li class="text-sm">#{{ j.id }} — {{ j.customer_name }}</li>
+                {% empty %}
+                  <li class="text-sm text-gray-400">No recent jobs</li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="text-xs text-gray-600">
+              <div class="font-medium">Today</div>
+              <div class="mt-2 space-y-2">
+                <div class="flex justify-between text-sm"><span>Created</span><span id="stat-created">0</span></div>
+                <div class="flex justify-between text-sm"><span>Completed</span><span id="stat-completed">0</span></div>
+                <div class="flex justify-between text-sm"><span>Avg TAT</span><span id="stat-tat">—</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <button id="open-walkin-btn" class="w-full bg-red-600 text-white py-2 rounded text-sm font-semibold">Create Walk-In Job</button>
+            <div class="mt-2 text-xs text-gray-500">Or use the Record Job button for faster single-line entries.</div>
+          </div>
+            <div class="mt-4">
+                <a href="/api/jobs/receipt/1/" target="_blank" class="text-sm text-red-700">Open sample receipt</a>
+              </div>
+        </div>
+      </div>
