@@ -5,15 +5,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Attendant · Farhat — Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
 </head>
 <body class="bg-red-50 text-gray-800 min-h-screen">
 
-  <!-- Top bar -->
-  <header class="bg-white border-b sticky top-0 z-30">
+  <!-- Top bar (sticky) -->
+  <header class="bg-white border-b sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
       <div class="flex items-center gap-3">
-        <img src="{% static 'imgs/farhat-logo-small.png' %}" alt="Farhat" class="h-10 w-10 object-contain" onerror="this.style.display='none'">
+        <img src="{% static 'images/farhat-logo-small.png' %}" alt="Farhat" class="h-10 w-10 object-contain" onerror="this.style.display='none'">
         <div>
           <div class="text-base font-semibold text-red-700">Farhat Printing Press</div>
           <div class="text-xs text-gray-500">Attendant Console</div>
@@ -34,7 +34,7 @@
         <input id="quick-search" placeholder="Search job / phone" class="border border-red-100 rounded px-3 py-2 text-sm w-40 bg-white/95" />
 
         <div class="relative">
-          <button id="user-menu-btn" class="flex items-center gap-2 px-2 py-1 rounded hover:bg-red-50">
+          <button id="user-menu-btn" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-2 px-2 py-1 rounded hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">
             {% if user.profile_picture %}
               <img src="{{ user.profile_picture.url }}" alt="photo" class="h-8 w-8 rounded-full object-cover border" />
             {% else %}
@@ -42,7 +42,7 @@
                 {{ user.get_full_name|default:user.get_username|first|upper }}
               </div>
             {% endif %}
-            <span class="text-sm">{{ user.get_full_name|default:user.get_username }}</span>
+            <span class="text-sm hidden sm:inline">{{ user.get_full_name|default:user.get_username }}</span>
           </button>
 
           <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-md py-1">
@@ -55,20 +55,52 @@
     </div>
   </header>
 
-  <!-- Tab bar -->
-  <div class="bg-white border-b">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="py-2 flex items-center">
-        <div class="bg-red-50 rounded-lg inline-flex overflow-hidden border">
-          <button data-tab="job" class="tab-btn px-4 py-2 text-sm font-medium bg-white text-red-700">▶️ Job</button>
-          <button data-tab="overview" class="tab-btn px-4 py-2 text-sm font-medium text-gray-600">📊 Overview</button>
-          <button data-tab="history" class="tab-btn px-4 py-2 text-sm font-medium text-gray-600">🕘 History</button>
+<!-- Tab bar (sticky under header) -->
+<div class="bg-red-600 border-b sticky top-16 z-30">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="py-2 flex items-center">
+      <!-- container holding both mobile & desktop controls -->
+      <div class="relative w-full">
+
+        <!-- Desktop nav (hidden on small screens) -->
+        <div class="hidden md:block">
+          <div class="relative">
+            <nav id="attendantDesktopNav" class="flex items-center gap-3 h-12 relative z-10">
+              <button data-tab="job" class="tab-btn px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-medium rounded-full bg-transparent text-white" aria-pressed="false">▶️ Job</button>
+              <button data-tab="overview" class="tab-btn px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-medium rounded-full bg-transparent text-white" aria-pressed="false">📊 Overview</button>
+              <button data-tab="history" class="tab-btn px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-medium rounded-full bg-transparent text-white" aria-pressed="false">🕘 History</button>
+            </nav>
+
+            <!-- sliding indicator (desktop) -->
+            <div id="attTabUnderline" aria-hidden="true"
+                 class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left"
+                 style="width:0; left:0;"></div>
+          </div>
         </div>
+
+        <!-- Mobile nav (shown on small screens) -->
+        <div class="md:hidden">
+          <div class="flex gap-2 overflow-hidden items-center relative">
+            <nav id="attendantMobileNav" class="flex gap-2 overflow-x-auto no-scrollbar w-full px-1">
+              <button data-tab="job" class="tab-btn px-2 py-1 text-xs md:text-sm font-medium rounded-full bg-white text-red-700" aria-pressed="true">▶️ Job</button>
+              <button data-tab="overview" class="tab-btn px-2 py-1 text-xs md:text-sm font-medium rounded-full bg-red-50 text-gray-700">📊 Overview</button>
+              <button data-tab="history" class="tab-btn px-2 py-1 text-xs md:text-sm font-medium rounded-full bg-red-50 text-gray-700">🕘 History</button>
+            </nav>
+
+            <!-- mobile underline (small) -->
+            <div id="attMobileUnderline" aria-hidden="true"
+                 class="absolute bottom-1 h-0.5 bg-yellow-400 rounded transition-all duration-200 ease-in-out"
+                 style="width:0; left:0;"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Main -->
+
+  <!-- Main (content flows under sticky header + tabs) -->
   <main class="max-w-6xl mx-auto px-4 py-4 grid grid-cols-1 gap-4 md:grid-cols-12">
 
    <!-- LEFT: tab panes -->
@@ -78,31 +110,38 @@
   <div id="panel-job" class="tab-panel bg-white border rounded-lg p-4">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-      <!-- Column A: large Record Job button (was walk_in) -->
+      <!-- Column A: large Record Job button -->
       <div class="md:col-span-1 flex items-center justify-center">
         <div class="w-full flex flex-col items-center">
-          <button id="record-job-btn" aria-controls="record-job-modal"
-                  class="flex flex-col items-center justify-center h-44 w-44 rounded-full bg-white border-2 border-red-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-300">
+          <button id="record-job-btn" aria-controls="record-job-quick-modal" aria-haspopup="dialog"
+                  class="flex flex-col items-center justify-center h-44 w-44 rounded-full bg-white border-2 border-red-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-300">
             <span class="text-4xl text-red-600">＋</span>
             <span class="mt-2 text-sm font-semibold text-red-700">Record Job</span>
             <span class="text-xs text-gray-500 mt-1">Quick entry / receipt</span>
           </button>
 
-          <!-- instruction / small action -->
           <div class="mt-3 w-full text-center text-xs text-gray-500">
-            Tap the big button to log a quick job. Use "Create Walk-In Job" for the full form.
+            Tap the big button to log a quick job. Use "Create Walk-In Job" for full form.
           </div>
         </div>
       </div>
 
-      <!-- Column C: small placeholder area (keeps balance) -->
-      <div class="md:col-span-1 flex items-center justify-center">
-        <!-- can be used later for shift status or quick totals -->
+      <!-- Column B: QUICK RECORD modal trigger area (keeps layout) -->
+      <div class="md:col-span-1">
+        <!-- quick stats or shift status placeholder -->
         {% include 'attendant/quickinfo.html' %}
+      </div>
+
+      <!-- Column C: balance / placeholders -->
+      <div class="md:col-span-1 flex items-center justify-center">
+        <div class="w-full text-center">
+          <div class="text-xs text-gray-500">Shift</div>
+          <div class="text-lg font-semibold text-red-700">Day • 08:00 — 16:00</div>
+        </div>
       </div>
     </div>
 
-    <!-- QUEUE moved below (full width under the 3 columns) -->
+    <!-- QUEUE below -->
     <div class="mt-4">
       <div class="bg-white border rounded-lg p-3">
         <div class="flex items-center justify-between mb-3">
@@ -137,27 +176,29 @@
 
   </div>
 
+  {# Include the other tab panels (overview, history) as partials so they share the same structure #}
   {% include 'attendant/overview.html' %}
   {% include 'attendant/history.html' %}
 </section>
 
-<!-- RIGHT: branch & messages + shortcuts (shortcuts pushed down) -->
+<!-- RIGHT: branch & messages + shortcuts -->
 <aside class="md:col-span-4 space-y-4">
-  <!-- Messages panel (new) -->
+  <!-- Messages panel -->
   <div class="bg-white border rounded-lg p-4">
     <h4 class="text-sm font-semibold mb-2 text-red-700">Messages ✉️</h4>
     <div id="messages-list" class="h-40 overflow-auto text-sm text-gray-700">
-      <!-- sample placeholder messages -->
-      <div class="py-2 border-b"><strong>#123</strong> John: "How long for 50 copies?"</div>
-      <div class="py-2 border-b"><strong>#124</strong> Ama: "When will my design be ready?"</div>
-      <!-- real messages will be filled via API/websocket -->
+      {% for m in messages %}
+        <div class="py-2 border-b"><strong>#{{ m.id }}</strong> {{ m.from_name }}: "{{ m.snippet }}"</div>
+      {% empty %}
+        <div class="py-2 text-xs text-gray-500">No messages</div>
+      {% endfor %}
     </div>
     <div class="mt-3">
       <a href="#" class="text-sm text-red-700">Open messaging console</a>
     </div>
   </div>
 
-  <!-- Shortcuts (pushed down) -->
+  <!-- Shortcuts -->
   <div class="bg-white border rounded-lg p-4">
     <h4 class="text-sm font-semibold mb-2 text-red-700">Shortcuts ⚡</h4>
     <div class="flex flex-col gap-2">
@@ -175,21 +216,222 @@
 
   </main>
 
-  <!-- Modal wrapper (hidden by default) -->
-  <div id="record-job-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
+  <!-- QUICK RECORD modal (id: record-job-quick-modal) -->
+  <div id="record-job-quick-modal" class="fixed inset-0 z-50 hidden px-4 flex justify-center items-start pt-20">
+    <!-- backdrop present but clicking it does NOT close the modal -->
+    <div id="quick-modal-backdrop" class="absolute inset-0 bg-black/40"></div>
+
+    <!-- modal panel -->
+    <div class="relative max-w-md w-full bg-white rounded-lg shadow-lg z-10 overflow-hidden">
+      <form id="record-job-form" class="p-4" method="post" action="#">
+        {% csrf_token %}
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-semibold text-red-700">Quick Record Job</h3>
+          <button type="button" id="quick-modal-close" class="text-gray-500 hover:text-gray-700" aria-label="Close">✕</button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Service</label>
+            <select id="modal-service" name="service" required class="w-full border rounded px-3 py-2 text-sm">
+              <option value="">Select service</option>
+              {% for s in services %}
+                <option value="{{ s.id }}" data-price="{{ s.meta.avg_price|default:0 }}">{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2">
+              <label class="block text-xs text-gray-600 mb-1">Quantity</label>
+              <input id="modal-quantity" name="quantity" type="number" min="1" value="1"
+                     class="w-full border rounded px-3 py-2 text-sm" required />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">Payment</label>
+              <select id="modal-payment" name="payment_type" class="w-full border rounded px-3 py-2 text-sm">
+                <option value="cash">Cash</option>
+                <option value="momo">Momo</option>
+                <option value="card">Card</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Customer name</label>
+            <input id="modal-customer" name="customer_name" type="text" class="w-full border rounded px-3 py-2 text-sm" placeholder="Optional" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Phone</label>
+            <input id="modal-phone" name="customer_phone" type="tel" class="w-full border rounded px-3 py-2 text-sm" placeholder="+233..." />
+          </div>
+
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Notes</label>
+            <textarea id="modal-notes" name="notes" rows="2" class="w-full border rounded px-3 py-2 text-sm" placeholder="Optional notes..."></textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <div class="text-sm text-gray-600">
+              <span class="font-semibold" id="modal-total-label">Total:</span>
+              <span id="modal-total-amount">GHS 0.00</span>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" id="modal-cancel" class="px-3 py-2 text-sm border rounded">Cancel</button>
+              <button type="submit" id="modal-submit" class="px-4 py-2 bg-red-600 text-white rounded text-sm font-semibold">Checkout</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- WALK-IN modal (detailed form) -->
+  <div id="walkin-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
     <div class="modal-content bg-white rounded-lg w-full max-w-2xl p-4">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-semibold">Create Walk-In Job</h3>
-        <button type="button" onclick="document.getElementById('record-job-modal').classList.add('hidden')" aria-label="Close" class="px-2 py-1 rounded hover:bg-gray-100">✕</button>
+        <button type="button" id="walkin-close" aria-label="Close" class="px-2 py-1 rounded hover:bg-gray-100">✕</button>
       </div>
-
-      <!-- include your existing walk-in form here -->
       {% include 'attendant/walk_in.html' %}
     </div>
   </div>
 
-  <!-- JS -->
-<script src="{% static 'jobs/js/attendant_dashboard.js' %}" defer></script>
+  <!-- Inline JS (modal behavior, calculations, tabs, profile popup) -->
+<script>
+(function(){
+  // elements
+  const userMenuBtn = document.getElementById('user-menu-btn');
+  const userMenu = document.getElementById('user-menu');
+
+  // profile popup
+  function closeUserMenu(){ if(!userMenu) return; userMenu.classList.add('hidden'); userMenuBtn && userMenuBtn.setAttribute('aria-expanded','false'); }
+  function openUserMenu(){ if(!userMenu) return; userMenu.classList.remove('hidden'); userMenuBtn && userMenuBtn.setAttribute('aria-expanded','true'); }
+
+  document.addEventListener('click', function(e){
+    if (!userMenuBtn) return;
+    if (userMenuBtn.contains(e.target)) {
+      if (userMenu && userMenu.classList.contains('hidden')) openUserMenu(); else closeUserMenu();
+    } else {
+      // clicks outside hide it
+      closeUserMenu();
+    }
+  });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { closeUserMenu(); closeQuickModal(); closeWalkinModal(); } });
+
+  // Tabs
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+  const panels = Array.from(document.querySelectorAll('.tab-panel'));
+  function showPanel(name){
+    panels.forEach(p=>p.classList.add('hidden'));
+    const p = document.getElementById('panel-' + name) || document.getElementById('tab-' + name);
+    if(p) p.classList.remove('hidden');
+    // update pressed state
+    tabBtns.forEach(b=> b.setAttribute('aria-pressed', b.dataset.tab === name ? 'true' : 'false'));
+    tabBtns.forEach(b=> {
+      if (b.dataset.tab === name) { b.classList.add('bg-red-600','text-white'); b.classList.remove('text-gray-600'); }
+      else { b.classList.remove('bg-red-600','text-white'); b.classList.add('text-gray-600'); }
+    });
+  }
+  tabBtns.forEach(b=> b.addEventListener('click', ()=> showPanel(b.dataset.tab) ));
+  // default
+  showPanel('job');
+
+  // Quick record modal elements
+  const quickModal = document.getElementById('record-job-quick-modal');
+  const quickBackdrop = document.getElementById('quick-modal-backdrop');
+  const openQuickBtn = document.getElementById('record-job-btn');
+  const quickClose = document.getElementById('quick-modal-close');
+  const modalCancel = document.getElementById('modal-cancel');
+
+  // Walk-in modal elements
+  const walkinModal = document.getElementById('walkin-modal');
+  const walkinClose = document.getElementById('walkin-close');
+
+  function openQuickModal(){
+    if(!quickModal) return;
+    quickModal.classList.remove('hidden');
+    // focus first control
+    const sel = quickModal.querySelector('#modal-service');
+    sel && sel.focus();
+  }
+  function closeQuickModal(){
+    if(!quickModal) return;
+    quickModal.classList.add('hidden');
+  }
+
+  function openWalkinModal(){ if(!walkinModal) return; walkinModal.classList.remove('hidden'); }
+  function closeWalkinModal(){ if(!walkinModal) return; walkinModal.classList.add('hidden'); }
+
+  // IMPORTANT: clicking backdrop should NOT close modal per requirement - so we don't attach a close-on-backdrop handler
+  // wire buttons
+  openQuickBtn && openQuickBtn.addEventListener('click', openQuickModal);
+  quickClose && quickClose.addEventListener('click', closeQuickModal);
+  modalCancel && modalCancel.addEventListener('click', closeQuickModal);
+
+  // walk-in triggers if you have a button elsewhere (not included here)
+  walkinClose && walkinClose.addEventListener('click', closeWalkinModal);
+
+  // Escape handling is global (already present) - it will close both modals (allowed)
+
+  // Quick modal: compute total = selected service price * qty
+  const serviceSelect = document.getElementById('modal-service');
+  const qtyInput = document.getElementById('modal-quantity');
+  const totalLabel = document.getElementById('modal-total-amount');
+
+  function parsePrice(val){ const n = parseFloat(val); return isNaN(n) ? 0 : n; }
+  function updateTotal(){
+    if(!serviceSelect || !qtyInput || !totalLabel) return;
+    const opt = serviceSelect.selectedOptions[0];
+    const price = opt ? parsePrice(opt.dataset.price) : 0;
+    const qty = parseInt(qtyInput.value || '1', 10);
+    const total = price * Math.max(1, (isNaN(qty) ? 1 : qty));
+    totalLabel.textContent = 'GHS ' + total.toFixed(2);
+  }
+  if(serviceSelect) serviceSelect.addEventListener('change', updateTotal);
+  if(qtyInput) qtyInput.addEventListener('input', updateTotal);
+  // init total
+  updateTotal();
+
+  // Prevent form submit double clicks and optionally handle via ajax later
+  const quickForm = document.getElementById('record-job-form');
+  if(quickForm){
+    quickForm.addEventListener('submit', function(e){
+      // allow normal submit for now; but disable submit button to avoid duplicates
+      const btn = document.getElementById('modal-submit');
+      if(btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
+    });
+  }
+
+  // QUEUE controls (simple refresh toggle)
+  const btnRefresh = document.getElementById('btn-refresh-queue');
+  const btnPoll = document.getElementById('btn-poll-toggle');
+  let polling = false;
+  let pollTimer = null;
+
+  async function refreshQueue(){
+    // ideally call your API; for now, a placeholder that toggles a class for demo
+    // fetch('/api/queue/?branch=' + (document.getElementById('branch-select')?.value || ''))...
+    console.log('Refresh queue (placeholder)');
+  }
+
+  btnRefresh && btnRefresh.addEventListener('click', function(){ refreshQueue(); });
+  btnPoll && btnPoll.addEventListener('click', function(){
+    polling = !polling;
+    btnPoll.textContent = polling ? 'Auto ✓' : 'Auto';
+    if(polling){
+      pollTimer = setInterval(refreshQueue, 5000);
+    } else {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  });
+
+  // accessibility: ensure keyboard close of modals via ESC handled globally in keydown above
+
+})();
+</script>
 
 </body>
 </html>

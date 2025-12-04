@@ -1,0 +1,445 @@
+{# branches/templates/branches/manager/branch_manager_dashboard.html #}
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ branch_display|default:"Branch Dashboard" }}</title>
+  <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-slate-800 antialiased">
+
+  <!-- Sticky header (Farhat theme: red + white) -->
+  <header class="sticky top-0 z-50 bg-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-4">
+          <a href="#" class="inline-flex items-center gap-3">
+            <img src="{% static 'images/farhat-logo-small.png' %}" alt="Farhat" class="h-12 w-12 object-contain">
+            <div class="leading-tight">
+              <div class="text-base font-semibold text-red-700">Farhat</div>
+              <div class="text-xs text-slate-500">{{ branch_display|default:"Branch Dashboard" }}</div>
+            </div>
+          </a>
+        </div>
+
+
+        <!-- right: quick actions + profile -->
+        <div class="flex items-center gap-3">
+          <button id="openQuickJobBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-600 text-white text-sm shadow-sm hover:bg-red-700">
+            + Outsource
+          </button>
+
+          <!-- profile / avatar -->
+          <div class="relative" id="profileRoot">
+            <button id="profileBtn" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300">
+              {% if profile_picture_url %}
+                <img src="{{ profile_picture_url }}" alt="Profile" class="h-10 w-10 rounded-full object-cover border">
+              {% else %}
+                <div class="h-10 w-10 rounded-full bg-red-100 text-red-700 font-semibold flex items-center justify-center border">
+                  {{ request.user.first_name|default:""|slice:":1" }}{{ request.user.last_name|default:""|slice:":1" }}
+                </div>
+              {% endif %}
+            </button>
+
+            <!-- popup: hidden by default -->
+            <div id="profilePopup" class="hidden absolute right-0 mt-2 w-44 bg-white border rounded-md shadow-lg py-2 z-50">
+              <div class="px-3 py-2 text-sm text-slate-800">
+                <div class="font-medium">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+                <div class="text-xs text-slate-500">{{ request.user.email }}</div>
+              </div>
+              <div class="border-t"></div>
+              <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-50">Profile</a>
+              <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-50">Settings</a>
+              <a href="{{ logout_url|default:'#' }}" class="block px-3 py-2 text-sm text-red-600 hover:bg-gray-50">Sign out</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+   {# Mobile tabs under header's first row but still inside header so sticky #}
+<div class="md:hidden py-2 bg-red-600">
+  <div class="relative">
+    <!-- compact mobile nav: smaller padding & font to reduce overflow -->
+    <nav id="mobileTabNav" class="flex gap-2 overflow-x-auto no-scrollbar px-1" aria-label="Mobile branch tabs">
+      <button data-tab="overview" class="tab-btn px-2 py-1 text-xs rounded-full bg-red-600 text-white" aria-pressed="true">Overview</button>
+      <button data-tab="sheets"  class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Daily Sheets</button>
+      <button data-tab="queue"   class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Queue</button>
+      <button data-tab="team"    class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Team</button>
+      <button data-tab="reports" class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Reports</button>
+      <button data-tab="history" class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">History</button>
+    </nav>
+
+    <!-- mobile underline (same behavior as desktop's) -->
+    <div id="mobileTabUnderline" aria-hidden="true" class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left" style="width:0; left:0;"></div>
+  </div>
+</div>
+
+    </div>
+  </header>
+
+<!-- Sticky secondary tab bar (desktop only) - with sliding yellow underline -->
+<div class="hidden md:block sticky top-16 z-40 bg-red-600 text-white border-b shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative">
+      <nav id="managerTabNav" class="flex items-center gap-3 h-12 relative z-10">
+        <button data-tab="overview" class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Overview</button>
+        <button data-tab="sheets"  class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Daily Sheets</button>
+        <button data-tab="queue"   class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Queue</button>
+        <button data-tab="team"    class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Team</button>
+        <button data-tab="reports" class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Reports</button>
+        <button data-tab="history" class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">History</button>
+      </nav>
+
+      <!-- sliding indicator: positioned at bottom of nav; will translate/resize via JS -->
+      <div id="tabUnderline" aria-hidden="true" class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left" style="width:0; left:0;"></div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Page content flows under header -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-4">
+
+    <!-- Overview Tab Panel -->
+    <section id="tab-overview" class="tab-panel">
+      <!-- Top KPI row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-slate-500">Today's Jobs</div>
+            <div class="text-xs text-slate-400">updated</div>
+          </div>
+          <div class="mt-4 flex items-end justify-between">
+            <div>
+              <div class="text-2xl font-semibold">{{ todays_sheet.total_jobs|default:"0" }}</div>
+              <div class="text-xs text-slate-500">jobs processed</div>
+            </div>
+            <div class="text-green-500 text-lg font-medium">▲ {{ todays_sheet.jobs_change_pct|default:"0" }}%</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-slate-500">Total Sales</div>
+            <div class="text-xs text-slate-400">today</div>
+          </div>
+          <div class="mt-4 flex items-end justify-between">
+            <div>
+              <div class="text-2xl font-semibold">GHS {{ todays_sheet.total_amount|default:"0.00" }}</div>
+              <div class="text-xs text-slate-500">collected</div>
+            </div>
+            <div class="text-slate-400 text-sm">cash / pos</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-slate-500">Open Queue</div>
+            <div class="text-xs text-slate-400">now</div>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl font-semibold">{{ queue_count|default:"0" }}</div>
+            <div class="text-xs text-slate-500">waiting</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border">
+          <div class="text-sm text-slate-500">Pending Payments</div>
+          <div class="mt-4">
+            <div class="text-2xl font-semibold">GHS {{ todays_sheet.pending_amount|default:"0.00" }}</div>
+            <div class="text-xs text-slate-500">awaiting settlement</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Queue + right column -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Quick action bar -->
+          <div class="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border">
+            <div class="flex items-center gap-3">
+              <button id="openQuickJobBtnInner" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 text-white text-sm">
+                + Record job
+              </button>
+              <button class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border text-sm hover:bg-slate-50">New Sheet</button>
+              <button class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border text-sm hover:bg-slate-50">Print</button>
+            </div>
+            <div class="text-sm text-slate-600">Last sync: <span class="font-medium">a few seconds ago</span></div>
+          </div>
+
+          <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium">Jobs Queue</h3>
+              <div class="text-sm text-slate-500">Showing latest 20</div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="text-slate-500 text-left uppercase tracking-wider">
+                  <tr>
+                    <th class="py-2">#</th><th class="py-2">Customer</th><th class="py-2">Service</th>
+                    <th class="py-2">Qty</th><th class="py-2">Amount</th><th class="py-2">Status</th><th class="py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if queue_items %}
+                    {% for job in queue_items %}
+                      <tr class="border-t">
+                        <td class="py-3">{{ forloop.counter }}</td>
+                        <td class="py-3">{% if job.customer_name %}{{ job.customer_name }}{% else %}{{ job.customer_phone }}{% endif %}</td>
+                        <td class="py-3">{{ job.service_name }}</td>
+                        <td class="py-3">{{ job.quantity }}</td>
+                        <td class="py-3">GHS {{ job.total_amount }}</td>
+                        <td class="py-3">
+                          <span class="px-2 py-1 rounded-full text-xs {% if job.status == 'OPEN' %}bg-yellow-100 text-yellow-800{% elif job.status == 'DONE' %}bg-green-100 text-green-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ job.status }}</span>
+                        </td>
+                        <td class="py-3">
+                          <div class="flex gap-2"><a href="#" class="text-sm text-sky-600 hover:underline">Open</a><a href="#" class="text-sm text-slate-600">Print</a></div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr class="border-t"><td colspan="7" class="py-6 text-center text-slate-500">No jobs in queue</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <h3 class="text-lg font-medium mb-3">Recent activity</h3>
+            <ul class="space-y-3 text-sm text-slate-600">
+              {% for event in recent_messages %}
+                <li class="flex items-start gap-3"><div class="w-2 h-2 mt-2 rounded-full bg-slate-400"></div>
+                  <div><div class="text-slate-800">{{ event.title }}</div><div class="text-xs text-slate-500">{{ event.created_at }}</div></div>
+                </li>
+              {% empty %}
+                <li class="text-slate-500">No recent activity</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <aside class="space-y-6">
+
+            <!-- WhatsApp messages (skeleton) -->
+          <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <h4 class="text-sm font-medium mb-3">WhatsApp Messages</h4>
+            <div class="text-xs text-slate-500 mb-2">Messages for this branch (live)</div>
+            <div class="h-36 overflow-auto text-sm text-slate-600"><div class="space-y-3"><div class="text-xs text-slate-500">No messages</div></div></div>
+          </div>
+          <!-- end of WhatsApp messages -->
+
+          <!--Shortcuts-->
+          <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <h4 class="text-sm font-medium mb-3">Shortcuts</h4>
+            <div class="grid grid-cols-2 gap-2">
+              <a href="#" class="px-3 py-2 rounded-md bg-slate-50 hover:bg-slate-100 text-sm">New Job</a>
+              <a href="#" class="px-3 py-2 rounded-md bg-slate-50 hover:bg-slate-100 text-sm">New Invoice</a>
+              <a href="#" class="px-3 py-2 rounded-md bg-slate-50 hover:bg-slate-100 text-sm">Lock Sheet</a>
+              <a href="#" class="px-3 py-2 rounded-md bg-slate-50 hover:bg-slate-100 text-sm">Export</a>
+            </div>
+          </div>
+          <!-- end of Shortcuts -->
+        </aside>
+      </div>
+    </section>
+
+    <!-- History tab (skeleton) -->
+    <section id="tab-history" class="tab-panel hidden">
+      <div class="bg-white rounded-xl p-4 shadow-sm border mb-6">
+        <h3 class="text-lg font-medium">Activity History</h3>
+        <p class="text-sm text-slate-500 mt-2">Showing most recent branch activities and job events.</p>
+      </div>
+    </section>
+
+    <!-- Settings tab (skeleton) -->
+    <section id="tab-settings" class="tab-panel hidden">
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <h3 class="text-lg font-medium">Settings</h3>
+        <p class="text-sm text-slate-500 mt-2">Branch-specific settings and preferences.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Safe JS -->
+<script>
+(function(){
+  const quickRecordUrl = "{{ quick_record_url|default:''|escapejs }}";
+  const managerDashboardUrl = "{{ manager_dashboard_url|default:''|escapejs }}";
+  const logoutUrl = "{{ logout_url|default:'#'|escapejs }}";
+
+  // PROFILE POPUP
+  const profileBtn = document.getElementById('profileBtn');
+  const profilePopup = document.getElementById('profilePopup');
+  const profileRoot = document.getElementById('profileRoot');
+
+  function closeProfile() {
+    if (!profilePopup || !profileBtn) return;
+    profilePopup.classList.add('hidden');
+    profileBtn.setAttribute('aria-expanded', 'false');
+  }
+  function openProfile() {
+    if (!profilePopup || !profileBtn) return;
+    profilePopup.classList.remove('hidden');
+    profileBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  document.addEventListener('click', function(e){
+    if (!profileRoot) return;
+    if (profileRoot.contains(e.target)) {
+      if (!profilePopup) return;
+      if (profilePopup.classList.contains('hidden')) openProfile(); else closeProfile();
+    } else {
+      closeProfile();
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeProfile();
+  });
+
+  // DOM ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Outsource / Record buttons (top & inner)
+    const btnTop = document.getElementById('openQuickJobBtn');
+    const btnInner = document.getElementById('openQuickJobBtnInner');
+    [btnTop, btnInner].forEach(btn=>{
+      if (!btn) return;
+      btn.addEventListener('click', function(evt) {
+        if (quickRecordUrl) { window.location.href = quickRecordUrl; return; }
+        if (managerDashboardUrl) { window.location.href = managerDashboardUrl; return; }
+        window.location.href = '/';
+      });
+    });
+
+    // Tab elements and underlines
+    const desktopNav = document.getElementById('managerTabNav');
+    const desktopUnderline = document.getElementById('tabUnderline');
+
+    const mobileNav = document.getElementById('mobileTabNav');
+    const mobileUnderline = document.getElementById('mobileTabUnderline');
+
+    // All tab buttons (desktop + mobile + inline)
+    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+    const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+    function showPanel(name) {
+      panels.forEach(p => p.classList.add('hidden'));
+      const target = document.getElementById('tab-' + name);
+      if (target) target.classList.remove('hidden');
+    }
+
+    function updateGenericTabs(name) {
+      tabs.forEach(t => {
+        const isActive = t.dataset.tab === name;
+        if (isActive) {
+          t.classList.add('bg-red-600','text-white');
+          t.classList.remove('bg-transparent','text-slate-700');
+          t.setAttribute('aria-pressed','true');
+        } else {
+          t.classList.remove('bg-red-600','text-white');
+          t.classList.add('bg-transparent','text-slate-700');
+          t.setAttribute('aria-pressed','false');
+        }
+      });
+    }
+
+    // compute left offset (relative to given nav)
+    function computeNavOffset(navEl, btnEl) {
+      const navRect = navEl.getBoundingClientRect();
+      const btnRect = btnEl.getBoundingClientRect();
+      return { left: btnRect.left - navRect.left, width: btnRect.width };
+    }
+
+    function moveUnderline(underlineEl, navEl, btnEl) {
+      if (!underlineEl || !navEl || !btnEl) return;
+      const { left, width } = computeNavOffset(navEl, btnEl);
+      underlineEl.style.width = width + 'px';
+      underlineEl.style.transform = 'translateX(' + left + 'px)';
+    }
+
+    // on tab click
+    function onTabClick(e) {
+      const btn = e.currentTarget;
+      const name = btn.dataset.tab;
+      if (!name) return;
+      // show panel
+      showPanel(name);
+      // update generic visuals
+      updateGenericTabs(name);
+
+      // move desktop underline if applicable
+      if (desktopNav) {
+        const desktopBtn = desktopNav.querySelector('.tab-btn[data-tab="' + name + '"]');
+        if (desktopBtn) moveUnderline(desktopUnderline, desktopNav, desktopBtn);
+      }
+      // move mobile underline if applicable
+      if (mobileNav) {
+        const mobileBtn = mobileNav.querySelector('.tab-btn[data-tab="' + name + '"]');
+        if (mobileBtn) moveUnderline(mobileUnderline, mobileNav, mobileBtn);
+        // also ensure mobile scroll keeps the active tab visible
+        try { mobileBtn && mobileBtn.scrollIntoView({ inline: 'center', behavior: 'smooth' }); } catch(e){/*ignore*/ }
+      }
+    }
+
+    // attach to all tab buttons
+    tabs.forEach(t => {
+      t.addEventListener('click', onTabClick);
+      t.addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          t.click();
+        }
+      });
+    });
+
+    // initialize defaults (overview)
+    function init() {
+      const defaultTab = 'overview';
+      showPanel(defaultTab);
+      updateGenericTabs(defaultTab);
+
+      // position desktop underline
+      if (desktopNav && desktopUnderline) {
+        const db = desktopNav.querySelector('.tab-btn[data-tab="' + defaultTab + '"]');
+        if (db) setTimeout(()=> moveUnderline(desktopUnderline, desktopNav, db), 10);
+      }
+      // position mobile underline
+      if (mobileNav && mobileUnderline) {
+        const mb = mobileNav.querySelector('.tab-btn[data-tab="' + defaultTab + '"]');
+        if (mb) setTimeout(()=> moveUnderline(mobileUnderline, mobileNav, mb), 10);
+      }
+    }
+
+    // recompute on resize (throttle)
+    let rt = null;
+    window.addEventListener('resize', function(){
+      if (rt) clearTimeout(rt);
+      rt = setTimeout(function(){
+        // find active tab
+        const active = tabs.find(t => t.getAttribute('aria-pressed') === 'true') || tabs.find(t => t.dataset.tab === 'overview') || tabs[0];
+        if (!active) return;
+        const nm = active.dataset.tab;
+        if (desktopNav && desktopUnderline) {
+          const db = desktopNav.querySelector('.tab-btn[data-tab="' + nm + '"]');
+          if (db) moveUnderline(desktopUnderline, desktopNav, db);
+        }
+        if (mobileNav && mobileUnderline) {
+          const mb = mobileNav.querySelector('.tab-btn[data-tab="' + nm + '"]');
+          if (mb) moveUnderline(mobileUnderline, mobileNav, mb);
+        }
+      }, 120);
+    });
+
+    // initial setup
+    init();
+  });
+})();
+</script>
+
+
+</body>
+</html>

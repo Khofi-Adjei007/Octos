@@ -38,6 +38,59 @@ def job_attachment_upload_path(instance, filename):
     return f"jobs/{job_id}/attachments/{ts}_{filename}"
 
 
+
+# Daily operational sheet for a branch
+class DaySheet(models.Model):
+    STATUS_OPEN = "open"
+    STATUS_CLOSED = "closed"
+    STATUS_CHOICES = [(STATUS_OPEN, "Open"), (STATUS_CLOSED, "Closed")]
+
+    branch = models.ForeignKey("branches.Branch", on_delete=models.CASCADE, related_name="daysheets")
+    date = models.DateField(help_text="Local date for the sheet (branch timezone)")
+    opened_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    opened_at = models.DateTimeField(auto_now_add=True)
+    closed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.SET_NULL)
+    closed_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    meta = models.JSONField(default=dict, blank=True)  # e.g., shift name, notes, starting_balance
+    total_jobs = models.PositiveIntegerField(default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+ 
+    weekday = models.CharField(max_length=12, blank=True)
+    branch_name = models.CharField(max_length=200, blank=True)
+    branch_city = models.CharField(max_length=120, blank=True)
+    branch_manager_name = models.CharField(max_length=150, blank=True)
+    branch_manager_email = models.EmailField(blank=True)
+
+    opening_cash = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    closing_cash = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    cash_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    momo_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    card_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    deposits_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    shift_name = models.CharField(max_length=64, blank=True, null=True)
+    locked = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+
+
+    class Meta:
+        unique_together = (("branch", "date"),)
+        ordering = ("-date",)
+
+class DaySheetShift(models.Model):
+    daysheet = models.ForeignKey(DaySheet, on_delete=models.CASCADE, related_name="shifts")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    role = models.CharField(max_length=64, blank=True)   # e.g., ATTENDANT, CASHIER
+    shift_start = models.DateTimeField(null=True, blank=True)
+    shift_end = models.DateTimeField(null=True, blank=True)
+    submitted = models.BooleanField(default=False)      # attendant submitted their shift
+    opening_cash = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    closing_cash = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+        
 class Job(models.Model):
     """
     Walk-in job / work order scheduled at a branch.
@@ -48,6 +101,7 @@ class Job(models.Model):
     """
     branch = models.ForeignKey("branches.Branch", on_delete=models.PROTECT, related_name="jobs")
     service = models.ForeignKey("branches.ServiceType", on_delete=models.PROTECT, related_name="jobs")
+    daysheet = models.ForeignKey(DaySheet, null=True, blank=True, on_delete=models.SET_NULL, related_name="jobs")
     customer_name = models.CharField(max_length=200)
     customer_phone = models.CharField(max_length=32, blank=True, null=True)
     description = models.TextField(blank=True)
@@ -170,3 +224,4 @@ class DailySale(models.Model):
     class Meta:
         unique_together = (("branch", "date"),)
         ordering = ("-date",)
+

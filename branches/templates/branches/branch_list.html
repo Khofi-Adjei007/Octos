@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Branches{% endblock %}
+{% block content %}
+<h1>Branches</h1>
+<ul>
+  {% for b in branches %}
+    <li><a href="{% url 'branches:manager-dashboard' branch_pk=b.pk %}">{{ b.name }} ({{ b.code }})</a></li>
+  {% empty %}
+    <li>No branches found.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

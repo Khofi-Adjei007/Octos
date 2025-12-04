@@ -183,3 +183,153 @@ document.addEventListener('click', (e)=>{
   }
 });
 document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') toggleModal(false); });
+
+// attendant_dashboard.js — modal behaviour: close via buttons/Esc only; blur background when open
+(function(){
+  // element getter with debug
+  const get = id => {
+    const e = document.getElementById(id);
+    if(!e) console.debug(`[modal] missing #${id}`);
+    return e;
+  };
+
+  const openBtn = get('record-job-btn');
+  const modal = get('record-job-modal');           // wrapper (fixed inset-0, flex items-start pt-20)
+  const backdrop = get('record-job-backdrop');     // full-screen backdrop element
+  const closeBtn = get('record-job-close');        // top-right ✕
+  const cancelBtn = get('modal-cancel');          // bottom cancel button
+  const form = get('record-job-form');
+  const serviceSel = get('modal-service');
+  const qty = get('modal-quantity');
+  const totalAmountEl = get('modal-total-amount');
+  const submitBtn = get('modal-submit');
+
+  if(!modal){
+    console.warn('[modal] modal wrapper not found — aborting modal script.');
+    return;
+  }
+
+  // show/hide helpers
+  function showModal(){
+    // reveal modal wrapper (was hidden)
+    modal.classList.remove('hidden');
+    modal.classList.add('flex'); // wrapper uses flex to center horizontally and items-start for vertical
+    // add backdrop blur + ensure backdrop visible
+    if(backdrop){
+      backdrop.classList.remove('hidden');
+      // visual blur + slightly darker black
+      backdrop.classList.add('backdrop-blur-sm', 'bg-black/40');
+    }
+    // prevent body scroll while modal open
+    document.documentElement.classList.add('overflow-hidden');
+    // focus
+    setTimeout(()=> { if(serviceSel) serviceSel.focus(); }, 60);
+    computeTotal();
+    console.debug('[modal] opened');
+  }
+
+  function hideModal(){
+    // hide wrapper
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    // remove backdrop visual classes but keep it hidden
+    if(backdrop){
+      backdrop.classList.add('hidden');
+      backdrop.classList.remove('backdrop-blur-sm','bg-black/40');
+    }
+    document.documentElement.classList.remove('overflow-hidden');
+    console.debug('[modal] closed');
+  }
+
+  // events to open/close
+  if(openBtn) openBtn.addEventListener('click', (e)=> { e.preventDefault(); showModal(); });
+
+  // close via explicit buttons only
+  if(closeBtn) closeBtn.addEventListener('click', (e)=> { e.preventDefault(); hideModal(); });
+  if(cancelBtn) cancelBtn.addEventListener('click', (e)=> { e.preventDefault(); hideModal(); });
+
+  // IMPORTANT: DO NOT close on backdrop click - ensure no listener attached
+  // If you previously added backdrop click handler, remove it or ensure nothing runs on backdrop clicks.
+
+  // close on Esc
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape'){
+      // only close if visible
+      if(!modal.classList.contains('hidden')) hideModal();
+    }
+  });
+
+  // keep clicks inside modal panel from doing anything weird (stop propagation)
+  const panel = modal.querySelector('.relative') || modal.querySelector('.modal-panel');
+  if(panel){
+    panel.addEventListener('click', (ev)=> ev.stopPropagation());
+  }
+
+  // pricing helpers
+  function getSelectedPrice(){
+    if(!serviceSel) return 0;
+    const opt = serviceSel.selectedOptions && serviceSel.selectedOptions[0];
+    const p = opt ? (opt.dataset.price || opt.getAttribute('data-price') || 0) : 0;
+    return parseFloat(p) || 0;
+  }
+
+  function computeTotal(){
+    if(!totalAmountEl) return;
+    const price = getSelectedPrice();
+    const q = qty ? Math.max(1, parseInt(qty.value || '1', 10)) : 1;
+    const total = price * q;
+    totalAmountEl.textContent = total ? `GHS ${total.toFixed(2)}` : '—';
+  }
+
+  if(serviceSel) serviceSel.addEventListener('change', computeTotal);
+  if(qty) qty.addEventListener('input', computeTotal);
+
+  // form submit logic left intact (you had it before) — defensive wrapper
+  if(form){
+    form.addEventListener('submit', async (ev)=>{
+      ev.preventDefault();
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.dataset.prev = submitBtn.textContent; submitBtn.textContent = 'Processing...'; }
+
+      const payload = {
+        service: serviceSel ? serviceSel.value : '',
+        quantity: qty ? qty.value : 1,
+        payment_type: (document.getElementById('modal-payment') || {}).value || 'cash',
+        customer_name: (document.getElementById('modal-customer') || {}).value || '',
+        customer_phone: (document.getElementById('modal-phone') || {}).value || '',
+        notes: (document.getElementById('modal-notes') || {}).value || ''
+      };
+
+      // csrf helper
+      const getCookie = name => {
+        const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return m ? m.pop() : '';
+      };
+      const csrftoken = getCookie('csrftoken');
+
+      try{
+        const res = await fetch('/api/jobs/quick_create/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+          body: JSON.stringify(payload)
+        });
+
+        if(res.ok){
+          const data = await res.json().catch(()=>null);
+          alert('Job recorded' + (data && data.id ? ` — #${data.id}` : ''));
+          hideModal();
+          if(typeof window.refreshQueue === 'function') window.refreshQueue();
+        } else {
+          const text = await res.text().catch(()=>res.status);
+          alert('Failed to record job: ' + text);
+        }
+      } catch(err){
+        console.error('[modal] network error', err);
+        alert('Network error while recording job');
+      } finally {
+        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.prev || 'Checkout'; }
+      }
+    });
+  }
+
+  console.debug('[modal] script initialized');
+})();
