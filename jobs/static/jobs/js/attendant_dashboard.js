@@ -1,335 +1,274 @@
- // ---------- tabs ----------
- (function(){
-  function init(){
-    // all your existing init code here (tab switching, event bindings)
-    console.log('attendant_dashboard.js loaded');
+(function(){
+  // ---------- small helpers ----------
+  const $ = id => document.getElementById(id);
+  const on = (el, ev, fn) => el && el.addEventListener(ev, fn);
+  const qsAll = sel => Array.from(document.querySelectorAll(sel || ''));
+  const attr = (el, name, val) => { if(!el) return; if(val===undefined) return el.getAttribute(name); el.setAttribute(name, val); };
+
+  // ---------- config / cached nodes ----------
+  const body = document.documentElement || document.body;
+  const tabBtns = qsAll('.tab-btn');
+  const panels = qsAll('.tab-panel');
+
+  // user menu elements (multiple templates used different ids)
+  const userMenuBtn = $('user-menu-btn') || $('profileBtn') || null;
+  const userMenu = $('user-menu') || $('user-menu') || $('profilePopup') || null;
+
+  // Modals (support both quick modal naming conventions from template versions)
+  const quickModal = $('record-job-quick-modal') || $('record-job-modal') || $('record-job-quick') || null;
+  const quickBackdrop = $('quick-modal-backdrop') || $('record-job-backdrop') || $('record-job-backdrop') || null;
+  const openQuickBtn = $('record-job-btn') || $('openQuickJobBtn') || $('openQuickJobBtnInner') || null;
+  const quickClose = $('quick-modal-close') || $('record-job-close') || $('modal-close') || null;
+  const modalCancel = $('modal-cancel') || null;
+  const quickForm = $('record-job-form') || null;
+
+  // walk-in / larger modal
+  const walkinModal = $('walkin-modal') || $('walkinModal') || $('walkin_modal') || null;
+  const walkinClose = $('walkin-close') || null;
+
+  // queue controls
+  const btnRefresh = $('btn-refresh-queue') || null;
+  const btnPoll = $('btn-poll-toggle') || null;
+  let polling = false, pollTimer = null;
+
+  // pricing elements (multiple possible ids)
+  const modalService = $('modal-service') || $('service') || null;
+  const modalQty = $('modal-quantity') || $('quantity') || null;
+  const modalTotalLabel = $('modal-total-amount') || $('modal-total-amount') || $('line-total') || null;
+
+  // CSRF helper
+  function getCookie(name){
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  // ---------- user menu (toggle) ----------
+  function closeUserMenu(){
+    if(!userMenu) return;
+    userMenu.classList.add('hidden');
+    if(userMenuBtn) attr(userMenuBtn, 'aria-expanded', 'false');
   }
-})();
+  function openUserMenu(){
+    if(!userMenu) return;
+    userMenu.classList.remove('hidden');
+    if(userMenuBtn) attr(userMenuBtn, 'aria-expanded', 'true');
+  }
 
-    document.querySelectorAll('.tab-btn').forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        document.querySelectorAll('.tab-btn').forEach(b=>{
-          b.classList.remove('bg-white','text-red-700');
-          b.classList.add('text-gray-600');
-        });
-        btn.classList.add('bg-white','text-red-700');
-        btn.classList.remove('text-gray-600');
+  document.addEventListener('click', function(e){
+    if (!userMenuBtn) return;
+    if (userMenuBtn.contains(e.target)) {
+      if (userMenu && userMenu.classList.contains('hidden')) openUserMenu(); else closeUserMenu();
+    } else {
+      closeUserMenu();
+    }
+  });
 
-        const tab = btn.dataset.tab;
-        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
-        const panel = document.getElementById('panel-' + tab);
-        if(panel) panel.classList.remove('hidden');
-      });
-    });
-    const initial = document.querySelector('.tab-btn[data-tab="job"]');
-    if(initial) initial.click();
+  // ---------- tabs (generic showPanel) ----------
+  function showPanel(name){
+    panels.forEach(p=>p.classList.add('hidden'));
+    // try panel id patterns: panel-{name} or tab-{name}
+    const p = $('panel-' + name) || $('tab-' + name) || document.querySelector('#tab-' + name) || $('panel-' + name);
+    if(p) p.classList.remove('hidden');
 
-    // ---------- user menu ----------
-    const userBtn = document.getElementById('user-menu-btn');
-    const userMenu = document.getElementById('user-menu');
-
-    function isDescendant(parent, child) {
-      if (!parent || !child) return false;
-      let node = child;
-      while (node) {
-        if (node === parent) return true;
-        node = node.parentNode;
+    // update pressed state & classes
+    tabBtns.forEach(b=>{
+      const isActive = b.dataset.tab === name;
+      attr(b, 'aria-pressed', isActive ? 'true' : 'false');
+      if(isActive){
+        b.classList.add('bg-red-600','text-white');
+        b.classList.remove('text-gray-600','bg-transparent');
+      } else {
+        b.classList.remove('bg-red-600','text-white');
+        b.classList.add('text-gray-600','bg-transparent');
       }
-      return false;
-    }
-
-    userBtn?.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      userMenu.classList.toggle('hidden');
     });
 
-    document.addEventListener('click', (e)=>{
-      const tgt = e.target;
-      if (isDescendant(userMenu, tgt) || isDescendant(userBtn, tgt)) return;
-      if (!userMenu.classList.contains('hidden')) userMenu.classList.add('hidden');
+    // Also try to move underline if desktop underline exists (support both IDs)
+    const nav = $('managerTabNav') || $('attendantDesktopNav') || null;
+    const underline = $('tabUnderline') || $('attTabUnderline') || $('attTabUnderline') || null;
+    if(underline && nav){
+      // find desktop button for the name
+      const deskBtn = nav.querySelector('.tab-btn[data-tab="'+name+'"]');
+      if(deskBtn){
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = deskBtn.getBoundingClientRect();
+        const left = btnRect.left - navRect.left;
+        underline.style.width = btnRect.width + 'px';
+        underline.style.transform = 'translateX(' + left + 'px)';
+      }
+    }
+  }
+
+  tabBtns.forEach(b => b.addEventListener('click', function(e){
+    const name = this.dataset.tab;
+    if(!name) return;
+    showPanel(name);
+  }));
+
+  // default tab
+  (function initDefaultTab(){
+    // prefer job -> overview -> first
+    const prefer = ['job','overview','overview','overview','job'];
+    let found = null;
+    for(const p of prefer){
+      found = tabBtns.find(t => t.dataset.tab === p);
+      if(found) break;
+    }
+    if(!found) found = tabBtns[0];
+    if(found) found.click();
+  })();
+
+  // keyboard: close modals / user menu on Esc
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') {
+      closeUserMenu();
+      closeQuickModal();
+      closeWalkinModal();
+    }
+  });
+
+  // ---------- quick modal open/close logic ----------
+  function openQuickModal(){
+    if(!quickModal) return;
+    quickModal.classList.remove('hidden');
+    // focus first control if present
+    const sel = quickModal.querySelector('#modal-service') || quickModal.querySelector('select');
+    if(sel) sel.focus();
+    // add backdrop blur if a backdrop is present
+    if(quickBackdrop) { quickBackdrop.classList.remove('hidden'); quickBackdrop.classList.add('backdrop-blur-sm','bg-black/40'); }
+    body.classList.add('overflow-hidden');
+  }
+
+  function closeQuickModal(){
+    if(!quickModal) return;
+    quickModal.classList.add('hidden');
+    if(quickBackdrop) { quickBackdrop.classList.add('hidden'); quickBackdrop.classList.remove('backdrop-blur-sm','bg-black/40'); }
+    body.classList.remove('overflow-hidden');
+  }
+
+  on(openQuickBtn, 'click', function(e){ e && e.preventDefault && e.preventDefault(); openQuickModal(); });
+  on(quickClose, 'click', function(e){ e && e.preventDefault && e.preventDefault(); closeQuickModal(); });
+  on(modalCancel, 'click', function(e){ e && e.preventDefault && e.preventDefault(); closeQuickModal(); });
+
+  // do not close modal on backdrop click per requirement (no listener)
+
+  // ---------- walkin modal ----------
+  function openWalkinModal(){ if(!walkinModal) return; walkinModal.classList.remove('hidden'); body.classList.add('overflow-hidden'); }
+  function closeWalkinModal(){ if(!walkinModal) return; walkinModal.classList.add('hidden'); body.classList.remove('overflow-hidden'); }
+  on(walkinClose, 'click', function(e){ e && e.preventDefault && e.preventDefault(); closeWalkinModal(); });
+
+  // ---------- quick modal pricing helpers ----------
+  function parsePrice(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function updateQuickTotal(){
+    if(!modalService || !modalQty || !modalTotalLabel) return;
+    const opt = modalService.selectedOptions && modalService.selectedOptions[0];
+    const price = opt ? parsePrice(opt.dataset.price || opt.getAttribute('data-price')) : 0;
+    const qty = Math.max(1, parseInt(modalQty.value || '1', 10) || 1);
+    const total = price * qty;
+    modalTotalLabel.textContent = total ? ('GHS ' + total.toFixed(2)) : 'GHS 0.00';
+  }
+  if(modalService) on(modalService, 'change', updateQuickTotal);
+  if(modalQty) on(modalQty, 'input', updateQuickTotal);
+  updateQuickTotal();
+
+  // disable submit double-click for quickForm
+  if(quickForm){
+    quickForm.addEventListener('submit', function(e){
+      const btn = $('modal-submit');
+      if(btn){ btn.disabled = true; btn.textContent = 'Processing…'; }
+      // allow form to submit normally; if you want AJAX, hook here
     });
+  }
 
-    // ---------- helpers ----------
-    function getCookie(name) {
-      const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-      return v ? v.pop() : '';
-    }
+  // ---------- queue controls (refresh / poll) ----------
+  async function refreshQueue(){
+    console.log('Refresh queue (placeholder) — implement your API call here');
+    // optionally: fetch data and update DOM
+  }
+  on(btnRefresh, 'click', function(){ refreshQueue(); });
+  on(btnPoll, 'click', function(){
+    polling = !polling;
+    if(btnPoll) btnPoll.textContent = polling ? 'Auto ✓' : 'Auto';
+    if(polling) pollTimer = setInterval(refreshQueue, 5000);
+    else { clearInterval(pollTimer); pollTimer = null; }
+  });
 
-    // ---------- price calc ----------
-    const serviceSel = document.getElementById('service');
-    const qtyEl = document.getElementById('quantity');
-    const depositEl = document.getElementById('deposit_amount');
-    const unitEl = document.getElementById('unit-price');
-    const totalEl = document.getElementById('line-total');
-    const attachmentEl = document.getElementById('attachment');
-    const feedback = document.getElementById('create-feedback');
+  // ---------- advanced: create/print / quick create via fetch (if you used earlier code) ----------
+  // Keep this optional: if elements exist, wire the quick-create AJAX path
+  (function wireCreateIfPresent(){
+    const createBtn = $('btn-create-print');
+    const feedback = $('create-feedback');
+    const serviceEl = $('service') || modalService;
+    const qtyEl = $('quantity') || modalQty;
+    if(!createBtn) return;
 
-    function parsePrice(v){ return Number(v||0); }
-
-    function calcTotal(){
-      const opt = serviceSel?.selectedOptions?.[0];
-      const price = opt ? parsePrice(opt.dataset.price) : 0;
-      const qty = Number(qtyEl.value || 1);
-      const deposit = Number(depositEl.value || 0);
-      const total = Math.max(0, (price * Math.max(1, qty)) - deposit);
-      unitEl.textContent = price.toFixed(2);
-      totalEl.textContent = total.toFixed(2);
-      return {price, qty, deposit, total};
-    }
-
-    serviceSel?.addEventListener('change', calcTotal);
-    qtyEl?.addEventListener('input', calcTotal);
-    depositEl?.addEventListener('input', calcTotal);
-    calcTotal();
-
-    // ---------- create & print (instant) ----------
-    document.getElementById('btn-create-print')?.addEventListener('click', async ()=>{
-      feedback.textContent = 'Creating job...';
-      const {price, qty, deposit} = calcTotal();
-      const branchId = document.getElementById('branch-select')?.value;
-      if(!branchId){ feedback.textContent = 'Select branch'; return; }
-      if(!serviceSel.value){ feedback.textContent = 'Select service'; return; }
+    createBtn.addEventListener('click', async function(){
+      if(feedback) feedback.textContent = 'Creating job...';
+      const price = (serviceEl && serviceEl.selectedOptions && serviceEl.selectedOptions[0] && parsePrice(serviceEl.selectedOptions[0].dataset.price)) || 0;
+      const qty = Number(qtyEl?.value || 1);
+      const branchId = $('branch-select')?.value;
+      if(!branchId){ if(feedback) feedback.textContent = 'Select branch'; return; }
+      if(!serviceEl || !serviceEl.value){ if(feedback) feedback.textContent = 'Select service'; return; }
 
       try{
         const fd = new FormData();
         fd.append('branch', branchId);
-        fd.append('service', serviceSel.value);
+        fd.append('service', serviceEl.value);
         fd.append('quantity', qty);
         fd.append('type', 'instant');
-        fd.append('deposit_amount', deposit);
-        fd.append('description', document.getElementById('notes').value || '');
-        fd.append('customer_name', document.getElementById('customer_name').value || '');
-        fd.append('customer_phone', document.getElementById('customer_phone').value || '');
-        // attach file if any
-        if(attachmentEl.files && attachmentEl.files.length) fd.append('attachment', attachmentEl.files[0]);
-
+        // append other fields as needed...
         const resp = await fetch('/api/jobs/jobs/', {
           method: 'POST',
-          headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-          },
+          headers: { 'X-CSRFToken': getCookie('csrftoken') },
           body: fd
         });
-
         if(!resp.ok){
-          const txt = await resp.text();
-          feedback.textContent = 'Create failed: ' + resp.status;
-          console.error('create error', resp.status, txt);
+          if(feedback) feedback.textContent = 'Create failed: ' + resp.status;
           return;
         }
-
-        const data = await resp.json();
-        feedback.textContent = 'Created. Opening receipt...';
-        // open receipt (server should return receipt_url)
-        if(data.receipt_url){
-          window.open(data.receipt_url, '_blank');
-        } else if(data.id){
-          window.open(`/api/jobs/receipt/${data.id}/`, '_blank');
+        const data = await resp.json().catch(()=>null);
+        if(feedback) feedback.textContent = 'Created';
+        if(data && (data.receipt_url || data.id)) {
+          const url = data.receipt_url || `/api/jobs/receipt/${data.id}/`;
+          window.open(url, '_blank');
         }
-        // clear form lightly
-        document.getElementById('create-job-form').reset();
-        calcTotal();
-        setTimeout(()=> feedback.textContent = '', 2000);
       } catch(err){
-        console.error(err);
-        feedback.textContent = 'Network error';
+        console.error('create error', err);
+        if(feedback) feedback.textContent = 'Network error';
       }
     });
+  })();
 
-    // placeholders
-    document.getElementById('btn-refresh-queue')?.addEventListener('click', ()=>{
-      alert('Refresh queue (API not wired yet)');
+  // ---------- accessibility helpers: keyboard navigation for tab buttons ----------
+  tabBtns.forEach(t=>{
+    on(t, 'keydown', function(ev){
+      if(ev.key === 'Enter' || ev.key === ' '){
+        ev.preventDefault();
+        t.click();
+      }
     });
-    document.getElementById('btn-create-pay')?.addEventListener('click', ()=>{
-      alert('Create & Pay (API not wired yet)');
-    });
-
-    // branch change (reload queue if needed)
-    document.getElementById('branch-select')?.addEventListener('change', ()=>{
-      // basic behaviour: reload page with ?branch=ID so server picks it up
-      const id = document.getElementById('branch-select').value;
-      const url = new URL(window.location.href);
-      url.searchParams.set('branch', id);
-      window.location.href = url.toString();
-    });
-
-// modal helper (put inside the IIFE/bootstrap you already added)
-function toggleModal(show){
-  const modal = document.getElementById('record-job-modal');
-  if(!modal) return;
-  modal.classList.toggle('hidden', !show);
-  if(show) {
-    modal.querySelector('[autofocus]')?.focus();
-  }
-}
-
-// open modal from quickinfo button
-document.getElementById('open-walkin-btn')?.addEventListener('click', ()=> toggleModal(true));
-
-// Record Job button could open a tiny quick-entry modal (reuse same modal include)
-document.getElementById('record-job-btn')?.addEventListener('click', ()=> toggleModal(true));
-
-// close on outside click or ESC
-document.addEventListener('click', (e)=>{
-  const modal = document.getElementById('record-job-modal');
-  if(modal && !modal.classList.contains('hidden')){
-    if(!modal.querySelector('.modal-content').contains(e.target)) toggleModal(false);
-  }
-});
-document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') toggleModal(false); });
-
-// attendant_dashboard.js — modal behaviour: close via buttons/Esc only; blur background when open
-(function(){
-  // element getter with debug
-  const get = id => {
-    const e = document.getElementById(id);
-    if(!e) console.debug(`[modal] missing #${id}`);
-    return e;
-  };
-
-  const openBtn = get('record-job-btn');
-  const modal = get('record-job-modal');           // wrapper (fixed inset-0, flex items-start pt-20)
-  const backdrop = get('record-job-backdrop');     // full-screen backdrop element
-  const closeBtn = get('record-job-close');        // top-right ✕
-  const cancelBtn = get('modal-cancel');          // bottom cancel button
-  const form = get('record-job-form');
-  const serviceSel = get('modal-service');
-  const qty = get('modal-quantity');
-  const totalAmountEl = get('modal-total-amount');
-  const submitBtn = get('modal-submit');
-
-  if(!modal){
-    console.warn('[modal] modal wrapper not found — aborting modal script.');
-    return;
-  }
-
-  // show/hide helpers
-  function showModal(){
-    // reveal modal wrapper (was hidden)
-    modal.classList.remove('hidden');
-    modal.classList.add('flex'); // wrapper uses flex to center horizontally and items-start for vertical
-    // add backdrop blur + ensure backdrop visible
-    if(backdrop){
-      backdrop.classList.remove('hidden');
-      // visual blur + slightly darker black
-      backdrop.classList.add('backdrop-blur-sm', 'bg-black/40');
-    }
-    // prevent body scroll while modal open
-    document.documentElement.classList.add('overflow-hidden');
-    // focus
-    setTimeout(()=> { if(serviceSel) serviceSel.focus(); }, 60);
-    computeTotal();
-    console.debug('[modal] opened');
-  }
-
-  function hideModal(){
-    // hide wrapper
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    // remove backdrop visual classes but keep it hidden
-    if(backdrop){
-      backdrop.classList.add('hidden');
-      backdrop.classList.remove('backdrop-blur-sm','bg-black/40');
-    }
-    document.documentElement.classList.remove('overflow-hidden');
-    console.debug('[modal] closed');
-  }
-
-  // events to open/close
-  if(openBtn) openBtn.addEventListener('click', (e)=> { e.preventDefault(); showModal(); });
-
-  // close via explicit buttons only
-  if(closeBtn) closeBtn.addEventListener('click', (e)=> { e.preventDefault(); hideModal(); });
-  if(cancelBtn) cancelBtn.addEventListener('click', (e)=> { e.preventDefault(); hideModal(); });
-
-  // IMPORTANT: DO NOT close on backdrop click - ensure no listener attached
-  // If you previously added backdrop click handler, remove it or ensure nothing runs on backdrop clicks.
-
-  // close on Esc
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape'){
-      // only close if visible
-      if(!modal.classList.contains('hidden')) hideModal();
-    }
   });
 
-  // keep clicks inside modal panel from doing anything weird (stop propagation)
-  const panel = modal.querySelector('.relative') || modal.querySelector('.modal-panel');
-  if(panel){
-    panel.addEventListener('click', (ev)=> ev.stopPropagation());
-  }
-
-  // pricing helpers
-  function getSelectedPrice(){
-    if(!serviceSel) return 0;
-    const opt = serviceSel.selectedOptions && serviceSel.selectedOptions[0];
-    const p = opt ? (opt.dataset.price || opt.getAttribute('data-price') || 0) : 0;
-    return parseFloat(p) || 0;
-  }
-
-  function computeTotal(){
-    if(!totalAmountEl) return;
-    const price = getSelectedPrice();
-    const q = qty ? Math.max(1, parseInt(qty.value || '1', 10)) : 1;
-    const total = price * q;
-    totalAmountEl.textContent = total ? `GHS ${total.toFixed(2)}` : '—';
-  }
-
-  if(serviceSel) serviceSel.addEventListener('change', computeTotal);
-  if(qty) qty.addEventListener('input', computeTotal);
-
-  // form submit logic left intact (you had it before) — defensive wrapper
-  if(form){
-    form.addEventListener('submit', async (ev)=>{
-      ev.preventDefault();
-      if(submitBtn){ submitBtn.disabled = true; submitBtn.dataset.prev = submitBtn.textContent; submitBtn.textContent = 'Processing...'; }
-
-      const payload = {
-        service: serviceSel ? serviceSel.value : '',
-        quantity: qty ? qty.value : 1,
-        payment_type: (document.getElementById('modal-payment') || {}).value || 'cash',
-        customer_name: (document.getElementById('modal-customer') || {}).value || '',
-        customer_phone: (document.getElementById('modal-phone') || {}).value || '',
-        notes: (document.getElementById('modal-notes') || {}).value || ''
-      };
-
-      // csrf helper
-      const getCookie = name => {
-        const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-        return m ? m.pop() : '';
-      };
-      const csrftoken = getCookie('csrftoken');
-
-      try{
-        const res = await fetch('/api/jobs/quick_create/', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
-          body: JSON.stringify(payload)
-        });
-
-        if(res.ok){
-          const data = await res.json().catch(()=>null);
-          alert('Job recorded' + (data && data.id ? ` — #${data.id}` : ''));
-          hideModal();
-          if(typeof window.refreshQueue === 'function') window.refreshQueue();
-        } else {
-          const text = await res.text().catch(()=>res.status);
-          alert('Failed to record job: ' + text);
-        }
-      } catch(err){
-        console.error('[modal] network error', err);
-        alert('Network error while recording job');
-      } finally {
-        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.prev || 'Checkout'; }
-      }
+  // ---------- underline reposition on resize (if underline exists) ----------
+  const nav = $('managerTabNav') || $('attendantDesktopNav') || null;
+  const underline = $('tabUnderline') || $('attTabUnderline') || null;
+  if(underline && nav){
+    let rt = null;
+    window.addEventListener('resize', function(){
+      if(rt) clearTimeout(rt);
+      rt = setTimeout(function(){
+        const active = tabBtns.find(t => t.getAttribute('aria-pressed') === 'true') || tabBtns[0];
+        if(!active) return;
+        const btn = nav.querySelector('.tab-btn[data-tab="'+ active.dataset.tab +'"]') || active;
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        underline.style.width = btnRect.width + 'px';
+        underline.style.transform = 'translateX(' + (btnRect.left - navRect.left) + 'px)';
+      }, 100);
     });
   }
 
-  console.debug('[modal] script initialized');
+  // final debug log
+  console.debug('Merged attendant dashboard JS initialized');
 })();
+
