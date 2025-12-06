@@ -1,53 +1,64 @@
-# jobs/admin.py (safe/lazy imports)
+# jobs/admin.py
 from django.contrib import admin
 from django.utils import timezone
 from django.apps import apps
+from django.core.exceptions import ImproperlyConfigured
 
-# Lazy-get models to avoid import-time circular errors
-Job = apps.get_model("jobs", "Job")
-JobRecord = apps.get_model("jobs", "JobRecord")
-JobAttachment = apps.get_model("jobs", "JobAttachment")
-DailySale = apps.get_model("jobs", "DailySale")
+def get_model_safe(app_label: str, model_name: str):
+    """Return model class or None if not available (avoids LookupError during startup)."""
+    try:
+        return apps.get_model(app_label, model_name)
+    except (LookupError, ImproperlyConfigured):
+        return None
 
-# New models (may not exist yet if migrations not applied)
-DaySheet = apps.get_model("jobs", "DaySheet")
-DaySheetShift = apps.get_model("jobs", "DaySheetShift")
-CorrectionEntry = apps.get_model("jobs", "CorrectionEntry")
-StatusLog = apps.get_model("jobs", "StatusLog")
-ShadowLogEvent = apps.get_model("jobs", "ShadowLogEvent")
-AnomalyFlag = apps.get_model("jobs", "AnomalyFlag")
+# lazy model resolution
+Job = get_model_safe("jobs", "Job")
+JobRecord = get_model_safe("jobs", "JobRecord")
+JobAttachment = get_model_safe("jobs", "JobAttachment")
+DailySale = get_model_safe("jobs", "DailySale")
+
+DaySheet = get_model_safe("jobs", "DaySheet")
+DaySheetShift = get_model_safe("jobs", "DaySheetShift")
+CorrectionEntry = get_model_safe("jobs", "CorrectionEntry")
+StatusLog = get_model_safe("jobs", "StatusLog")
+ShadowLogEvent = get_model_safe("jobs", "ShadowLogEvent")
+AnomalyFlag = get_model_safe("jobs", "AnomalyFlag")
 
 
 # ---------- existing models (preserved) ----------
-@admin.register(Job)
-class JobAdmin(admin.ModelAdmin):
-    list_display = ("id", "service", "branch", "customer_name", "status", "queue_position", "expected_ready_at")
-    list_filter = ("status", "branch", "service", "priority", "type")
-    search_fields = ("customer_name", "customer_phone", "description", "id")
-    readonly_fields = ("created_at", "updated_at")
+if Job is not None:
+    @admin.register(Job)
+    class JobAdmin(admin.ModelAdmin):
+        list_display = ("id", "service", "branch", "customer_name", "status", "queue_position", "expected_ready_at")
+        list_filter = ("status", "branch", "service", "priority", "type")
+        search_fields = ("customer_name", "customer_phone", "description", "id")
+        readonly_fields = ("created_at", "updated_at")
 
 
-@admin.register(JobRecord)
-class JobRecordAdmin(admin.ModelAdmin):
-    list_display = ("id", "job", "performed_by", "time_start", "time_end", "quantity_produced")
-    search_fields = ("job__id", "performed_by__username")
-    readonly_fields = ("created_at",)
+if JobRecord is not None:
+    @admin.register(JobRecord)
+    class JobRecordAdmin(admin.ModelAdmin):
+        list_display = ("id", "job", "performed_by", "time_start", "time_end", "quantity_produced")
+        search_fields = ("job__id", "performed_by__username")
+        readonly_fields = ("created_at",)
 
 
-@admin.register(JobAttachment)
-class JobAttachmentAdmin(admin.ModelAdmin):
-    list_display = ("id", "record", "uploaded_by", "file", "created_at")
-    readonly_fields = ("created_at",)
+if JobAttachment is not None:
+    @admin.register(JobAttachment)
+    class JobAttachmentAdmin(admin.ModelAdmin):
+        list_display = ("id", "record", "uploaded_by", "file", "created_at")
+        readonly_fields = ("created_at",)
 
 
-@admin.register(DailySale)
-class DailySaleAdmin(admin.ModelAdmin):
-    list_display = ("branch", "date", "total_amount", "total_count")
-    list_filter = ("branch", "date")
-    readonly_fields = ("updated_at",)
+if DailySale is not None:
+    @admin.register(DailySale)
+    class DailySaleAdmin(admin.ModelAdmin):
+        list_display = ("branch", "date", "total_amount", "total_count")
+        list_filter = ("branch", "date")
+        readonly_fields = ("updated_at",)
 
 
-# register other models only if they exist to avoid import errors on older migrations
+# ---------- new models (conditionally registered) ----------
 if DaySheet is not None:
     @admin.register(DaySheet)
     class DaySheetAdmin(admin.ModelAdmin):
@@ -64,7 +75,21 @@ if DaySheet is not None:
             "report_url",
         )
 
+        fieldsets = (
+            (None, {
+                "fields": ("branch", "date", "status", "notes", "meta", "report_url")
+            }),
+            ("Totals", {
+                "fields": ("total_jobs", "total_amount", "opening_cash", "closing_cash",
+                           "cash_total", "momo_total", "card_total", "deposits_total")
+            }),
+            ("Audit", {
+                "fields": ("opened_by", "opened_at", "closed_by", "closed_at", "hq_closed_by", "hq_closed_at", "created_at", "updated_at")
+            }),
+        )
+
         def has_delete_permission(self, request, obj=None):
+            # preserve data integrity via admin — disallow deletes here by default
             return False
 
 
@@ -91,7 +116,11 @@ if CorrectionEntry is not None:
         actions = ["mark_approved", "mark_rejected"]
 
         def mark_approved(self, request, queryset):
-            updated = queryset.filter(status=CorrectionEntry.STATUS_OPEN).update(status=CorrectionEntry.STATUS_APPROVED, approved_by=request.user, approved_at=timezone.now())
+            updated = queryset.filter(status=CorrectionEntry.STATUS_OPEN).update(
+                status=CorrectionEntry.STATUS_APPROVED,
+                approved_by=request.user,
+                approved_at=timezone.now(),
+            )
             self.message_user(request, f"{updated} correction(s) marked as approved.")
         mark_approved.short_description = "Mark selected corrections as APPROVED"
 
@@ -113,6 +142,7 @@ if StatusLog is not None:
         readonly_fields = ("created_at", "payload")
 
         def has_add_permission(self, request):
+            # programmatically created only
             return False
 
         def has_delete_permission(self, request, obj=None):
@@ -144,4 +174,3 @@ if AnomalyFlag is not None:
 
         def has_delete_permission(self, request, obj=None):
             return False
-# ---------- end of jobs/admin.py ----------
