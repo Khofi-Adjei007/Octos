@@ -27,6 +27,7 @@ urlpatterns = [
     path('hr/', hr_views.human_resource, name='human_resources'),
     path('', include('public.urls')),
     path("api/public/", include("public.api.urls")),
+    
 
     # Human Resources API
     path('hr/api/', include('Human_Resources.api.urls', namespace='hr_api')),
@@ -34,6 +35,7 @@ urlpatterns = [
     # Branches API
     path("api/", include("branches.urls")),
     path("api/jobs/", include("jobs.urls")),
+    path("api/jobs/", include("jobs.api.urls", namespace="jobs_api")),
 
 ]
 

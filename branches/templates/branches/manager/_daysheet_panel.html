@@ -1,0 +1,85 @@
+{# branches/templates/branches/manager/_daysheet_panel.html #}
+<div class="bg-white rounded-xl p-4 shadow-sm border">
+  <div class="flex items-start justify-between mb-4">
+    <div>
+      <h3 class="text-lg font-medium"></h3>
+      <div class="text-xs text-slate-500"></div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btnNewSheet" class="px-3 py-2 rounded-md bg-white border hover:bg-slate-50 text-sm">New Sheet</button>
+      <button id="btnLockSheet" class="px-3 py-2 rounded-md bg-white border hover:bg-slate-50 text-sm">Lock/Unlock</button>
+      <button id="btnCloseDay" class="px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 text-sm">Close Day</button>
+    </div>
+  </div>
+
+  <!-- High-level totals -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+    <div class="p-3 bg-gray-50 rounded">
+      <div class="text-xs text-slate-500">Jobs</div>
+      <div class="text-xl font-semibold">{{ todays_sheet.total_jobs|default:0 }}</div>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <div class="text-xs text-slate-500">Total</div>
+      <div class="text-xl font-semibold">GHS {{ todays_sheet.total_amount|default:"0.00" }}</div>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <div class="text-xs text-slate-500">Pending</div>
+      <div class="text-xl font-semibold">GHS {{ todays_sheet.pending_amount|default:"0.00" }}</div>
+    </div>
+  </div>
+
+  <!-- Shifts table -->
+  <div class="mb-4">
+    <h4 class="text-sm font-medium mb-2">Shifts</h4>
+    <div class="overflow-auto">
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-left">
+          <tr><th class="py-2">Attendant</th><th class="py-2">Start</th><th class="py-2">End</th><th class="py-2">Status</th><th class="py-2">Actions</th></tr>
+        </thead>
+        <tbody id="shiftsTbody">
+          {% if recent_shifts %}
+            {% for s in recent_shifts %}
+              <tr class="border-t">
+                <td class="py-2">{{ s.user_name }}</td>
+                <td class="py-2">{{ s.shift_start }}</td>
+                <td class="py-2">{{ s.shift_end|default:"—" }}</td>
+                <td class="py-2">{{ s.status }}</td>
+                <td class="py-2">
+                  {% if s.status == "shift_open" %}
+                    <button data-shift="{{ s.id }}" class="btn-close-shift text-xs px-2 py-1 rounded bg-white border">Close</button>
+                  {% else %}
+                    <span class="text-xs text-slate-500">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="border-t"><td colspan="5" class="py-6 text-center text-slate-500">No shifts yet</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Optional: daysheet details server-rendered -->
+  <div id="daysheetDetails">
+    {% if todays_sheet_obj %}
+      <pre class="text-xs text-slate-600 bg-slate-50 p-2 rounded">{{ todays_sheet_obj.meta|default:"" }}</pre>
+    {% else %}
+      <div class="text-xs text-slate-500">Sheet details will appear here.</div>
+    {% endif %}
+  </div>
+
+  <!-- PIN modal (simple) -->
+  <div id="pinModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded p-4 w-80">
+      <h4 class="text-sm font-medium mb-2">Manager PIN required</h4>
+      <input id="pinInput" type="password" placeholder="Enter PIN" class="w-full border px-2 py-1 rounded mb-3" />
+      <div class="flex justify-end gap-2">
+        <button id="pinCancel" class="px-3 py-1 rounded border text-sm">Cancel</button>
+        <button id="pinConfirm" class="px-3 py-1 rounded bg-red-600 text-white text-sm">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>

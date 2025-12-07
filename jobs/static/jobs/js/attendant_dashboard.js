@@ -10,31 +10,31 @@
   const tabBtns = qsAll('.tab-btn');
   const panels = qsAll('.tab-panel');
 
-  // user menu elements (multiple templates used different ids)
   const userMenuBtn = $('user-menu-btn') || $('profileBtn') || null;
-  const userMenu = $('user-menu') || $('user-menu') || $('profilePopup') || null;
+  const userMenu = $('user-menu') || $('profilePopup') || null;
 
-  // Modals (support both quick modal naming conventions from template versions)
-  const quickModal = $('record-job-quick-modal') || $('record-job-modal') || $('record-job-quick') || null;
-  const quickBackdrop = $('quick-modal-backdrop') || $('record-job-backdrop') || $('record-job-backdrop') || null;
+  const quickModal = $('record-job-quick-modal') || null;
+  const quickBackdrop = $('quick-modal-backdrop') || null;
   const openQuickBtn = $('record-job-btn') || $('openQuickJobBtn') || $('openQuickJobBtnInner') || null;
-  const quickClose = $('quick-modal-close') || $('record-job-close') || $('modal-close') || null;
+  const quickClose = $('quick-modal-close') || null;
   const modalCancel = $('modal-cancel') || null;
   const quickForm = $('record-job-form') || null;
 
-  // walk-in / larger modal
-  const walkinModal = $('walkin-modal') || $('walkinModal') || $('walkin_modal') || null;
+  const walkinModal = $('walkin-modal') || null;
   const walkinClose = $('walkin-close') || null;
 
-  // queue controls
   const btnRefresh = $('btn-refresh-queue') || null;
   const btnPoll = $('btn-poll-toggle') || null;
   let polling = false, pollTimer = null;
 
-  // pricing elements (multiple possible ids)
-  const modalService = $('modal-service') || $('service') || null;
-  const modalQty = $('modal-quantity') || $('quantity') || null;
-  const modalTotalLabel = $('modal-total-amount') || $('modal-total-amount') || $('line-total') || null;
+  const modalService = $('modal-service') || null;
+  const modalQty = $('modal-quantity') || null;
+  const modalTotalLabel = $('modal-total-amount') || null;
+
+  // API endpoints (update if your router uses different base)
+  const API_BASE = '/api/jobs/';           // router base for jobs app
+  const JOBS_ENDPOINT = API_BASE + 'jobs/';          // POST here to create job
+  const RECEIPT_BASE = API_BASE + 'receipt/';       // open RECEIPT_BASE + id + '/'
 
   // CSRF helper
   function getCookie(name){
@@ -63,31 +63,26 @@
     }
   });
 
-  // ---------- tabs (generic showPanel) ----------
+  // ---------- tabs ----------
   function showPanel(name){
     panels.forEach(p=>p.classList.add('hidden'));
-    // try panel id patterns: panel-{name} or tab-{name}
-    const p = $('panel-' + name) || $('tab-' + name) || document.querySelector('#tab-' + name) || $('panel-' + name);
+    const p = $('panel-' + name) || $('tab-' + name) || document.querySelector('#tab-' + name);
     if(p) p.classList.remove('hidden');
 
-    // update pressed state & classes
     tabBtns.forEach(b=>{
       const isActive = b.dataset.tab === name;
       attr(b, 'aria-pressed', isActive ? 'true' : 'false');
       if(isActive){
-        b.classList.add('bg-red-600','text-white');
-        b.classList.remove('text-gray-600','bg-transparent');
+        b.classList.add('bg-red-600','text-white'); b.classList.remove('text-gray-600','bg-transparent');
       } else {
-        b.classList.remove('bg-red-600','text-white');
-        b.classList.add('text-gray-600','bg-transparent');
+        b.classList.remove('bg-red-600','text-white'); b.classList.add('text-gray-600','bg-transparent');
       }
     });
 
-    // Also try to move underline if desktop underline exists (support both IDs)
+    // move underline if present
     const nav = $('managerTabNav') || $('attendantDesktopNav') || null;
-    const underline = $('tabUnderline') || $('attTabUnderline') || $('attTabUnderline') || null;
+    const underline = $('tabUnderline') || $('attTabUnderline') || null;
     if(underline && nav){
-      // find desktop button for the name
       const deskBtn = nav.querySelector('.tab-btn[data-tab="'+name+'"]');
       if(deskBtn){
         const navRect = nav.getBoundingClientRect();
@@ -105,10 +100,8 @@
     showPanel(name);
   }));
 
-  // default tab
   (function initDefaultTab(){
-    // prefer job -> overview -> first
-    const prefer = ['job','overview','overview','overview','job'];
+    const prefer = ['job','overview','overview','job'];
     let found = null;
     for(const p of prefer){
       found = tabBtns.find(t => t.dataset.tab === p);
@@ -118,7 +111,6 @@
     if(found) found.click();
   })();
 
-  // keyboard: close modals / user menu on Esc
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') {
       closeUserMenu();
@@ -127,16 +119,17 @@
     }
   });
 
-  // ---------- quick modal open/close logic ----------
+  // ---------- quick modal open/close ----------
   function openQuickModal(){
     if(!quickModal) return;
     quickModal.classList.remove('hidden');
-    // focus first control if present
-    const sel = quickModal.querySelector('#modal-service') || quickModal.querySelector('select');
-    if(sel) sel.focus();
-    // add backdrop blur if a backdrop is present
     if(quickBackdrop) { quickBackdrop.classList.remove('hidden'); quickBackdrop.classList.add('backdrop-blur-sm','bg-black/40'); }
     body.classList.add('overflow-hidden');
+    // try to set focus
+    const sel = quickModal.querySelector('#modal-service') || quickModal.querySelector('select');
+    if(sel) sel.focus();
+    // recompute total
+    updateQuickTotal();
   }
 
   function closeQuickModal(){
@@ -150,14 +143,12 @@
   on(quickClose, 'click', function(e){ e && e.preventDefault && e.preventDefault(); closeQuickModal(); });
   on(modalCancel, 'click', function(e){ e && e.preventDefault && e.preventDefault(); closeQuickModal(); });
 
-  // do not close modal on backdrop click per requirement (no listener)
-
-  // ---------- walkin modal ----------
+  // ---------- walkin ----------
   function openWalkinModal(){ if(!walkinModal) return; walkinModal.classList.remove('hidden'); body.classList.add('overflow-hidden'); }
   function closeWalkinModal(){ if(!walkinModal) return; walkinModal.classList.add('hidden'); body.classList.remove('overflow-hidden'); }
   on(walkinClose, 'click', function(e){ e && e.preventDefault && e.preventDefault(); closeWalkinModal(); });
 
-  // ---------- quick modal pricing helpers ----------
+  // ---------- pricing helpers ----------
   function parsePrice(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
   function updateQuickTotal(){
     if(!modalService || !modalQty || !modalTotalLabel) return;
@@ -171,19 +162,129 @@
   if(modalQty) on(modalQty, 'input', updateQuickTotal);
   updateQuickTotal();
 
-  // disable submit double-click for quickForm
+  // ---------- quick form submission (AJAX) ----------
   if(quickForm){
-    quickForm.addEventListener('submit', function(e){
-      const btn = $('modal-submit');
-      if(btn){ btn.disabled = true; btn.textContent = 'Processing…'; }
-      // allow form to submit normally; if you want AJAX, hook here
+    quickForm.addEventListener('submit', async function(e){
+      e && e.preventDefault && e.preventDefault();
+
+      // UI elements
+      const feedbackText = (function(){
+        let el = document.getElementById('create-feedback');
+        if(!el){
+          el = document.createElement('div');
+          el.id = 'create-feedback';
+          el.className = 'mt-2 text-sm';
+          quickForm.appendChild(el);
+        }
+        return el;
+      })();
+
+      // gather required values
+      const branchEl = document.getElementById('branch-select');
+      const branchId = branchEl ? (branchEl.value || '').trim() : '';
+      const svcEl = modalService;
+      const svcId = svcEl ? svcEl.value : '';
+      const qty = modalQty ? Number(modalQty.value || 1) : 1;
+      const payment = document.getElementById('modal-payment') ? document.getElementById('modal-payment').value : 'cash';
+      const name = document.getElementById('modal-customer') ? document.getElementById('modal-customer').value : '';
+      const phone = document.getElementById('modal-phone') ? document.getElementById('modal-phone').value : '';
+      const notes = document.getElementById('modal-notes') ? document.getElementById('modal-notes').value : '';
+
+      // validate
+      if(!branchId){
+        feedbackText.textContent = 'Select a branch';
+        if(branchEl){
+          branchEl.classList.add('ring-2','ring-red-300');
+          branchEl.focus();
+          setTimeout(()=> branchEl.classList.remove('ring-2','ring-red-300'), 2000);
+        }
+        return;
+      }
+      if(!svcId){
+        feedbackText.textContent = 'Select a service';
+        if(svcEl){
+          svcEl.classList.add('ring-2','ring-red-300');
+          svcEl.focus();
+          setTimeout(()=> svcEl.classList.remove('ring-2','ring-red-300'), 2000);
+        }
+        return;
+      }
+
+      // disable submit
+      const submitBtn = $('modal-submit');
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Processing…'; }
+
+      feedbackText.textContent = 'Creating job...';
+
+      try {
+        const fd = new FormData();
+        fd.append('branch', branchId);
+        fd.append('service', svcId);
+        fd.append('quantity', qty);
+        // quick record should be instant (completed) — we rely on serializer/service to handle 'instant'
+        fd.append('type', 'instant');
+        fd.append('customer_name', name);
+        fd.append('customer_phone', phone);
+        fd.append('description', notes);
+        fd.append('payment_type', payment);
+
+        const resp = await fetch(JOBS_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+            // don't set Content-Type: browser will set multipart/form-data boundary automatically for FormData
+          },
+          body: fd,
+          credentials: 'same-origin'
+        });
+
+        if(!resp.ok){
+          let errText = `Create failed (${resp.status})`;
+          try{
+            const errJson = await resp.json().catch(()=>null);
+            if(errJson && errJson.detail) errText = errJson.detail;
+            else if(errJson) errText = JSON.stringify(errJson);
+          }catch(e){}
+          feedbackText.textContent = errText;
+          console.warn('Job create failed', resp.status);
+          return;
+        }
+
+        const data = await resp.json().catch(()=>null);
+        feedbackText.textContent = 'Created';
+
+        // open receipt if possible (API may or may not return a receipt_url)
+        if(data && data.id){
+          const url = (data.receipt_url) ? data.receipt_url : (RECEIPT_BASE + data.id + '/');
+          try { window.open(url, '_blank'); } catch(e){ console.warn('Failed to open receipt', e); }
+        }
+
+        // refresh queue and UI (if you have a function to fetch queue, call it)
+        if(typeof refreshQueue === 'function') try{ refreshQueue(); }catch(e){/*ignore*/}
+
+        // reset modal inputs
+        if(modalQty) modalQty.value = '1';
+        if(modalService) modalService.selectedIndex = 0;
+        if(document.getElementById('modal-customer')) document.getElementById('modal-customer').value = '';
+        if(document.getElementById('modal-phone')) document.getElementById('modal-phone').value = '';
+        if(document.getElementById('modal-notes')) document.getElementById('modal-notes').value = '';
+
+        // close modal after a short delay
+        setTimeout(()=>{ closeQuickModal(); feedbackText.textContent = ''; }, 700);
+
+      } catch(err) {
+        console.error('create error', err);
+        feedbackText.textContent = 'Network error';
+      } finally {
+        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Checkout'; }
+      }
     });
   }
 
-  // ---------- queue controls (refresh / poll) ----------
+  // ---------- queue controls ----------
   async function refreshQueue(){
-    console.log('Refresh queue (placeholder) — implement your API call here');
-    // optionally: fetch data and update DOM
+    // Best-effort placeholder: you should implement actual fetch to queue endpoint and patch DOM
+    console.log('Refresh queue placeholder — implement API fetch here to update queue DOM.');
   }
   on(btnRefresh, 'click', function(){ refreshQueue(); });
   on(btnPoll, 'click', function(){
@@ -193,53 +294,7 @@
     else { clearInterval(pollTimer); pollTimer = null; }
   });
 
-  // ---------- advanced: create/print / quick create via fetch (if you used earlier code) ----------
-  // Keep this optional: if elements exist, wire the quick-create AJAX path
-  (function wireCreateIfPresent(){
-    const createBtn = $('btn-create-print');
-    const feedback = $('create-feedback');
-    const serviceEl = $('service') || modalService;
-    const qtyEl = $('quantity') || modalQty;
-    if(!createBtn) return;
-
-    createBtn.addEventListener('click', async function(){
-      if(feedback) feedback.textContent = 'Creating job...';
-      const price = (serviceEl && serviceEl.selectedOptions && serviceEl.selectedOptions[0] && parsePrice(serviceEl.selectedOptions[0].dataset.price)) || 0;
-      const qty = Number(qtyEl?.value || 1);
-      const branchId = $('branch-select')?.value;
-      if(!branchId){ if(feedback) feedback.textContent = 'Select branch'; return; }
-      if(!serviceEl || !serviceEl.value){ if(feedback) feedback.textContent = 'Select service'; return; }
-
-      try{
-        const fd = new FormData();
-        fd.append('branch', branchId);
-        fd.append('service', serviceEl.value);
-        fd.append('quantity', qty);
-        fd.append('type', 'instant');
-        // append other fields as needed...
-        const resp = await fetch('/api/jobs/jobs/', {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') },
-          body: fd
-        });
-        if(!resp.ok){
-          if(feedback) feedback.textContent = 'Create failed: ' + resp.status;
-          return;
-        }
-        const data = await resp.json().catch(()=>null);
-        if(feedback) feedback.textContent = 'Created';
-        if(data && (data.receipt_url || data.id)) {
-          const url = data.receipt_url || `/api/jobs/receipt/${data.id}/`;
-          window.open(url, '_blank');
-        }
-      } catch(err){
-        console.error('create error', err);
-        if(feedback) feedback.textContent = 'Network error';
-      }
-    });
-  })();
-
-  // ---------- accessibility helpers: keyboard navigation for tab buttons ----------
+  // ---------- keyboard nav ----------
   tabBtns.forEach(t=>{
     on(t, 'keydown', function(ev){
       if(ev.key === 'Enter' || ev.key === ' '){
@@ -249,7 +304,7 @@
     });
   });
 
-  // ---------- underline reposition on resize (if underline exists) ----------
+  // ---------- underline reposition on resize ----------
   const nav = $('managerTabNav') || $('attendantDesktopNav') || null;
   const underline = $('tabUnderline') || $('attTabUnderline') || null;
   if(underline && nav){
@@ -268,7 +323,5 @@
     });
   }
 
-  // final debug log
   console.debug('Merged attendant dashboard JS initialized');
 })();
-

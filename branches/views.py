@@ -315,3 +315,298 @@ class BranchListView(LoginRequiredMixin, ListView):
         qs = Branch.objects.filter(is_active=True).order_by('name')
         return qs
 
+
+# branches/views.py (add / replace relevant parts)
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse, HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.apps import apps
+from django.core.exceptions import PermissionDenied
+from django.utils import timezone
+
+# services (class-based singletons in jobs.services)
+from jobs.services import (
+    daysheet_service,
+    branch_service,
+    job_service,
+    manager_service,
+    shift_service,
+    anomaly_service,
+)
+
+def _get_models():
+    DaySheet = apps.get_model("jobs", "DaySheet")
+    ShadowLogEvent = apps.get_model("jobs", "ShadowLogEvent")
+    DaySheetShift = apps.get_model("jobs", "DaySheetShift")
+    return DaySheet, ShadowLogEvent, DaySheetShift
+
+def _manager_of_branch(user, branch_obj):
+    try:
+        return branch_service._is_manager_of_branch(user, branch_obj)
+    except Exception:
+        try:
+            mgr = getattr(branch_obj, "manager", None)
+            if mgr is None:
+                return False
+            if mgr == user or getattr(mgr, "user", None) == user or getattr(mgr, "pk", None) == getattr(user, "pk", None):
+                return True
+        except Exception:
+            return False
+    return False
+
+@login_required
+def branch_manager_dashboard(request, branch_id=None):
+    """
+    Render branch manager dashboard and wire Daily Sheets data.
+    If branch_id not provided, attempt to find branches managed by user and pick the first.
+    """
+    Branch = apps.get_model("branches", "Branch")
+    DaySheet, ShadowLogEvent, DaySheetShift = _get_models()
+
+    # Determine active branch
+    active_branch = None
+    branches = branch_service.get_user_branches(request.user) or []
+    if branch_id:
+        try:
+            branch_id_int = int(branch_id)
+            active_branch = next((b for b in branches if b["id"] == branch_id_int), None)
+            if not active_branch:
+                branch_obj = get_object_or_404(Branch, pk=branch_id_int)
+                if not _manager_of_branch(request.user, branch_obj):
+                    return HttpResponseForbidden("You are not manager of this branch.")
+                active_branch = {"id": branch_obj.pk, "name": getattr(branch_obj, "name", str(branch_obj))}
+        except Exception:
+            active_branch = None
+    else:
+        active_branch = branches[0] if branches else None
+
+    if not active_branch:
+        try:
+            if hasattr(request.user, "employee"):
+                br = getattr(request.user.employee, "branch", None)
+                if br:
+                    active_branch = {"id": br.pk, "name": getattr(br, "name", str(br))}
+        except Exception:
+            pass
+
+    if not active_branch:
+        return HttpResponseForbidden("No branch available for you to manage.")
+
+    # get branch model instance
+    branch_obj = get_object_or_404(Branch, pk=active_branch["id"])
+
+    if not _manager_of_branch(request.user, branch_obj):
+        return HttpResponseForbidden("You must be branch manager to access this page.")
+
+    # get today's sheet (create if missing)
+    try:
+        todays_sheet_obj, created = daysheet_service.get_or_create_daysheet_for_branch(branch_obj, user=request.user, now=timezone.now())
+    except Exception:
+        try:
+            today = timezone.localdate()
+            DaySheet = apps.get_model("jobs", "DaySheet")
+            todays_sheet_obj = DaySheet.objects.filter(branch=branch_obj, date=today).first()
+            created = False
+        except Exception:
+            todays_sheet_obj = None
+            created = False
+
+    # prepare digest for template
+    todays_sheet = {
+        "total_jobs": getattr(todays_sheet_obj, "total_jobs", 0),
+        "total_amount": getattr(todays_sheet_obj, "total_amount", 0),
+        "jobs_change_pct": (todays_sheet_obj.meta.get("jobs_change_pct") if getattr(todays_sheet_obj, "meta", None) else None) or 0,
+        "pending_amount": (todays_sheet_obj.meta.get("pending_amount") if getattr(todays_sheet_obj, "meta", None) else None) or 0,
+        "date": getattr(todays_sheet_obj, "date", None),
+    }
+
+    queue_items = branch_service.get_branch_queue_summary(branch_obj.pk) or []
+    queue_count = len(queue_items)
+
+    # recent shifts (simple digest)
+    recent_shifts = []
+    try:
+        DaySheetShift = apps.get_model("jobs", "DaySheetShift")
+        shifts = DaySheetShift.objects.filter(daysheet__branch=branch_obj).order_by("-created_at")[:8]
+        for s in shifts:
+            recent_shifts.append({
+                "id": s.pk,
+                "user_name": getattr(getattr(s, "user", None), "get_full_name", lambda: str(getattr(s, "user", None)))(),
+                "shift_start": getattr(s, "shift_start", None),
+                "shift_end": getattr(s, "shift_end", None),
+                "status": getattr(s, "status", None),
+            })
+    except Exception:
+        recent_shifts = []
+
+    # recent messages / activity (use ShadowLogEvent)
+    recent_messages = []
+    try:
+        ShadowLogEvent = apps.get_model("jobs", "ShadowLogEvent")
+        recent_qs = ShadowLogEvent.objects.filter(branch_id=branch_obj.pk).order_by("-timestamp")[:10]
+        for ev in recent_qs:
+            recent_messages.append({
+                "title": ev.event_type.replace("_", " ").title(),
+                "created_at": getattr(ev, "timestamp", None),
+            })
+    except Exception:
+        recent_messages = []
+
+    quick_record_url = f"/branches/{branch_obj.pk}/jobs/new/"
+    manager_dashboard_url = request.path
+    logout_url = getattr(request, "logout_url", "/accounts/logout/")
+    profile_picture_url = getattr(request.user, "profile_picture_url", None) or ""
+
+    context = {
+        "branch": branch_obj,
+        "branch_display": getattr(branch_obj, "name", str(branch_obj)),
+        "profile_picture_url": profile_picture_url,
+        "logout_url": logout_url,
+        "quick_record_url": quick_record_url,
+        "manager_dashboard_url": manager_dashboard_url,
+        "todays_sheet": todays_sheet,
+        "todays_sheet_obj": todays_sheet_obj,
+        "recent_shifts": recent_shifts,
+        "queue_items": queue_items,
+        "queue_count": queue_count,
+        "recent_messages": recent_messages,
+    }
+
+    return render(request, "branches/manager/branch_manager_dashboard.html", context)
+
+
+# -------------------------
+# Minimal manager actions (endpoints)
+# -------------------------
+@login_required
+@require_POST
+def daysheet_new(request, branch_id):
+    """Create a new DaySheet for branch (if none exists today)."""
+    Branch = apps.get_model("branches", "Branch")
+    branch_obj = get_object_or_404(Branch, pk=branch_id)
+
+    if not _manager_of_branch(request.user, branch_obj):
+        return JsonResponse({"ok": False, "detail": "Not allowed"}, status=403)
+
+    try:
+        sheet, created = daysheet_service.get_or_create_daysheet_for_branch(branch_obj, user=request.user, now=timezone.now())
+        return JsonResponse({"ok": True, "created": created, "daysheet_id": sheet.pk, "date": str(sheet.date)})
+    except Exception as e:
+        return JsonResponse({"ok": False, "detail": "Could not create daysheet", "error": str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def daysheet_close(request, branch_id):
+    """
+    Manager closes the day's sheet. Expects POST JSON payload: {"pin": "1234"}.
+    Returns JSON with success or error message.
+    """
+    Branch = apps.get_model("branches", "Branch")
+    DaySheet = apps.get_model("jobs", "DaySheet")
+    branch_obj = get_object_or_404(Branch, pk=branch_id)
+
+    if not _manager_of_branch(request.user, branch_obj):
+        return JsonResponse({"ok": False, "detail": "Not allowed"}, status=403)
+
+    # parse JSON safely
+    try:
+        import json
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        payload = request.POST.dict() if hasattr(request, "POST") else {}
+
+    pin = (payload.get("pin") or "").strip()
+    if not pin:
+        return JsonResponse({"ok": False, "detail": "PIN is required"}, status=400)
+
+    today = timezone.localdate()
+    daysheet = DaySheet.objects.filter(branch=branch_obj, date=today).first()
+    if not daysheet:
+        return JsonResponse({"ok": False, "detail": "No open daysheet for today"}, status=400)
+
+    try:
+        manager_service.manager_close_day(daysheet, request.user, pin=pin, now=timezone.now())
+        return JsonResponse({"ok": True, "detail": "Day closed", "daysheet_id": daysheet.pk})
+    except PermissionDenied:
+        return JsonResponse({"ok": False, "detail": "Invalid PIN"}, status=403)
+    except ValueError as ve:
+        return JsonResponse({"ok": False, "detail": str(ve)}, status=400)
+    except Exception as exc:
+        return JsonResponse({"ok": False, "detail": "Failed to close day", "error": str(exc)}, status=500)
+
+
+@login_required
+@require_POST
+def daysheet_lock(request, branch_id):
+    """
+    Lock/open the daysheet (manager action). Accepts POST JSON {'action':'lock'|'unlock'}
+    """
+    Branch = apps.get_model("branches", "Branch")
+    DaySheet = apps.get_model("jobs", "DaySheet")
+    branch_obj = get_object_or_404(Branch, pk=branch_id)
+
+    if not _manager_of_branch(request.user, branch_obj):
+        return JsonResponse({"ok": False, "detail": "Not allowed"}, status=403)
+
+    try:
+        import json
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        payload = request.POST.dict() if hasattr(request, "POST") else {}
+
+    action = payload.get("action")
+    if action not in ("lock", "unlock"):
+        return JsonResponse({"ok": False, "detail": "Invalid action"}, status=400)
+
+    try:
+        today = timezone.localdate()
+        daysheet = DaySheet.objects.filter(branch=branch_obj, date=today).first()
+        if not daysheet:
+            return JsonResponse({"ok": False, "detail": "No daysheet found for today"}, status=400)
+
+        daysheet.locked = (action == "lock")
+        daysheet.save(update_fields=["locked"])
+        return JsonResponse({"ok": True, "locked": daysheet.locked})
+    except Exception as exc:
+        return JsonResponse({"ok": False, "detail": "Failed to update lock", "error": str(exc)}, status=500)
+
+
+@login_required
+@require_POST
+def close_shift(request, branch_id, shift_id):
+    """
+    Close an open shift. Expects JSON payload: {'closing_cash': '100.00', 'pin': '1234'}.
+    Delegates to shift_service.close_shift.
+    """
+    Branch = apps.get_model("branches", "Branch")
+    DaySheetShift = apps.get_model("jobs", "DaySheetShift")
+    branch_obj = get_object_or_404(Branch, pk=branch_id)
+
+    if not _manager_of_branch(request.user, branch_obj):
+        return JsonResponse({"ok": False, "detail": "Not allowed"}, status=403)
+
+    try:
+        import json
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        payload = request.POST.dict() if hasattr(request, "POST") else {}
+
+    expected_keys = ("closing_cash", "pin")
+    if not all(k in payload for k in expected_keys):
+        return JsonResponse({"ok": False, "detail": "closing_cash and pin are required"}, status=400)
+
+    shift = DaySheetShift.objects.filter(pk=shift_id, daysheet__branch=branch_obj).first()
+    if not shift:
+        return JsonResponse({"ok": False, "detail": "Shift not found"}, status=404)
+
+    try:
+        closing_cash = payload.get("closing_cash")
+        pin = payload.get("pin")
+        shift_service.close_shift(shift, request.user, closing_cash=closing_cash, pin=pin, now=timezone.now())
+        return JsonResponse({"ok": True, "detail": "Shift closed", "shift_id": shift.pk})
+    except PermissionDenied:
+        return JsonResponse({"ok": False, "detail": "Invalid PIN"}, status=403)
+    except Exception as exc:
+        return JsonResponse({"ok": False, "detail": "Failed to close shift", "error": str(exc)}, status=500)

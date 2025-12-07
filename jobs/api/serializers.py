@@ -17,7 +17,6 @@ JobAttachment = apps.get_model("jobs", "JobAttachment")
 
 from jobs.services import job_service
 
-
 class JobAttachmentSerializer(serializers.ModelSerializer):
     uploaded_by = serializers.StringRelatedField(read_only=True)
 
@@ -40,8 +39,11 @@ class JobRecordSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "attachments", "created_at"]
 
     def validate(self, data):
-        # Optional: basic validation to ensure job exists and belongs to the branch the user is currently in
-        # (business rules may vary; keep lightweight here)
+        # ensure time_end >= time_start when provided
+        ts = data.get("time_start")
+        te = data.get("time_end")
+        if ts and te and te < ts:
+            raise serializers.ValidationError("time_end cannot be before time_start")
         return data
 
 
@@ -57,6 +59,19 @@ class JobSerializer(serializers.ModelSerializer):
             "queue_position","expected_ready_at","completed_at","created_by","created_at",
         ]
         read_only_fields = ["id","unit_price","total_amount","queue_position","expected_ready_at","completed_at","created_at","created_by","status"]
+
+    def validate(self, data):
+        # Basic validation
+        qty = data.get("quantity", 1) or 1
+        if int(qty) < 1:
+            raise serializers.ValidationError({"quantity": "Quantity must be at least 1"})
+        deposit = data.get("deposit_amount", 0) or 0
+        try:
+            if Decimal(str(deposit)) < 0:
+                raise serializers.ValidationError({"deposit_amount": "Deposit cannot be negative"})
+        except Exception:
+            raise serializers.ValidationError({"deposit_amount": "Invalid deposit amount"})
+        return data
 
     def create(self, validated_data):
         """
@@ -82,15 +97,11 @@ class JobSerializer(serializers.ModelSerializer):
             return job
 
         # Non-instant (queued) path: create snapshot and attach
-        # Basic validation
         if "branch" not in validated_data or "service" not in validated_data:
             raise serializers.ValidationError("branch and service are required for queued jobs")
 
-        # Use transaction to avoid partial state
         with transaction.atomic():
-            # copy data so we can manipulate
             data = dict(validated_data)
-            # snapshot unit_price: prefer service.price -> validated_data.price -> 0
             svc = validated_data.get("service")
             unit_price = getattr(svc, "price", None) or validated_data.get("price") or Decimal("0.00")
             try:
@@ -102,25 +113,28 @@ class JobSerializer(serializers.ModelSerializer):
             qty = int(validated_data.get("quantity", 1) or 1)
             deposit = validated_data.get("deposit_amount", 0) or 0
             try:
-                total = (Decimal(unit_price) * qty) - Decimal(deposit)
+                total = (Decimal(unit_price) * qty) - Decimal(str(deposit or 0))
             except Exception:
                 total = Decimal("0.00")
             if total < 0:
                 total = Decimal("0.00")
-            data["total_amount"] = total.quantize(Decimal("0.01")) if isinstance(total, Decimal) else Decimal(str(total)).quantize(Decimal("0.01"))
+            data["total_amount"] = total.quantize(Decimal("0.01"))
 
-            # set created_by if available
-            if user:
+            # if caller passed created_by via perform_create, prefer that value
+            created_by_override = validated_data.get("created_by") or self.initial_data.get("created_by")
+            if created_by_override and not isinstance(created_by_override, type(user)):
+                # ignore if not consistent; we'll instead prefer the request user below
+                created_by_override = None
+
+            if not data.get("created_by") and user:
                 data["created_by"] = user
 
-            # create job instance
             instance = Job.objects.create(**data)
 
-            # attach to daysheet (idempotent)
+            # attach to daysheet (idempotent) - best-effort
             try:
                 job_service.attach_job_to_daysheet_idempotent(instance, user=user, now=timezone.now())
             except Exception as exc:
                 logger.debug("attach_job_to_daysheet_idempotent failed for job %s: %s", getattr(instance, "pk", None), exc)
-                # swallow exceptions to keep API resilient
 
             return instance
