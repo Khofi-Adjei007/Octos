@@ -4,27 +4,42 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.views import APIView
+
 from django.shortcuts import render, get_object_or_404
 from django.apps import apps
 from django.utils import timezone
 from django.db import transaction
 import logging
 
-from .serializers import JobSerializer, JobRecordSerializer, JobAttachmentSerializer
+from .serializers import (
+    JobSerializer,
+    JobRecordSerializer,
+    JobAttachmentSerializer,
+    ServiceTypeSerializer,
+    ServicePricingRuleSerializer,
+)
+
 from jobs.services import job_service, shift_service, daysheet_service, anomaly_service
 
 logger = logging.getLogger(__name__)
 
+# =========================
 # Models
+# =========================
 Job = apps.get_model("jobs", "Job")
 JobRecord = apps.get_model("jobs", "JobRecord")
 JobAttachment = apps.get_model("jobs", "JobAttachment")
+ServiceType = apps.get_model("jobs", "ServiceType")
+ServicePricingRule = apps.get_model("jobs", "ServicePricingRule")
 
 
+# =========================
+# Permission mixin
+# =========================
 class ReadWritePermissionMixin:
     """
-    Returns readable permissions for safe methods and stricter permissions for unsafe ones.
-    Instances (not classes) are returned as DRF expects permission instances.
+    Safe methods are readable, unsafe methods require authentication.
     """
     def get_permissions(self):
         if self.request.method in ("GET", "HEAD", "OPTIONS"):
@@ -32,93 +47,77 @@ class ReadWritePermissionMixin:
         return [IsAuthenticated()]
 
 
+# =========================
+# Job APIs
+# =========================
 class JobViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
-    """
-    Job endpoint. Creation of instant jobs is delegated to job_service.create_instant_job via serializer.
-    Non-instant jobs snapshot unit_price/total and are attached to the day's DaySheet.
-    """
     queryset = Job.objects.select_related("branch", "service", "created_by").all()
     serializer_class = JobSerializer
 
     def get_queryset(self):
-        """
-        Allow optional filtering by branch via ?branch=<id> to make dashboard wiring easy.
-        """
         qs = super().get_queryset()
         branch = self.request.query_params.get("branch")
         if branch:
             try:
-                branch_id = int(branch)
-                qs = qs.filter(branch_id=branch_id)
+                qs = qs.filter(branch_id=int(branch))
             except Exception:
                 pass
         return qs
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
-        # ensure request is present in serializer context for job_service delegation
         ctx["request"] = self.request
         return ctx
 
     def perform_create(self, serializer):
-        """
-        Ensure created_by set when available. The serializer's create() will delegate instant-job
-        creation to job_service, but for queued jobs we still pass created_by as a kwarg so the
-        serializer/create has consistent info.
-        """
-        user = self.request.user if self.request and getattr(self.request, "user", None) and self.request.user.is_authenticated else None
-        try:
-            serializer.save(created_by=user)
-        except Exception as exc:
-            logger.exception("Job create failed: %s", exc)
-            raise
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(created_by=user)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def start(self, request, pk=None):
         job = self.get_object()
         if job.status == "in_progress":
-            return Response({"detail": "Job already in progress"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Job already in progress"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         job.status = "in_progress"
         job.save(update_fields=["status"])
         return Response(self.get_serializer(job).data)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def complete(self, request, pk=None):
-        """
-        Mark job completed, create a JobRecord, and attach job to daysheet in a transaction.
-        """
         job = self.get_object()
         if job.status == "completed":
-            return Response({"detail": "Job already completed"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Job already completed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         now = timezone.now()
-        try:
-            with transaction.atomic():
-                job.status = "completed"
-                job.completed_at = now
-                job.save(update_fields=["status", "completed_at"])
+        with transaction.atomic():
+            job.status = "completed"
+            job.completed_at = now
+            job.save(update_fields=["status", "completed_at"])
 
-                # Best-effort record creation (kept inside txn but guarded)
-                try:
-                    JobRecord.objects.create(
-                        job=job,
-                        performed_by=request.user if request.user and request.user.is_authenticated else None,
-                        time_start=now,
-                        time_end=now,
-                        quantity_produced=getattr(job, "quantity", 1) or 1,
-                        notes="Marked completed via API",
-                    )
-                except Exception as exc:
-                    logger.exception("Failed to create completion JobRecord for job %s: %s", getattr(job, "pk", None), exc)
+            try:
+                JobRecord.objects.create(
+                    job=job,
+                    performed_by=request.user,
+                    time_start=now,
+                    time_end=now,
+                    quantity_produced=job.quantity or 1,
+                    notes="Marked completed via API",
+                )
+            except Exception:
+                logger.exception("JobRecord creation failed during complete")
 
-                # Idempotent attach to daysheet
-                try:
-                    job_service.attach_job_to_daysheet_idempotent(job, user=request.user, now=now)
-                except Exception as exc:
-                    logger.exception("Failed to attach job %s to daysheet during complete action: %s", getattr(job, "pk", None), exc)
-        except Exception as exc:
-            logger.exception("Failed to complete job %s: %s", getattr(job, "pk", None), exc)
-            return Response({"detail": "Failed to complete job", "error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            try:
+                job_service.attach_job_to_daysheet_idempotent(
+                    job, user=request.user, now=now
+                )
+            except Exception:
+                logger.exception("attach_job_to_daysheet_idempotent failed during complete")
 
         return Response(self.get_serializer(job).data)
 
@@ -129,55 +128,41 @@ class JobRecordViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
     parser_classes = (MultiPartParser, FormParser)
 
     def perform_create(self, serializer):
-        """
-        Save record, attach job to daysheet idempotently, then run anomaly detectors.
-        """
-        request = self.request
-        user = request.user if request.user and request.user.is_authenticated else None
-
-        save_kwargs = {}
-        if not serializer.validated_data.get("performed_by") and user:
-            save_kwargs["performed_by"] = user
-
+        user = self.request.user if self.request.user.is_authenticated else None
+        instance = serializer.save(performed_by=user)
         try:
-            instance = serializer.save(**save_kwargs)
-        except Exception as exc:
-            logger.exception("Failed to save JobRecord via API: %s", exc)
-            raise
+            job_service.attach_job_to_daysheet_idempotent(
+                instance.job, user=user, now=timezone.now()
+            )
+            anomaly_service.detect_duplicate_job(instance.job)
+        except Exception:
+            logger.debug("Post JobRecord hooks failed")
 
-        # post-save hooks (best-effort)
-        try:
-            job = getattr(instance, "job", None)
-            if job:
-                try:
-                    job_service.attach_job_to_daysheet_idempotent(job, user=user, now=timezone.now())
-                except Exception as exc:
-                    logger.exception("attach_job_to_daysheet_idempotent failed for job %s: %s", getattr(job, "pk", None), exc)
-                try:
-                    anomaly_service.detect_duplicate_job(job)
-                except Exception as exc:
-                    logger.debug("anomaly_service.detect_duplicate_job raised: %s", exc)
-        except Exception as exc:
-            logger.exception("Post-save hooks for JobRecord failed: %s", exc)
-
-    @action(detail=True, methods=["post"], parser_classes=(MultiPartParser, FormParser), permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post"],
+        parser_classes=(MultiPartParser, FormParser),
+        permission_classes=[IsAuthenticated],
+    )
     def upload_attachment(self, request, pk=None):
         record = self.get_object()
         file_obj = request.FILES.get("file")
         if not file_obj:
-            return Response({"detail": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            att = JobAttachment.objects.create(
-                record=record,
-                file=file_obj,
-                uploaded_by=request.user if request.user.is_authenticated else None,
-                note=request.data.get("note", "")
+            return Response(
+                {"detail": "No file uploaded"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-            serializer = JobAttachmentSerializer(att, context={"request": request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Exception as exc:
-            logger.exception("Failed to save attachment for JobRecord %s: %s", getattr(record, "pk", None), exc)
-            return Response({"detail": "Attachment save failed", "error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        att = JobAttachment.objects.create(
+            record=record,
+            file=file_obj,
+            uploaded_by=request.user,
+            note=request.data.get("note", ""),
+        )
+        return Response(
+            JobAttachmentSerializer(att).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class JobAttachmentViewSet(ReadWritePermissionMixin, viewsets.ReadOnlyModelViewSet):
@@ -188,3 +173,39 @@ class JobAttachmentViewSet(ReadWritePermissionMixin, viewsets.ReadOnlyModelViewS
 def job_receipt(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     return render(request, "jobs/receipt.html", {"job": job})
+
+
+# ==================================================
+# READ-ONLY APIs (SERVICES + PRICING)
+# ==================================================
+
+class ServiceTypeListAPIView(APIView):
+    """
+    Expose available services to the UI.
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        services = ServiceType.objects.all().order_by("name")
+        serializer = ServiceTypeSerializer(services, many=True)
+        return Response(serializer.data)
+
+
+class ServicePricingRuleListAPIView(APIView):
+    """
+    Expose pricing rules for a specific service.
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, service_id):
+        rules = ServicePricingRule.objects.filter(
+            service_id=service_id,
+            is_active=True,
+        ).order_by(
+            "paper_size",
+            "print_mode",
+            "color_mode",
+            "side_mode",
+        )
+        serializer = ServicePricingRuleSerializer(rules, many=True)
+        return Response(serializer.data)

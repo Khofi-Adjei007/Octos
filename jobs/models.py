@@ -41,6 +41,116 @@ def job_attachment_upload_path(instance, filename):
     return f"jobs/{job_id}/attachments/{ts}_{filename}"
 
 
+
+class ServiceType(models.Model):
+    """
+    Canonical service definitions for the jobs domain.
+    We keep a local copy in jobs so jobs/processing can evolve independently
+    from branch capability records (branches.ServiceType).
+    """
+    code = models.CharField(max_length=64, unique=True, help_text="Short code (e.g. A4-COLOR, BIND-SPIRAL)")
+    name = models.CharField(max_length=150)
+    category = models.CharField(max_length=120, blank=True, null=True, help_text="e.g. Quick, Process")
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True,
+                                help_text="Default unit price (may be overridden per branch)")
+    avg_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True,
+                                    help_text="Estimated average price (ui hint)")
+    meta = models.JSONField(default=dict, blank=True, help_text="Extra attributes (paper size, sides, lamination)")
+    is_quick = models.BooleanField(default=True, help_text="If true, considered instant/walk-in service")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["category", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+    
+
+class ServicePricingRule(models.Model):
+    PRICING_TYPE_CHOICES = [
+        ("variant", "Variant-based"),
+        ("flat", "Flat"),
+    ]
+
+    PRINT_MODE_CHOICES = [
+        ("printout", "Printout"),
+        ("photocopy", "Photocopy"),
+    ]
+
+    COLOR_MODE_CHOICES = [
+        ("bw", "Black & White"),
+        ("color", "Color"),
+    ]
+
+    SIDE_MODE_CHOICES = [
+        ("single", "One-sided"),
+        ("double", "Double-sided"),
+    ]
+
+    PAPER_SIZE_CHOICES = [
+        ("A4", "A4"),
+        ("A3", "A3"),
+    ]
+
+    service_type = models.ForeignKey(
+        "jobs.ServiceType",
+        on_delete=models.CASCADE,
+        related_name="pricing_rules",
+    )
+
+    pricing_type = models.CharField(
+        max_length=10,
+        choices=PRICING_TYPE_CHOICES,
+        default="variant",
+    )
+
+    # ---- Variant fields (nullable for flat services) ----
+    paper_size = models.CharField(
+        max_length=2,
+        choices=PAPER_SIZE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    print_mode = models.CharField(
+        max_length=10,
+        choices=PRINT_MODE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    color_mode = models.CharField(
+        max_length=10,
+        choices=COLOR_MODE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    side_mode = models.CharField(
+        max_length=10,
+        choices=SIDE_MODE_CHOICES,
+        null=True,
+        blank=True,
+    )
+
+    unit_price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "service_type",
+                    "paper_size",
+                    "print_mode",
+                    "color_mode",
+                    "side_mode",
+                ],
+                name="unique_variant_pricing",
+            )
+        ]
+
+
 # -----------------------
 # Daily operational sheet for a branch (upgraded version)
 # -----------------------

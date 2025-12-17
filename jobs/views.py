@@ -32,19 +32,18 @@ def job_receipt(request, job_id):
 __all__ = ["JobViewSet", "JobRecordViewSet", "JobAttachmentViewSet", "job_receipt"]
 
 
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 from django.shortcuts import render
-from django.apps import apps
+from django.http import HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
 
-# compatibility facade helpers (delegates to class-based services)
-from .jobs_services import user_is_attendant, get_user_branches, get_branch_queue_summary
+# facade helpers / services (existing in your project)
+from jobs.jobs_services import user_is_attendant, get_user_branches, get_branch_queue_summary
 
 @login_required
 def attendant_dashboard(request):
     """
-    Renders the attendant dashboard.
-    Normalizes branches and services into simple dicts for templates/JS.
+    Renders the attendant dashboard. Attendants are always pinned to a single branch.
+    The branch is inferred from the user (employee.branch, user.branch) or fallback.
     """
     user = request.user
 
@@ -52,70 +51,53 @@ def attendant_dashboard(request):
     if not user_is_attendant(user):
         return HttpResponseForbidden("You are not permitted to access the attendant dashboard.")
 
-    # get branches this attendant can operate at (may be list of dicts or model instances)
-    raw_branches = get_user_branches(user) or []
+    # try to infer assigned branch (object or dict with id/name)
+    assigned_branch_obj = None
+    try:
+        emp = getattr(user, "employee", None)
+        if emp and getattr(emp, "branch", None):
+            assigned_branch_obj = emp.branch
+    except Exception:
+        assigned_branch_obj = None
 
-    # normalize branches => list of {'id': .., 'name': ..}
-    branches = []
-    for b in raw_branches:
-        if isinstance(b, dict):
-            branches.append({"id": b.get("id"), "name": b.get("name")})
-        else:
-            branches.append({"id": getattr(b, "pk", getattr(b, "id", None)), "name": getattr(b, "name", str(b))})
-
-    # branch selection via ?branch=ID
-    branch_param = request.GET.get("branch")
-    active_branch = None
-    if branch_param:
+    if not assigned_branch_obj:
+        # try direct attribute
         try:
-            branch_id = int(branch_param)
-            active_branch = next((br for br in branches if br["id"] == branch_id), None)
+            if getattr(user, "branch", None):
+                assigned_branch_obj = user.branch
         except Exception:
-            active_branch = None
+            assigned_branch_obj = None
 
-    # default to first branch if none chosen
-    if not active_branch and branches:
-        active_branch = branches[0]
+    # for template convenience build a lightweight dict for active_branch
+    active_branch = None
+    if assigned_branch_obj:
+        active_branch = {"id": getattr(assigned_branch_obj, "pk", getattr(assigned_branch_obj, "id", None)),
+                         "name": getattr(assigned_branch_obj, "name", str(assigned_branch_obj))}
+    else:
+        # fallback to facade that returns available branches as dicts
+        branches_list = get_user_branches(user) or []
+        if branches_list:
+            active_branch = branches_list[0]
 
-    # fetch queue summary for selected branch (list of dicts)
+    # provide 'branches' for compatibility (but attendants cannot switch in UI)
+    branches = []
+    try:
+        branches = get_user_branches(user) or []
+    except Exception:
+        branches = []
+
+    # queue for the active branch
     queue = []
-    if active_branch:
+    if active_branch and active_branch.get("id"):
         try:
-            queue = get_branch_queue_summary(active_branch["id"]) or []
+            queue = get_branch_queue_summary(active_branch["id"])
         except Exception:
             queue = []
-
-    # load ServiceType model and normalize service list for the modal
-    ServiceType = apps.get_model("branches", "ServiceType")
-    services = []
-    try:
-        qs = ServiceType.objects.all()
-        for s in qs:
-            meta = getattr(s, "meta", {}) or {}
-            # prefer explicit price, then meta.avg_price, then 0
-            price = getattr(s, "price", None)
-            if price is None:
-                price = meta.get("avg_price") or getattr(s, "avg_price", 0)
-            services.append({
-                "id": getattr(s, "pk", getattr(s, "id", None)),
-                "name": getattr(s, "name", getattr(s, "title", "Service")),
-                "price": price or 0,
-                "meta": meta,
-            })
-    except Exception:
-        services = []
-
-    # messages placeholder (replace with real messaging in future)
-    messages = []
 
     context = {
         "user": user,
         "branches": branches,
         "active_branch": active_branch,
         "queue": queue,
-        "services": services,
-        "messages": messages,
     }
-
     return render(request, "attendant/attendant_dashboard.html", context)
-
