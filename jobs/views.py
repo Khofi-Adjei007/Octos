@@ -12,8 +12,7 @@ from .jobs_services import (
     get_branch_queue_summary,
 )
 
-
-# If API viewsets live in jobs.api.views, re-export them for backward compatibility
+# attempt to import API viewsets
 try:
     from jobs.api.views import JobViewSet, JobRecordViewSet, JobAttachmentViewSet, job_receipt as api_job_receipt
 except Exception:
@@ -32,12 +31,7 @@ def job_receipt(request, job_id):
 __all__ = ["JobViewSet", "JobRecordViewSet", "JobAttachmentViewSet", "job_receipt"]
 
 
-from django.shortcuts import render
-from django.http import HttpResponseForbidden
-from django.contrib.auth.decorators import login_required
 
-# facade helpers / services (existing in your project)
-from jobs.jobs_services import user_is_attendant, get_user_branches, get_branch_queue_summary
 
 @login_required
 def attendant_dashboard(request):

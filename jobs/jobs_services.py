@@ -22,7 +22,6 @@ try:
         daysheet_service,
         shift_service,
         manager_service,
-        correction_service,
         anomaly_service,
         user_is_attendant_static,
     )

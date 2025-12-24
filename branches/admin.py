@@ -1,8 +1,7 @@
 # branches/admin.py
 from django.contrib import admin
 from .models import (
-    Country, Region, City, District, Location,
-    ServiceType, Branch
+    Country, Region, City, District, Location,Branch
 )
 
 @admin.register(Country)
@@ -33,10 +32,6 @@ class LocationAdmin(admin.ModelAdmin):
     search_fields = ('name', 'type', 'code')
     list_filter = ('type', 'is_active')
 
-@admin.register(ServiceType)
-class ServiceTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'created_at')
-    search_fields = ('name', 'code')
 
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin):

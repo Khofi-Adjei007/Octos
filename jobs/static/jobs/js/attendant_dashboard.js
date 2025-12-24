@@ -1,194 +1,365 @@
+/* ============================================================
+ * QUICK RECORD MODAL (OPEN / CLOSE)
+ * ============================================================ */
+const modal = document.querySelector("#record-job-quick-modal");
+const openBtn = document.querySelector("#record-job-btn");
+const closeBtn = document.querySelector("#quick-modal-close");
+const cancelBtn = document.querySelector("#modal-cancel");
+
+function openModal() {
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  document.body.classList.add("overflow-hidden");
+}
+
+function closeModal() {
+  if (!modal) return;
+  modal.classList.add("hidden");
+  document.body.classList.remove("overflow-hidden");
+}
+
+openBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  openModal();
+});
+
+closeBtn?.addEventListener("click", closeModal);
+cancelBtn?.addEventListener("click", closeModal);
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeModal();
+});
+
+
+
 (function () {
-  // ---------------- helpers ----------------
-  const $ = (id) => document.getElementById(id);
-  const qsAll = (sel) => Array.from(document.querySelectorAll(sel));
-  const on = (el, ev, fn) => el && el.addEventListener(ev, fn);
+  /* ============================================================
+   * HELPERS
+   * ============================================================ */
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
   function getCookie(name) {
     const m = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
     return m ? m.pop() : "";
   }
 
-  // ---------------- constants ----------------
+  /* ============================================================
+   * API ENDPOINTS
+   * ============================================================ */
   const API_BASE = "/api/jobs/";
   const SERVICES_ENDPOINT = API_BASE + "services/";
   const JOBS_ENDPOINT = API_BASE + "jobs/";
-  const RECEIPT_BASE = API_BASE + "receipt/";
 
-  // ---------------- elements ----------------
-  const quickModal = $("record-job-quick-modal");
-  const openQuickBtn = $("record-job-btn");
-  const closeQuickBtn = $("quick-modal-close");
-  const cancelQuickBtn = $("modal-cancel");
-  const quickForm = $("record-job-form");
+  /* ============================================================
+   * DOM REFERENCES (QUICK RECORD)
+   * ============================================================ */
+  const serviceLinesBox = $("#service-lines");
+  const addLineBtn = $("#add-service-line");
+  const summaryBox = $("#summary-lines");
+  const summaryTotal = $("#summary-total");
+  const form = $("#record-job-form");
+  const submitBtn = $("#modal-submit");
+  const feedback = $("#quick-feedback");
 
-  const serviceSelect = $("modal-service");
-  const qtyInput = $("modal-quantity");
-  const totalLabel = $("modal-total-amount");
+  const customerName = $("#modal-customer");
+  const customerPhone = $("#modal-phone");
+  const branchInput = $("#branch-select");
 
-  // ---------------- modal helpers ----------------
-  function openQuickModal() {
-    if (!quickModal) return;
-    quickModal.classList.remove("hidden");
-    document.body.classList.add("overflow-hidden");
+  /* ============================================================
+   * STATE
+   * ============================================================ */
+  let servicesCache = [];
+
+  /* ============================================================
+   * DATA LOADING
+   * ============================================================ */
+  async function loadServicesOnce() {
+    if (servicesCache.length) return servicesCache;
+
+    const resp = await fetch(SERVICES_ENDPOINT, { credentials: "same-origin" });
+    if (!resp.ok) throw new Error("Failed to load services");
+
+    servicesCache = await resp.json();
+    return servicesCache;
   }
 
-  function closeQuickModal() {
-    if (!quickModal) return;
-    quickModal.classList.add("hidden");
-    document.body.classList.remove("overflow-hidden");
+  /* ============================================================
+   * PRICING HELPERS
+   * ============================================================ */
+  function serviceHasVariants(service) {
+    return Array.isArray(service.pricing_rules) && service.pricing_rules.length > 1;
   }
 
-  on(openQuickBtn, "click", (e) => {
-    if (e) e.preventDefault();
-    openQuickModal();
+  function pricingRuleLabel(rule) {
+    const parts = [];
+    if (rule.paper_size) parts.push(rule.paper_size);
+    if (rule.color_mode) parts.push(rule.color_mode);
+    if (rule.side_mode) parts.push(rule.side_mode);
+    if (rule.print_mode) parts.push(rule.print_mode);
+    return parts.length ? parts.join(" • ") : "Standard";
+  }
+
+  function getUnitPriceBySelection(serviceId, ruleIndex = 0) {
+    const svc = servicesCache.find(s => String(s.id) === String(serviceId));
+    if (!svc || !svc.pricing_rules?.length) return 0;
+
+    const rule = svc.pricing_rules[ruleIndex] || svc.pricing_rules[0];
+    return parseFloat(rule.unit_price || "0");
+  }
+
+  /* ============================================================
+   * SERVICE SELECT POPULATION
+   * ============================================================ */
+  function populateServiceSelect(select) {
+    select.innerHTML = `<option value="">Select service</option>`;
+
+    servicesCache.forEach((svc) => {
+      if (!svc.is_quick) return;
+      const opt = document.createElement("option");
+      opt.value = svc.id;
+      opt.textContent = svc.name;
+      select.appendChild(opt);
+    });
+  }
+
+  /* ============================================================
+   * VARIANT SELECTOR
+   * ============================================================ */
+  function renderVariantSelect(line, serviceId) {
+    const svc = servicesCache.find(s => String(s.id) === String(serviceId));
+    if (!svc) return;
+
+    let container = line.querySelector(".variant-container");
+
+    if (!serviceHasVariants(svc)) {
+      if (container) container.remove();
+      return;
+    }
+
+    if (!container) {
+      container = document.createElement("div");
+      container.className = "variant-container w-full mt-2";
+      container.innerHTML = `
+        <label class="block text-xs mb-1">Options</label>
+        <select class="variant-select w-full border rounded px-2 py-2 text-sm"></select>
+      `;
+      line.querySelector(".flex-1").appendChild(container);
+    }
+
+    const select = container.querySelector(".variant-select");
+    select.innerHTML = "";
+
+    svc.pricing_rules.forEach((rule, idx) => {
+      const opt = document.createElement("option");
+      opt.value = String(idx);
+      opt.textContent = pricingRuleLabel(rule);
+      select.appendChild(opt);
+    });
+
+    select.addEventListener("change", renderSummary);
+  }
+
+  /* ============================================================
+   * SERVICE LINE CREATION
+   * ============================================================ */
+  function createServiceLine() {
+    const line = document.createElement("div");
+    line.className = "service-line flex items-end gap-2";
+
+    line.innerHTML = `
+      <div class="flex-1">
+        <label class="block text-xs mb-1">Service</label>
+        <select class="service-select w-full border rounded px-2 py-2 text-sm"></select>
+      </div>
+      <div class="w-24">
+        <label class="block text-xs mb-1">Qty</label>
+        <input type="number" class="service-qty w-full border rounded px-2 py-2 text-sm" min="1" value="1">
+      </div>
+      <button type="button" class="remove-line text-red-600">✕</button>
+    `;
+
+    const serviceSelect = line.querySelector(".service-select");
+    populateServiceSelect(serviceSelect);
+
+    line.querySelector(".remove-line").addEventListener("click", () => {
+      line.remove();
+      renderSummary();
+    });
+
+    bindLine(line);
+    serviceLinesBox.appendChild(line);
+  }
+
+  /* ============================================================
+   * SUMMARY CALCULATION
+   * ============================================================ */
+  function getLineData(line) {
+    const svcSelect = line.querySelector(".service-select");
+    const qtyInput = line.querySelector(".service-qty");
+    const variantSelect = line.querySelector(".variant-select");
+
+    if (!svcSelect || !qtyInput || !svcSelect.value) return null;
+
+    const qty = Math.max(1, parseInt(qtyInput.value || "1", 10));
+    const ruleIndex = variantSelect ? parseInt(variantSelect.value || "0", 10) : 0;
+    const unitPrice = getUnitPriceBySelection(svcSelect.value, ruleIndex);
+
+    return {
+      serviceId: svcSelect.value,
+      serviceName: svcSelect.selectedOptions[0].textContent,
+      quantity: qty,
+      unitPrice,
+      lineTotal: unitPrice * qty,
+      ruleIndex,
+    };
+  }
+
+  function renderSummary() {
+    summaryBox.innerHTML = "";
+
+    let grandTotal = 0;
+    let hasData = false;
+
+    $$(".service-line").forEach((line) => {
+      const data = getLineData(line);
+      if (!data) return;
+
+      hasData = true;
+      grandTotal += data.lineTotal;
+
+      summaryBox.insertAdjacentHTML(
+        "beforeend",
+        `
+        <div class="flex justify-between text-sm border-b pb-1">
+          <span>${data.serviceName} × ${data.quantity}</span>
+          <span>GHS ${data.lineTotal.toFixed(2)}</span>
+        </div>
+        `
+      );
+    });
+
+    summaryTotal.textContent = hasData
+      ? `GHS ${grandTotal.toFixed(2)}`
+      : "GHS —";
+  }
+
+  function bindLine(line) {
+    const serviceSelect = line.querySelector(".service-select");
+    const qtyInput = line.querySelector(".service-qty");
+
+    serviceSelect?.addEventListener("change", () => {
+      renderVariantSelect(line, serviceSelect.value);
+      renderSummary();
+    });
+
+    qtyInput?.addEventListener("input", renderSummary);
+  }
+
+  /* ============================================================
+   * INITIALIZATION
+   * ============================================================ */
+  document.addEventListener("DOMContentLoaded", async () => {
+    await loadServicesOnce();
+
+    const existingLines = $$(".service-line");
+
+    if (existingLines.length) {
+      existingLines.forEach((line) => {
+        const select = line.querySelector(".service-select");
+        if (select) populateServiceSelect(select);
+        bindLine(line);
+      });
+    } else {
+      createServiceLine();
+    }
+
+    renderSummary();
   });
-  on(closeQuickBtn, "click", closeQuickModal);
-  on(cancelQuickBtn, "click", closeQuickModal);
 
-  // ---------------- services loading ----------------
-  async function loadServices() {
-    if (!serviceSelect) return;
+  addLineBtn?.addEventListener("click", createServiceLine);
 
-    serviceSelect.innerHTML =
-      '<option value="">Loading services…</option>';
+  /* ============================================================
+   * FORM SUBMISSION
+   * ============================================================ */
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    feedback.textContent = "";
+
+    if (!branchInput?.value) {
+      feedback.textContent = "No branch assigned.";
+      return;
+    }
+
+    const lines = $$(".service-line");
+    if (!lines.length) {
+      feedback.textContent = "Add at least one service.";
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing…";
 
     try {
-      const resp = await fetch(SERVICES_ENDPOINT, {
-        credentials: "same-origin",
-      });
+      let lastJob = null;
 
-      if (!resp.ok) {
-        throw new Error("Failed to load services");
-      }
+      for (const line of lines) {
+        const data = getLineData(line);
+        if (!data) throw new Error("Select all services.");
 
-      const services = await resp.json();
-
-      serviceSelect.innerHTML =
-        '<option value="">Select service</option>';
-
-      services.forEach((svc) => {
-        // ✅ Quick Record only supports non-print quick services
-        if (!svc.is_quick || svc.is_print_service) return;
-
-        const opt = document.createElement("option");
-        opt.value = svc.id;
-        opt.textContent = svc.name;
-        serviceSelect.appendChild(opt);
-      });
-
-      // If nothing valid remains
-      if (serviceSelect.options.length === 1) {
-        serviceSelect.innerHTML =
-          '<option value="">No quick services available</option>';
-      }
-    } catch (err) {
-      console.error("Service load failed", err);
-      serviceSelect.innerHTML =
-        '<option value="">Unable to load services</option>';
-    }
-  }
-
-  // Load services once when page is ready
-  document.addEventListener("DOMContentLoaded", function () {
-    loadServices();
-  });
-
-  // ---------------- total label ----------------
-  function updateTotalPlaceholder() {
-    if (totalLabel) {
-      totalLabel.textContent = "Calculated at checkout";
-    }
-  }
-
-  on(serviceSelect, "change", updateTotalPlaceholder);
-  on(qtyInput, "input", updateTotalPlaceholder);
-
-  // ---------------- submit quick job ----------------
-  if (quickForm) {
-    quickForm.addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      const serviceId = serviceSelect.value;
-      const qty = Math.max(1, parseInt(qtyInput.value || "1", 10));
-
-      if (!serviceId) {
-        alert("Please select a service");
-        serviceSelect.focus();
-        return;
-      }
-
-      const submitBtn = $("modal-submit");
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Processing…";
-      }
-
-      try {
         const fd = new FormData();
-        fd.append("service", serviceId);
-        fd.append("quantity", qty);
+        fd.append("branch", branchInput.value);
+        fd.append("service", data.serviceId);
+        fd.append("quantity", data.quantity);
         fd.append("type", "instant");
-        fd.append("customer_name", $("modal-customer")?.value || "");
-        fd.append("customer_phone", $("modal-phone")?.value || "");
-        fd.append("description", $("modal-notes")?.value || "");
+        fd.append("customer_name", customerName.value || "");
+        fd.append("customer_phone", customerPhone.value || "");
+
+        const svc = servicesCache.find(s => String(s.id) === String(data.serviceId));
+        if (svc && svc.pricing_rules[data.ruleIndex]) {
+          const rule = svc.pricing_rules[data.ruleIndex];
+          fd.append("paper_size", rule.paper_size || "");
+          fd.append("print_mode", rule.print_mode || "");
+          fd.append("color_mode", rule.color_mode || "");
+          fd.append("side_mode", rule.side_mode || "");
+        }
 
         const resp = await fetch(JOBS_ENDPOINT, {
           method: "POST",
-          headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
+          headers: { "X-CSRFToken": getCookie("csrftoken") },
           body: fd,
           credentials: "same-origin",
         });
 
+        const resData = await resp.json();
         if (!resp.ok) {
-          let err = "Job creation failed";
-          try {
-            const j = await resp.json();
-            err = JSON.stringify(j);
-          } catch {}
-          throw new Error(err);
-        }
+  console.error("JOB CREATE ERROR", resData);
+  throw new Error(JSON.stringify(resData));
+}
 
-        const data = await resp.json();
-
-        // Open receipt
-        if (data && data.id) {
-          const urls = [
-            data.receipt_url,
-            "/jobs/receipt/" + data.id + "/",
-            RECEIPT_BASE + data.id + "/",
-          ];
-          for (const u of urls) {
-            if (!u) continue;
-            try {
-              window.open(u, "_blank");
-              break;
-            } catch {}
-          }
-        }
-
-        // reset
-        serviceSelect.selectedIndex = 0;
-        qtyInput.value = "1";
-        $("modal-customer").value = "";
-        $("modal-phone").value = "";
-        $("modal-notes").value = "";
-        updateTotalPlaceholder();
-
-        closeQuickModal();
-      } catch (err) {
-        console.error(err);
-        alert("Could not create job");
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Checkout";
-        }
+        lastJob = resData;
       }
-    });
-  }
 
-  console.debug("Attendant dashboard JS (API-driven services, filtered) loaded");
+      if (lastJob?.id) {
+        window.open(`/jobs/receipt/${lastJob.id}/`, "_blank");
+      }
+
+      serviceLinesBox.innerHTML = "";
+      createServiceLine();
+      customerName.value = "";
+      customerPhone.value = "";
+      closeModal();
+    } catch (err) {
+      feedback.textContent = err.message;
+    } finally {
+      console.log(
+  "Submitting services:",
+  servicesCache.map(s => ({ id: s.id, name: s.name }))
+);
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Checkout";
+    }
+  });
+
 })();

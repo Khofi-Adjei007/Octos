@@ -158,13 +158,44 @@ def _branch_snapshot(branch):
     }
 
 
+from decimal import Decimal
+from typing import Optional, Tuple
+from datetime import timedelta
+import logging
+
+from django.db import transaction
+from django.db.models import F
+from django.utils import timezone
+
+from jobs.models import (
+    Job,
+    JobRecord,
+    DaySheet,
+    ServiceType,
+    ServicePricingRule,
+)
+from decimal import Decimal
+from typing import Optional, Tuple
+import logging
+
+from django.db import transaction
+from django.db.models import F
+from django.utils import timezone
+
+from jobs.models import Job, JobRecord, ServiceType, ServicePricingRule
+from .models import DaySheet, DaySheetShift, StatusLog, ShadowLogEvent, CorrectionEntry, AnomalyFlag
+
+
+logger = logging.getLogger(__name__)
+
+
 # ---------------------------
 # Primary services
 # ---------------------------
 class JobService(BaseService):
 
     # -------------------------------------------------
-    # PRINT SERVICE ENFORCEMENT
+    # PRINT SERVICE HELPERS
     # -------------------------------------------------
     def _is_print_service(self, service: ServiceType) -> bool:
         return service.code in {"A4_PRINT", "A3_PRINT"}
@@ -178,6 +209,10 @@ class JobService(BaseService):
         color_mode: str,
         side_mode: str,
     ):
+        """
+        Enforce print variants ONLY for print services,
+        and ONLY when variants are being supplied.
+        """
         if not self._is_print_service(service):
             return
 
@@ -196,83 +231,80 @@ class JobService(BaseService):
                 f"Missing required print options for {service.code}: {', '.join(missing)}"
             )
 
-    # -------------------------------------------------
-    # EXISTING LOGIC (UNCHANGED)
-    # -------------------------------------------------
-    def attach_job_to_daysheet_idempotent(self, job: Job, user=None, daysheet: DaySheet = None, now=None) -> Tuple[DaySheet, bool, bool]:
+    def attach_job_to_daysheet_idempotent(
+        self,
+        job: Job,
+        user=None,
+        daysheet: DaySheet = None,
+        now=None,
+    ) -> Tuple[DaySheet, bool, bool]:
+
         if job is None:
             raise ValueError("job is required")
+
         now = now or timezone.now()
 
         with transaction.atomic():
+            # 🔒 Lock the job
             job = Job.objects.select_for_update().get(pk=job.pk)
 
-            if getattr(job, "daysheet_id", None):
-                try:
-                    existing_ds = DaySheet.objects.get(pk=job.daysheet_id)
-                except DaySheet.DoesNotExist:
-                    existing_ds = None
-                return existing_ds, False, False
+            # ✅ Idempotent exit
+            if job.daysheet_id:
+                return job.daysheet, False, False
 
-            meta = getattr(job, "meta", {}) or {}
-            if meta.get("attached_to_daysheet"):
-                existing_ds = None
-                try:
-                    existing_ds = DaySheet.objects.filter(meta__contains={"job_ref": job.pk}).first()
-                except Exception:
-                    existing_ds = None
-                return existing_ds, False, False
-
+            # Resolve / lock daysheet
             if daysheet is None:
-                daysheet, created = DaySheetService(self.hq, self.pin_verifier).get_or_create_daysheet_for_branch(
+                daysheet, created = DaySheetService(
+                    self.hq, self.pin_verifier
+                ).get_or_create_daysheet_for_branch(
                     job.branch, user=user, now=now
                 )
             else:
-                daysheet = DaySheet.objects.select_for_update().get(pk=daysheet.pk)
                 created = False
 
-            try:
-                unit_price = Decimal(getattr(job, "unit_price", None) or getattr(job, "price", None) or 0)
-            except Exception:
-                unit_price = Decimal("0.00")
+            # 🔒 Lock the daysheet row
+            daysheet = DaySheet.objects.select_for_update().get(pk=daysheet.pk)
 
-            try:
-                deposit = Decimal(getattr(job, "deposit_amount", 0) or 0)
-            except Exception:
-                deposit = Decimal("0.00")
-
-            qty = int(getattr(job, "quantity", 1) or 1)
-            total_for_job = (unit_price * qty) - deposit
-            if total_for_job < 0:
-                total_for_job = Decimal("0.00")
-
+            # ✅ TRUST THE JOB TOTAL (single source of truth)
+            total_for_job = Decimal(job.total_amount or 0)
             payment_type = AnomalyService._infer_payment_type_from_job_static(job)
 
-            DaySheet.objects.filter(pk=daysheet.pk).update(
-                total_jobs=F("total_jobs") + 1,
-                total_amount=F("total_amount") + total_for_job,
-            )
+            # Update aggregates safely
+            daysheet.total_jobs = F("total_jobs") + 1
+            daysheet.total_amount = F("total_amount") + total_for_job
+            daysheet.save(update_fields=["total_jobs", "total_amount"])
 
+            # Attach job
             job.daysheet = daysheet
-            meta["attached_to_daysheet"] = True
-            job.meta = meta
-            job.save()
+            job.save(update_fields=["daysheet"])
 
-            actor = {"user_id": getattr(user, "pk", None), "role": getattr(user, "role", None) if user else None}
             payload = {
-                "daily_sheet_date": str(daysheet.date),
-                "daily_sheet_id": str(daysheet.pk),
                 "job_id": str(job.pk),
-                "service": getattr(job.service, "name", None),
+                "service": job.service.name,
                 "total_amount": float(total_for_job),
                 "payment_type": payment_type,
                 "timestamp": now.isoformat(),
             }
-            self._create_status_log("DaySheet", str(daysheet.pk), "JOB_ATTACHED", actor=actor, payload=payload)
-            self._create_shadow_event("JOB_ATTACHED", getattr(job.branch, "pk", None), actor=actor, payload=payload)
+
+            self._create_status_log(
+                "DaySheet", str(daysheet.pk), "JOB_ATTACHED", payload=payload
+            )
+            self._create_shadow_event(
+                "JOB_ATTACHED",
+                str(job.branch.pk),
+                actor={
+                    "user_id": getattr(user, "pk", None),
+                    "role": getattr(getattr(user, "role", None), "code", None),
+                },
+                payload=payload,
+            )
+
 
             return daysheet, created, True
 
+    # -------------------------------------------------
+    # INSTANT JOB CREATION (PATCHED)
+    # -------------------------------------------------
     def create_instant_job(
         self,
         *,
@@ -291,14 +323,14 @@ class JobService(BaseService):
     ):
         svc = ServiceType.objects.get(pk=service_id)
 
-        # ✅ ENFORCE PRINT VARIANTS HERE
-        self._validate_print_variants(
-            service=svc,
-            paper_size=paper_size,
-            print_mode=print_mode,
-            color_mode=color_mode,
-            side_mode=side_mode,
-        )
+        if any([paper_size, print_mode, color_mode, side_mode]):
+            self._validate_print_variants(
+                service=svc,
+                paper_size=paper_size,
+                print_mode=print_mode,
+                color_mode=color_mode,
+                side_mode=side_mode,
+            )
 
         unit_price = self.resolve_unit_price_safe(
             service=svc,
@@ -310,9 +342,7 @@ class JobService(BaseService):
 
         qty = int(quantity or 1)
         deposit = Decimal(deposit or 0)
-        total = (unit_price * qty) - deposit
-        if total < 0:
-            total = Decimal("0.00")
+        total = max(Decimal("0.00"), (unit_price * qty) - deposit)
 
         now = timezone.now()
 
@@ -331,12 +361,6 @@ class JobService(BaseService):
                 status="completed",
                 completed_at=now,
                 created_by=created_by,
-                meta={
-                    "paper_size": paper_size,
-                    "print_mode": print_mode,
-                    "color_mode": color_mode,
-                    "side_mode": side_mode,
-                },
             )
 
             JobRecord.objects.create(
@@ -348,15 +372,14 @@ class JobService(BaseService):
                 notes="Instant job (auto-priced)",
             )
 
-            DaySheetService(self.hq, self.pin_verifier).get_or_create_daysheet_for_branch(
+            DaySheetService(
+                self.hq, self.pin_verifier
+            ).get_or_create_daysheet_for_branch(
                 job.branch, user=created_by, now=now
             )
+
             self.attach_job_to_daysheet_idempotent(job, user=created_by, now=now)
 
-            actor = {
-                "user_id": getattr(created_by, "pk", None),
-                "role": getattr(created_by, "role", None) if created_by else None,
-            }
             payload = {
                 "job_id": str(job.pk),
                 "branch_id": str(branch_id),
@@ -366,13 +389,28 @@ class JobService(BaseService):
                 "total_amount": float(job.total_amount),
                 "timestamp": now.isoformat(),
             }
-            self._create_status_log("Job", str(job.pk), "JOB_CREATED_INSTANT", actor=actor, payload=payload)
-            self._create_shadow_event("JOB_CREATED_INSTANT", branch_id, actor=actor, payload=payload)
+
+            self._create_status_log(
+                "Job", str(job.pk), "JOB_CREATED_INSTANT", payload=payload
+            )
+            actor = {
+            "user_id": getattr(created_by, "pk", None),
+            "role": getattr(getattr(created_by, "role", None), "code", None),
+        }
+
+        self._create_shadow_event(
+            "JOB_CREATED_INSTANT",
+            str(branch_id),
+            actor=actor,
+            payload=payload,
+        )
+
+
 
         return job
 
     # -------------------------------------------------
-    # PRICING (UNCHANGED)
+    # PRICING
     # -------------------------------------------------
     def resolve_unit_price(
         self,
@@ -383,21 +421,15 @@ class JobService(BaseService):
         color_mode: str = None,
         side_mode: str = None,
     ) -> Decimal:
-        try:
-            rule = ServicePricingRule.objects.get(
-                service_type=service,
-                is_active=True,
-                paper_size=paper_size,
-                print_mode=print_mode,
-                color_mode=color_mode,
-                side_mode=side_mode,
-            )
-            return rule.unit_price
-        except ServicePricingRule.DoesNotExist:
-            raise ValueError(
-                f"No pricing rule found for {service.code} "
-                f"[{paper_size}, {print_mode}, {color_mode}, {side_mode}]"
-            )
+        rule = ServicePricingRule.objects.get(
+            service_type=service,
+            is_active=True,
+            paper_size=paper_size,
+            print_mode=print_mode,
+            color_mode=color_mode,
+            side_mode=side_mode,
+        )
+        return rule.unit_price
 
     def resolve_unit_price_safe(
         self,
@@ -417,23 +449,28 @@ class JobService(BaseService):
                 side_mode=side_mode,
             )
         except Exception:
-            pass
-
-        rule = ServicePricingRule.objects.filter(
-            service_type=service,
-            pricing_type="flat",
-            is_active=True,
-        ).first()
-
-        if rule:
-            return rule.unit_price
+            rule = ServicePricingRule.objects.filter(
+                service_type=service,
+                pricing_type="flat",
+                is_active=True,
+            ).first()
+            if rule:
+                return rule.unit_price
 
         return Decimal(getattr(service, "price", "0.00") or "0.00")
 
 
 
 class DaySheetService(BaseService):
-    def get_or_create_daysheet_for_branch(self, branch, user=None, now=None, allow_reopen=False, shift_name=None) -> Tuple[DaySheet, bool]:
+    def get_or_create_daysheet_for_branch(
+        self,
+        branch,
+        user=None,
+        now=None,
+        allow_reopen=False,
+        shift_name=None
+    ) -> Tuple[DaySheet, bool]:
+
         now = now or timezone.now()
         date_local = _local_date_for_branch(now, branch)
         weekday = date_local.strftime("%A")
@@ -441,7 +478,11 @@ class DaySheetService(BaseService):
         with transaction.atomic():
             sheet = (
                 DaySheet.objects.select_for_update()
-                .filter(branch=branch, date=date_local, status=DaySheet.STATUS_OPEN)
+                .filter(
+                    branch=branch,
+                    date=date_local,
+                    status=DaySheet.STATUS_OPEN
+                )
                 .first()
             )
             if sheet:
@@ -462,11 +503,33 @@ class DaySheetService(BaseService):
                 shift_name=shift_name or None,
                 meta={},
             )
+
+            actor = {
+                "user_id": getattr(user, "pk", None),
+                "role": getattr(getattr(user, "role", None), "code", None),
+            }
+
             try:
-                self._create_status_log("DaySheet", str(sheet.pk), "DAY_SHEET_CREATED", actor={"user_id": getattr(user, "pk", None), "role": getattr(user, "role", None) if user else None}, payload={"date": str(sheet.date)})
-                self._create_shadow_event("DAY_SHEET_CREATED", getattr(branch, "pk", None), actor={"user_id": getattr(user, "pk", None)}, payload={"date": str(sheet.date)})
+                self._create_status_log(
+                    "DaySheet",
+                    str(sheet.pk),
+                    "DAY_SHEET_CREATED",
+                    actor=actor,
+                    payload={"date": str(sheet.date)},
+                )
+                self._create_shadow_event(
+                    "DAY_SHEET_CREATED",
+                    getattr(branch, "pk", None),
+                    actor=actor,
+                    payload={"date": str(sheet.date)},
+                )
             except Exception as exc:
-                logger.exception("DaySheetService: failed to create status or shadow log for daysheet %s: %s", getattr(sheet, "pk", None), exc)
+                logger.exception(
+                    "DaySheetService: failed to create status or shadow log for daysheet %s: %s",
+                    getattr(sheet, "pk", None),
+                    exc,
+                )
+
             return sheet, True
 
 
@@ -486,7 +549,11 @@ class ShiftService(BaseService):
                 status=DaySheetShift.SHIFT_OPEN,
                 opening_cash=Decimal("0.00"),
             )
-            actor = {"user_id": getattr(user, "pk", None), "role": getattr(user, "role", None) if user else None}
+            actor = {"user_id": getattr(user, "pk", None),
+                "user_id": getattr(user, "pk", None),
+                "role": getattr(getattr(user, "role", None), "code", None),
+            }
+
             payload = {"shift_id": str(shift.pk), "daysheet_id": str(daysheet.pk), "timestamp": now.isoformat()}
             try:
                 self._create_status_log("DaySheetShift", str(shift.pk), "SHIFT_STARTED", actor=actor, payload=payload)
@@ -511,7 +578,11 @@ class ShiftService(BaseService):
             shift.pin_verified_by = user
             shift.submitted = True
             shift.save()
-            actor = {"user_id": getattr(user, "pk", None), "role": getattr(user, "role", None) if user else None}
+            actor = {"user_id": getattr(user, "pk", None),
+                "user_id": getattr(user, "pk", None),
+                "role": getattr(getattr(user, "role", None), "code", None),
+            }
+
             payload = {
                 "shift_id": str(shift.pk),
                 "daysheet_id": str(shift.daysheet.pk),
@@ -857,75 +928,127 @@ class BranchService(BaseService):
             return False
 
     def get_branch_queue_summary(self, branch_id, limit: int = 20) -> list:
-        """
-        Return a list of job summary dicts for the given branch.
-        Each entry:
-          {
-            'id': int,
-            'customer_name': str,
-            'service': str,
-            'status': str,
-            'eta': ISO timestamp or None,
-            'created_at': ISO timestamp,
-            'queue_position': int or None,
-            'total_amount': float,
-            'created_by': username or None,
-            'quantity': int
-          }
-        """
-        Job = None
-        try:
-            from django.apps import apps
-            Job = apps.get_model("jobs", "Job")
-        except Exception:
+            """
+            Return a list of job summary dicts for the given branch.
+            Each entry:
+            {
+                'id': int,
+                'customer_name': str,
+                'service': str,
+                'status': str,
+                'eta': ISO timestamp or None,
+                'created_at': ISO timestamp,
+                'queue_position': int or None,
+                'total_amount': float,
+                'created_by': username or None,
+                'quantity': int
+            }
+            """
             Job = None
-
-        if Job is None:
-            return []
-
-        try:
-            # prefer queued / in_progress / ready statuses
-            statuses = ["queued", "in_progress", "ready"]
-            qs = Job.objects.filter(branch_id=branch_id, status__in=statuses).order_by("queue_position", "created_at")[:limit]
-            results = []
-            for j in qs:
-                results.append({
-                    "id": j.pk,
-                    "customer_name": getattr(j, "customer_name", "") or "",
-                    "service": getattr(getattr(j, "service", None), "name", "") if getattr(j, "service", None) else "",
-                    "status": getattr(j, "status", "") or "",
-                    "eta": getattr(j, "expected_ready_at", None).isoformat() if getattr(j, "expected_ready_at", None) else None,
-                    "created_at": getattr(j, "created_at", None).isoformat() if getattr(j, "created_at", None) else None,
-                    "queue_position": getattr(j, "queue_position", None),
-                    "total_amount": float(getattr(j, "total_amount", 0) or 0),
-                    "created_by": getattr(getattr(j, "created_by", None), "username", None) if getattr(j, "created_by", None) else None,
-                    "quantity": int(getattr(j, "quantity", 1) or 1),
-                })
-            return results
-        except Exception as exc:
-            logger.debug("BranchService.get_branch_queue_summary: primary query failed, trying fallback ordering: %s", exc)
-            # try a more permissive ordering if queue_position doesn't exist
             try:
-                qs = Job.objects.filter(branch_id=branch_id, status__in=statuses).order_by("created_at")[:limit]
+                from django.apps import apps
+                Job = apps.get_model("jobs", "Job")
+            except Exception:
+                Job = None
+
+            if Job is None:
+                return []
+
+            try:
+                statuses = ["queued", "in_progress", "ready"]
+                qs = (
+                    Job.objects
+                    .filter(branch_id=branch_id, status__in=statuses)
+                    .order_by("queue_position", "created_at")[:limit]
+                )
+
                 results = []
                 for j in qs:
+                    try:
+                        service_name = j.service.name
+                    except Exception:
+                        service_name = ""
+
                     results.append({
                         "id": j.pk,
                         "customer_name": getattr(j, "customer_name", "") or "",
-                        "service": getattr(getattr(j, "service", None), "name", "") if getattr(j, "service", None) else "",
+                        "service": service_name,
                         "status": getattr(j, "status", "") or "",
-                        "eta": getattr(j, "expected_ready_at", None).isoformat() if getattr(j, "expected_ready_at", None) else None,
-                        "created_at": getattr(j, "created_at", None).isoformat() if getattr(j, "created_at", None) else None,
+                        "eta": (
+                            j.expected_ready_at.isoformat()
+                            if getattr(j, "expected_ready_at", None)
+                            else None
+                        ),
+                        "created_at": (
+                            j.created_at.isoformat()
+                            if getattr(j, "created_at", None)
+                            else None
+                        ),
                         "queue_position": getattr(j, "queue_position", None),
                         "total_amount": float(getattr(j, "total_amount", 0) or 0),
-                        "created_by": getattr(getattr(j, "created_by", None), "username", None) if getattr(j, "created_by", None) else None,
+                        "created_by": (
+                            getattr(j.created_by, "username", None)
+                            if getattr(j, "created_by", None)
+                            else None
+                        ),
                         "quantity": int(getattr(j, "quantity", 1) or 1),
                     })
-                return results
-            except Exception:
-                logger.exception("BranchService.get_branch_queue_summary fallback query failed for branch %s", branch_id)
-                return []
 
+                return results
+
+            except Exception as exc:
+                logger.debug(
+                    "BranchService.get_branch_queue_summary: primary query failed, trying fallback ordering: %s",
+                    exc,
+                )
+
+                try:
+                    qs = (
+                        Job.objects
+                        .filter(branch_id=branch_id, status__in=statuses)
+                        .order_by("created_at")[:limit]
+                    )
+
+                    results = []
+                    for j in qs:
+                        try:
+                            service_name = j.service.name
+                        except Exception:
+                            service_name = ""
+
+                        results.append({
+                            "id": j.pk,
+                            "customer_name": getattr(j, "customer_name", "") or "",
+                            "service": service_name,
+                            "status": getattr(j, "status", "") or "",
+                            "eta": (
+                                j.expected_ready_at.isoformat()
+                                if getattr(j, "expected_ready_at", None)
+                                else None
+                            ),
+                            "created_at": (
+                                j.created_at.isoformat()
+                                if getattr(j, "created_at", None)
+                                else None
+                            ),
+                            "queue_position": getattr(j, "queue_position", None),
+                            "total_amount": float(getattr(j, "total_amount", 0) or 0),
+                            "created_by": (
+                                getattr(j.created_by, "username", None)
+                                if getattr(j, "created_by", None)
+                                else None
+                            ),
+                            "quantity": int(getattr(j, "quantity", 1) or 1),
+                        })
+
+                    return results
+
+                except Exception:
+                    logger.exception(
+                        "BranchService.get_branch_queue_summary fallback query failed for branch %s",
+                        branch_id,
+                    )
+                    return []
 
 
 

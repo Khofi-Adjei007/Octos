@@ -1375,6 +1375,10 @@ select {
   justify-content: space-between;
 }
 
+.gap-0 {
+  gap: 0px;
+}
+
 .gap-10 {
   gap: 2.5rem;
 }
@@ -1547,6 +1551,10 @@ select {
 
 .border-l-4 {
   border-left-width: 4px;
+}
+
+.border-r {
+  border-right-width: 1px;
 }
 
 .border-t {
@@ -2067,6 +2075,11 @@ select {
   padding-right: 1rem;
 }
 
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
 .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -2153,8 +2166,8 @@ select {
   padding-top: 0.5rem;
 }
 
-.pt-20 {
-  padding-top: 5rem;
+.pt-3 {
+  padding-top: 0.75rem;
 }
 
 .pt-4 {

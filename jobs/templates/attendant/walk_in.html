@@ -1,68 +1,143 @@
-        <!-- Create Walk-in Job -->
-          <div class="md:col-span-1 bg-white">
-            <h3 class="text-sm font-semibold mb-2 text-red-700">Create Walk-in Job</h3>
+<!-- Create Walk-in Job -->
+<div class="md:col-span-1 bg-white">
+  <h3 class="text-sm font-semibold mb-2 text-red-700">Create Walk-in Job</h3>
 
-            <form id="create-job-form" class="space-y-3" enctype="multipart/form-data">
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Service</label>
-                <select id="service" name="service" class="w-full border rounded px-3 py-2 text-sm" required>
-                  <option value="">— select service —</option>
-                  {% for s in services %}
-                    <option value="{{ s.id }}" data-price="{{ s.price }}">{{ s.name }} — GHS {{ s.price }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+  <form id="create-job-form" class="space-y-3" enctype="multipart/form-data">
 
-              <div class="grid grid-cols-3 gap-2">
-                <div class="col-span-2">
-                  <label class="block text-xs text-gray-600 mb-1">Quantity</label>
-                  <input id="quantity" name="quantity" type="number" min="1" value="1" class="w-full border rounded px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-600 mb-1">Priority</label>
-                  <select id="priority" name="priority" class="w-full border rounded px-3 py-2 text-sm">
-                    <option value="normal" selected>Normal</option>
-                    <option value="express">Express</option>
-                  </select>
-                </div>
-              </div>
+    <!-- SERVICE -->
+    <div>
+      <label class="block text-xs text-gray-600 mb-1">Service</label>
+      <select id="service" name="service" class="w-full border rounded px-3 py-2 text-sm" required>
+        <option value="">— select service —</option>
+        {% for s in services %}
+          <option
+            value="{{ s.id }}"
+            data-is-print="{{ s.is_print_service|yesno:'true,false' }}"
+          >
+            {{ s.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
 
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Customer name</label>
-                <input id="customer_name" name="customer_name" type="text" class="w-full border rounded px-3 py-2 text-sm" placeholder="Customer full name" />
-              </div>
+    <!-- ================= PRINT VARIANTS (HIDDEN BY DEFAULT) ================= -->
+    <div id="print-variants" class="space-y-3 hidden">
 
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Phone</label>
-                <input id="customer_phone" name="customer_phone" type="tel" class="w-full border rounded px-3 py-2 text-sm" placeholder="+233..." />
-              </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">Paper size</label>
+          <select name="paper_size" id="paper_size" class="w-full border rounded px-3 py-2 text-sm">
+            <option value="">Select</option>
+            <option value="A4">A4</option>
+            <option value="A3">A3</option>
+          </select>
+        </div>
 
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Deposit (GHS)</label>
-                <input id="deposit_amount" name="deposit_amount" type="number" min="0" step="0.01" value="0.00" class="w-full border rounded px-3 py-2 text-sm" />
-              </div>
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">Print mode</label>
+          <select name="print_mode" id="print_mode" class="w-full border rounded px-3 py-2 text-sm">
+            <option value="">Select</option>
+            <option value="printout">Printout</option>
+            <option value="photocopy">Photocopy</option>
+          </select>
+        </div>
+      </div>
 
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Notes</label>
-                <textarea id="notes" name="description" rows="2" class="w-full border rounded px-3 py-2 text-sm" placeholder="Job details..."></textarea>
-              </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">Color</label>
+          <select name="color_mode" id="color_mode" class="w-full border rounded px-3 py-2 text-sm">
+            <option value="">Select</option>
+            <option value="bw">Black & White</option>
+            <option value="color">Color</option>
+          </select>
+        </div>
 
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Attach file</label>
-                <input id="attachment" name="attachment" type="file" class="text-sm" accept="image/*,.pdf" />
-              </div>
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">Sides</label>
+          <select name="side_mode" id="side_mode" class="w-full border rounded px-3 py-2 text-sm">
+            <option value="">Select</option>
+            <option value="single">One-sided</option>
+            <option value="double">Double-sided</option>
+          </select>
+        </div>
+      </div>
 
-              <!-- price + total -->
-              <div class="flex items-center justify-between text-sm mt-1">
-                <div>Unit: GHS <span id="unit-price">0.00</span></div>
-                <div class="font-semibold">Total: GHS <span id="line-total">0.00</span></div>
-              </div>
+    </div>
+    <!-- ================= END PRINT VARIANTS ================= -->
 
-              <div class="flex items-center gap-2 pt-2">
-                <button id="btn-create-print" type="button" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded text-sm font-semibold">Create & Print</button>
-                <button id="btn-create-pay" type="button" class="flex-1 border border-red-200 hover:border-red-300 py-2 rounded text-sm">Create & Pay</button>
-              </div>
+    <!-- QUANTITY + PRIORITY -->
+    <div class="grid grid-cols-3 gap-2">
+      <div class="col-span-2">
+        <label class="block text-xs text-gray-600 mb-1">Quantity</label>
+        <input id="quantity" name="quantity" type="number" min="1" value="1"
+               class="w-full border rounded px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-600 mb-1">Priority</label>
+        <select id="priority" name="priority" class="w-full border rounded px-3 py-2 text-sm">
+          <option value="normal" selected>Normal</option>
+          <option value="express">Express</option>
+        </select>
+      </div>
+    </div>
 
-              <div id="create-feedback" class="text-sm text-gray-600 mt-2"></div>
-            </form>
-          </div>
+    <!-- CUSTOMER -->
+    <div>
+      <label class="block text-xs text-gray-600 mb-1">Customer name</label>
+      <input id="customer_name" name="customer_name" type="text"
+             class="w-full border rounded px-3 py-2 text-sm"
+             placeholder="Customer full name" />
+    </div>
+
+    <div>
+      <label class="block text-xs text-gray-600 mb-1">Phone</label>
+      <input id="customer_phone" name="customer_phone" type="tel"
+             class="w-full border rounded px-3 py-2 text-sm"
+             placeholder="+233..." />
+    </div>
+
+    <!-- DEPOSIT -->
+    <div>
+      <label class="block text-xs text-gray-600 mb-1">Deposit (GHS)</label>
+      <input id="deposit_amount" name="deposit_amount" type="number"
+             min="0" step="0.01" value="0.00"
+             class="w-full border rounded px-3 py-2 text-sm" />
+    </div>
+
+    <!-- NOTES -->
+    <div>
+      <label class="block text-xs text-gray-600 mb-1">Notes</label>
+      <textarea id="notes" name="description" rows="2"
+                class="w-full border rounded px-3 py-2 text-sm"
+                placeholder="Job details..."></textarea>
+    </div>
+
+    <!-- ATTACHMENT -->
+    <div>
+      <label class="block text-xs text-gray-600 mb-1">Attach file</label>
+      <input id="attachment" name="attachment" type="file"
+             class="text-sm" accept="image/*,.pdf" />
+    </div>
+
+    <!-- PRICE PREVIEW -->
+    <div class="flex items-center justify-between text-sm mt-1">
+      <div>Unit: GHS <span id="unit-price">—</span></div>
+      <div class="font-semibold">Total: GHS <span id="line-total">—</span></div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex items-center gap-2 pt-2">
+      <button id="btn-create-print" type="button"
+              class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded text-sm font-semibold">
+        Create & Print
+      </button>
+      <button id="btn-create-pay" type="button"
+              class="flex-1 border border-red-200 hover:border-red-300 py-2 rounded text-sm">
+        Create & Pay
+      </button>
+    </div>
+
+    <div id="create-feedback" class="text-sm text-gray-600 mt-2"></div>
+  </form>
+</div>

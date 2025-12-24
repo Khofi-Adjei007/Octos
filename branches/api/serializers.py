@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from branches.models import (
-    Branch, Country, Region, City, District, Location, ServiceType
+    Branch, Country, Region, City, District, Location
 )
 
 # Small nested serializers for reuse
@@ -29,10 +29,6 @@ class LocationSerializer(serializers.ModelSerializer):
         model = Location
         fields = ("id", "name", "type", "latitude", "longitude")
 
-class ServiceTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServiceType
-        fields = ("id", "code", "name")
 
 # Manager / employee representation — don't assume employee fields, use str()
 class ManagerSimpleSerializer(serializers.Serializer):
@@ -62,7 +58,7 @@ class BranchDetailSerializer(serializers.ModelSerializer):
     city = CitySerializer(read_only=True)
     district = DistrictSerializer(read_only=True)
     location = LocationSerializer(read_only=True)
-    services = ServiceTypeSerializer(many=True, read_only=True)
+
     manager = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
@@ -82,9 +78,6 @@ class BranchDetailSerializer(serializers.ModelSerializer):
     )
     location_id = serializers.PrimaryKeyRelatedField(
         source="location", queryset=Location.objects.all(), write_only=True, required=False
-    )
-    service_ids = serializers.PrimaryKeyRelatedField(
-        source="services", queryset=ServiceType.objects.all(), many=True, write_only=True, required=False
     )
 
     class Meta:

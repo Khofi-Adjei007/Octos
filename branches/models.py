@@ -100,21 +100,7 @@ class Location(models.Model):
         return f"{self.name} ({self.type})"
 
 
-class ServiceType(models.Model):
-    """
-    Defines a capability/service a branch can perform (e.g., 'DTF', 'DTG', 'LARGE_FORMAT', 'BINDING')
-    """
-    code = models.CharField(max_length=32, unique=True)
-    name = models.CharField(max_length=120)
-    description = models.TextField(blank=True, null=True)
-    meta = models.JSONField(default=dict, blank=True)  # equipment details, estimated throughput, etc.
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return f"{self.name} ({self.code})"
 
 
 class Branch(models.Model):
@@ -151,7 +137,6 @@ class Branch(models.Model):
     longitude = models.FloatField(null=True, blank=True)
 
     # capabilities & operations
-    services = models.ManyToManyField(ServiceType, blank=True, related_name='branches')  # what the branch can do
     opening_hours = models.JSONField(default=dict, blank=True)  # simple structure or more advanced later
     is_main = models.BooleanField(default=False)  # HQ flag (enforce uniqueness via app logic)
     is_active = models.BooleanField(default=True)

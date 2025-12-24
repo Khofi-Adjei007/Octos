@@ -1,5 +1,5 @@
 import django_filters
-from branches.models import Branch, ServiceType
+from branches.models import Branch
 
 class BranchFilter(django_filters.FilterSet):
     country = django_filters.NumberFilter(field_name="country__id")

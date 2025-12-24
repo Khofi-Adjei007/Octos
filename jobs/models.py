@@ -273,7 +273,7 @@ class Job(models.Model):
     - `total_amount` = unit_price * quantity - deposit_amount (stored for receipts / daily sales).
     """
     branch = models.ForeignKey("branches.Branch", on_delete=models.PROTECT, related_name="jobs")
-    service = models.ForeignKey("branches.ServiceType", on_delete=models.PROTECT, related_name="jobs")
+    service = models.ForeignKey("jobs.ServiceType", on_delete=models.PROTECT, related_name="jobs")
     daysheet = models.ForeignKey(DaySheet, null=True, blank=True, on_delete=models.SET_NULL, related_name="jobs")
     customer_name = models.CharField(max_length=200)
     customer_phone = models.CharField(max_length=32, blank=True, null=True)

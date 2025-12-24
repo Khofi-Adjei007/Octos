@@ -20,13 +20,19 @@ from .serializers import (
     ServicePricingRuleSerializer,
 )
 
-from jobs.services import job_service, shift_service, daysheet_service, anomaly_service
+from jobs.services import (
+    job_service,
+    shift_service,
+    daysheet_service,
+    anomaly_service,
+)
 
 logger = logging.getLogger(__name__)
 
-# =========================
-# Models
-# =========================
+# ==================================================
+# MODELS
+# ==================================================
+
 Job = apps.get_model("jobs", "Job")
 JobRecord = apps.get_model("jobs", "JobRecord")
 JobAttachment = apps.get_model("jobs", "JobAttachment")
@@ -34,24 +40,31 @@ ServiceType = apps.get_model("jobs", "ServiceType")
 ServicePricingRule = apps.get_model("jobs", "ServicePricingRule")
 
 
-# =========================
-# Permission mixin
-# =========================
+# ==================================================
+# PERMISSION MIXIN
+# ==================================================
+
 class ReadWritePermissionMixin:
     """
     Safe methods are readable, unsafe methods require authentication.
     """
+
     def get_permissions(self):
         if self.request.method in ("GET", "HEAD", "OPTIONS"):
             return [IsAuthenticatedOrReadOnly()]
         return [IsAuthenticated()]
 
 
-# =========================
-# Job APIs
-# =========================
+# ==================================================
+# JOB APIs
+# ==================================================
+
 class JobViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
-    queryset = Job.objects.select_related("branch", "service", "created_by").all()
+    queryset = (
+        Job.objects
+        .select_related("branch", "service", "created_by")
+        .all()
+    )
     serializer_class = JobSerializer
 
     def get_queryset(self):
@@ -81,6 +94,7 @@ class JobViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
                 {"detail": "Job already in progress"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         job.status = "in_progress"
         job.save(update_fields=["status"])
         return Response(self.get_serializer(job).data)
@@ -117,19 +131,26 @@ class JobViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
                     job, user=request.user, now=now
                 )
             except Exception:
-                logger.exception("attach_job_to_daysheet_idempotent failed during complete")
+                logger.exception(
+                    "attach_job_to_daysheet_idempotent failed during complete"
+                )
 
         return Response(self.get_serializer(job).data)
 
 
 class JobRecordViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
-    queryset = JobRecord.objects.select_related("job", "performed_by").all()
+    queryset = (
+        JobRecord.objects
+        .select_related("job", "performed_by")
+        .all()
+    )
     serializer_class = JobRecordSerializer
     parser_classes = (MultiPartParser, FormParser)
 
     def perform_create(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         instance = serializer.save(performed_by=user)
+
         try:
             job_service.attach_job_to_daysheet_idempotent(
                 instance.job, user=user, now=timezone.now()
@@ -147,6 +168,7 @@ class JobRecordViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
     def upload_attachment(self, request, pk=None):
         record = self.get_object()
         file_obj = request.FILES.get("file")
+
         if not file_obj:
             return Response(
                 {"detail": "No file uploaded"},
@@ -159,14 +181,22 @@ class JobRecordViewSet(ReadWritePermissionMixin, viewsets.ModelViewSet):
             uploaded_by=request.user,
             note=request.data.get("note", ""),
         )
+
         return Response(
             JobAttachmentSerializer(att).data,
             status=status.HTTP_201_CREATED,
         )
 
 
-class JobAttachmentViewSet(ReadWritePermissionMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = JobAttachment.objects.select_related("record__job").all()
+class JobAttachmentViewSet(
+    ReadWritePermissionMixin,
+    viewsets.ReadOnlyModelViewSet,
+):
+    queryset = (
+        JobAttachment.objects
+        .select_related("record__job")
+        .all()
+    )
     serializer_class = JobAttachmentSerializer
 
 
@@ -182,11 +212,17 @@ def job_receipt(request, job_id):
 class ServiceTypeListAPIView(APIView):
     """
     Expose available services to the UI.
+    Includes pricing rules inline for Quick Record.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        services = ServiceType.objects.all().order_by("name")
+        services = (
+            ServiceType.objects
+            .prefetch_related("pricing_rules")
+            .order_by("name")
+        )
         serializer = ServiceTypeSerializer(services, many=True)
         return Response(serializer.data)
 
@@ -194,18 +230,21 @@ class ServiceTypeListAPIView(APIView):
 class ServicePricingRuleListAPIView(APIView):
     """
     Expose pricing rules for a specific service.
+    Kept for admin / diagnostics / future use.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, service_id):
-        rules = ServicePricingRule.objects.filter(
-            service_id=service_id,
-            is_active=True,
-        ).order_by(
-            "paper_size",
-            "print_mode",
-            "color_mode",
-            "side_mode",
+        rules = (
+            ServicePricingRule.objects
+            .filter(service_id=service_id, is_active=True)
+            .order_by(
+                "paper_size",
+                "print_mode",
+                "color_mode",
+                "side_mode",
+            )
         )
         serializer = ServicePricingRuleSerializer(rules, many=True)
         return Response(serializer.data)
