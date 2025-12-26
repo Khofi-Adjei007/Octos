@@ -531,6 +531,56 @@ class DaySheetService(BaseService):
                 )
 
             return sheet, True
+        
+    def compute_day_totals(self, daysheet: DaySheet) -> Dict[str, Any]:
+        """
+        Authoritative financial aggregation for a DaySheet.
+        Read-only. No mutations. Safe to call repeatedly.
+        """
+
+        qs = Job.objects.filter(daysheet=daysheet)
+
+        totals = {
+            "total_jobs": 0,
+            "gross_total": Decimal("0.00"),
+            "deposits_total": Decimal("0.00"),
+            "completed_total": Decimal("0.00"),
+            "outstanding_total": Decimal("0.00"),
+            "by_channel": {
+                "cash": Decimal("0.00"),
+                "momo": Decimal("0.00"),
+                "card": Decimal("0.00"),
+            },
+        }
+
+        for job in qs:
+            total = Decimal(job.total_amount or 0)
+            deposit = Decimal(job.deposit_amount or 0)
+            balance = total - deposit
+
+            payment_type = AnomalyService._infer_payment_type_from_job_static(job)
+
+            totals["total_jobs"] += 1
+            totals["gross_total"] += total
+            totals["deposits_total"] += deposit
+
+            if balance <= 0:
+                totals["completed_total"] += total
+            else:
+                totals["outstanding_total"] += balance
+
+            # Channel allocation (deposit-based)
+            if payment_type in totals["by_channel"]:
+                totals["by_channel"][payment_type] += deposit
+
+        # Quantize for safety
+        for k in ["gross_total", "deposits_total", "completed_total", "outstanding_total"]:
+            totals[k] = totals[k].quantize(Decimal("0.01"))
+
+        for ch in totals["by_channel"]:
+            totals["by_channel"][ch] = totals["by_channel"][ch].quantize(Decimal("0.01"))
+
+        return totals
 
 
 class ShiftService(BaseService):
@@ -622,29 +672,78 @@ class ShiftService(BaseService):
 class ManagerService(BaseService):
     def manager_close_day(self, daysheet: DaySheet, manager_user, pin: str, now=None) -> DaySheet:
         now = now or timezone.now()
-        open_shifts = daysheet.shifts.filter(status=DaySheetShift.SHIFT_OPEN).exists()
-        if open_shifts:
+
+        # 1️⃣ Guard: all shifts must be closed
+        if daysheet.shifts.filter(status=DaySheetShift.SHIFT_OPEN).exists():
             raise ValueError("Not all shifts are closed. Manager cannot close the day.")
+
+        # 2️⃣ Guard: PIN verification
         if not self.pin_verifier.verify(manager_user, pin):
             raise PermissionError("Invalid manager PIN")
+
+        # 3️⃣ Compute authoritative day totals
+        aggregator = DayAggregationService()
+        day_totals = aggregator.aggregate(daysheet)
+
         with transaction.atomic():
+
+            # 4️⃣ Persist closure + totals snapshot
             daysheet.status = DaySheet.STATUS_BRANCH_CLOSED
             daysheet.closed_at = now
             daysheet.closed_by = manager_user
-            daysheet.save()
-            actor = {"user_id": getattr(manager_user, "pk", None), "role": getattr(manager_user, "role", None) if manager_user else None}
-            payload = {
-                "daily_sheet_id": str(daysheet.pk),
-                "date": str(daysheet.date),
-                "timestamp": now.isoformat(),
-                "total_jobs": daysheet.total_jobs,
-                "total_amount": float(daysheet.total_amount or 0),
+
+            # Store snapshot in meta (immutable audit record)
+            meta = daysheet.meta or {}
+            meta["final_aggregation"] = {
+                "job_count": day_totals["job_count"],
+                "shift_count": day_totals["shift_count"],
+                "gross_total": str(day_totals["gross_total"]),
+                "deposit_total": str(day_totals["deposit_total"]),
+                "net_total": str(day_totals["net_total"]),
+                "cash_total": str(day_totals["cash_total"]),
+                "momo_total": str(day_totals["momo_total"]),
+                "card_total": str(day_totals["card_total"]),
+                "expected_closing_cash": str(day_totals["expected_closing_cash"]),
+                "computed_at": day_totals["computed_at"].isoformat(),
             }
+            daysheet.meta = meta
+
+            daysheet.save(update_fields=["status", "closed_at", "closed_by", "meta"])
+
+            # 5️⃣ Audit + HQ events
+            actor = {
+                "user_id": getattr(manager_user, "pk", None),
+                "role": getattr(getattr(manager_user, "role", None), "code", None),
+            }
+
+            payload = {
+                "daysheet_id": str(daysheet.pk),
+                "date": str(daysheet.date),
+                "totals": day_totals,
+                "timestamp": now.isoformat(),
+            }
+
             try:
-                self._create_status_log("DaySheet", str(daysheet.pk), "MANAGER_CLOSED", actor=actor, payload=payload)
-                self._create_shadow_event("MANAGER_CLOSED", getattr(daysheet.branch, "pk", None), actor=actor, payload=payload)
+                self._create_status_log(
+                    "DaySheet",
+                    str(daysheet.pk),
+                    "MANAGER_CLOSED",
+                    actor=actor,
+                    payload=payload,
+                )
+                self._create_shadow_event(
+                    "MANAGER_CLOSED",
+                    getattr(daysheet.branch, "pk", None),
+                    actor=actor,
+                    payload=payload,
+                )
             except Exception as exc:
-                logger.exception("ManagerService.manager_close_day: failed to create logs for daysheet %s: %s", getattr(daysheet, "pk", None), exc)
+                logger.exception(
+                    "ManagerService.manager_close_day: logging failed for daysheet %s: %s",
+                    getattr(daysheet, "pk", None),
+                    exc,
+                )
+
             return daysheet
 
 
@@ -1050,7 +1149,131 @@ class BranchService(BaseService):
                     )
                     return []
 
+# ---------------------------
+# Preconfigured singletons (facade targets)
+# ---------------------------
+_default_hq = HQClient()
+_default_pin = PINVerifier()
 
+job_service = JobService(hq_client=_default_hq, pin_verifier=_default_pin)
+daysheet_service = DaySheetService(hq_client=_default_hq, pin_verifier=_default_pin)
+shift_service = ShiftService(hq_client=_default_hq, pin_verifier=_default_pin)
+manager_service = ManagerService(hq_client=_default_hq, pin_verifier=_default_pin)
+correction_service = CorrectionService(hq_client=_default_hq, pin_verifier=_default_pin)
+anomaly_service = AnomalyService(hq_client=_default_hq, pin_verifier=_default_pin)
+branch_service = BranchService(hq_client=_default_hq, pin_verifier=_default_pin)
+
+# jobs/services/shift_aggregation.py
+from jobs.models import Job, DaySheetShift
+
+class ShiftAggregationService:
+    """
+    Read-only aggregation service.
+    Computes authoritative totals for a single shift.
+    """
+
+    PAYMENT_CASH = "cash"
+    PAYMENT_MOMO = "momo"
+    PAYMENT_CARD = "card"
+
+    ALLOWED_PAYMENT_TYPES = {
+        PAYMENT_CASH,
+        PAYMENT_MOMO,
+        PAYMENT_CARD,
+    }
+
+    def aggregate(self, shift: DaySheetShift) -> dict:
+        if not shift or not shift.shift_start:
+            raise ValueError("Invalid shift")
+
+        shift_end = shift.shift_end or timezone.now()
+
+        jobs_qs = Job.objects.filter(
+            daysheet=shift.daysheet,
+            created_by=shift.user,
+            created_at__gte=shift.shift_start,
+            created_at__lte=shift_end,
+        )
+
+        totals = {
+            "gross_total": Decimal("0.00"),
+            "deposit_total": Decimal("0.00"),
+            "net_total": Decimal("0.00"),
+            "cash_total": Decimal("0.00"),
+            "momo_total": Decimal("0.00"),
+            "card_total": Decimal("0.00"),
+        }
+
+        job_count = jobs_qs.count()
+
+        for job in jobs_qs:
+            job_gross = Decimal(job.unit_price or 0) * Decimal(job.quantity or 1)
+            deposit = Decimal(job.deposit_amount or 0)
+            net = Decimal(job.total_amount or 0)
+
+            totals["gross_total"] += job_gross
+            totals["deposit_total"] += deposit
+            totals["net_total"] += net
+
+            payment_type = self._infer_payment_type(job)
+
+            if payment_type == self.PAYMENT_CASH:
+                totals["cash_total"] += net
+            elif payment_type == self.PAYMENT_MOMO:
+                totals["momo_total"] += net
+            elif payment_type == self.PAYMENT_CARD:
+                totals["card_total"] += net
+
+        expected_cash = totals["cash_total"]
+
+        return {
+            "shift_id": shift.pk,
+            "daysheet_id": shift.daysheet_id,
+            "branch_id": shift.daysheet.branch_id,
+            "attendant_id": shift.user_id,
+            "shift_start": shift.shift_start,
+            "shift_end": shift_end,
+
+            "job_count": job_count,
+
+            "gross_total": totals["gross_total"].quantize(Decimal("0.01")),
+            "deposit_total": totals["deposit_total"].quantize(Decimal("0.01")),
+            "net_total": totals["net_total"].quantize(Decimal("0.01")),
+
+            "expected_cash": expected_cash.quantize(Decimal("0.01")),
+            "momo_total": totals["momo_total"].quantize(Decimal("0.01")),
+            "card_total": totals["card_total"].quantize(Decimal("0.01")),
+
+            "computed_at": timezone.now(),
+        }
+
+    # -------------------------
+    # Internal helpers
+    # -------------------------
+
+    def _infer_payment_type(self, job) -> str:
+        """
+        Authoritative inference.
+        Never trust frontend strings blindly.
+        """
+        pt = getattr(job, "payment_type", None)
+
+        if isinstance(pt, str):
+            pt = pt.lower()
+            if pt in self.ALLOWED_PAYMENT_TYPES:
+                return pt
+
+        # fallback via metadata
+        meta = getattr(job, "meta", {}) or {}
+        pt = meta.get("payment_type")
+        if isinstance(pt, str) and pt.lower() in self.ALLOWED_PAYMENT_TYPES:
+            return pt.lower()
+
+        # deposits imply later settlement (cash by default)
+        if Decimal(job.deposit_amount or 0) > 0:
+            return self.PAYMENT_CASH
+
+        return self.PAYMENT_CASH
 
 # ---------------------------
 # Utility: user_is_attendant
@@ -1076,16 +1299,85 @@ def user_is_attendant_static(user) -> bool:
     return False
 
 
-# ---------------------------
-# Preconfigured singletons (facade targets)
-# ---------------------------
-_default_hq = HQClient()
-_default_pin = PINVerifier()
+# jobs/services/day_aggregation.py
+class DayAggregationService:
+    """
+    Read-only aggregation service.
+    Computes authoritative totals for a full DaySheet
+    by composing ShiftAggregationService results.
+    """
 
-job_service = JobService(hq_client=_default_hq, pin_verifier=_default_pin)
-daysheet_service = DaySheetService(hq_client=_default_hq, pin_verifier=_default_pin)
-shift_service = ShiftService(hq_client=_default_hq, pin_verifier=_default_pin)
-manager_service = ManagerService(hq_client=_default_hq, pin_verifier=_default_pin)
-correction_service = CorrectionService(hq_client=_default_hq, pin_verifier=_default_pin)
-anomaly_service = AnomalyService(hq_client=_default_hq, pin_verifier=_default_pin)
-branch_service = BranchService(hq_client=_default_hq, pin_verifier=_default_pin)
+    def __init__(self):
+        self.shift_aggregator = ShiftAggregationService()
+
+    def aggregate(self, daysheet: DaySheet) -> dict:
+        if not daysheet:
+            raise ValueError("DaySheet is required")
+
+        shifts = DaySheetShift.objects.filter(
+            daysheet=daysheet,
+            status__in=[
+                DaySheetShift.SHIFT_CLOSED,
+                DaySheetShift.SHIFT_AUTO_CLOSED,
+                DaySheetShift.SHIFT_LOCKED,
+            ],
+        )
+
+        totals = {
+            "gross_total": Decimal("0.00"),
+            "deposit_total": Decimal("0.00"),
+            "net_total": Decimal("0.00"),
+            "cash_total": Decimal("0.00"),
+            "momo_total": Decimal("0.00"),
+            "card_total": Decimal("0.00"),
+        }
+
+        job_count = 0
+
+        for shift in shifts:
+            shift_data = self.shift_aggregator.aggregate(shift)
+
+            job_count += shift_data["job_count"]
+
+            totals["gross_total"] += shift_data["gross_total"]
+            totals["deposit_total"] += shift_data["deposit_total"]
+            totals["net_total"] += shift_data["net_total"]
+
+            totals["cash_total"] += shift_data["expected_cash"]
+            totals["momo_total"] += shift_data["momo_total"]
+            totals["card_total"] += shift_data["card_total"]
+
+        expected_closing_cash = totals["cash_total"]
+
+        return {
+            "daysheet_id": daysheet.pk,
+            "branch_id": daysheet.branch_id,
+            "date": daysheet.date,
+
+            "shift_count": shifts.count(),
+            "job_count": job_count,
+
+            "gross_total": totals["gross_total"].quantize(Decimal("0.01")),
+            "deposit_total": totals["deposit_total"].quantize(Decimal("0.01")),
+            "net_total": totals["net_total"].quantize(Decimal("0.01")),
+
+            "cash_total": totals["cash_total"].quantize(Decimal("0.01")),
+            "momo_total": totals["momo_total"].quantize(Decimal("0.01")),
+            "card_total": totals["card_total"].quantize(Decimal("0.01")),
+
+            "expected_closing_cash": expected_closing_cash.quantize(Decimal("0.01")),
+
+            "computed_at": timezone.now(),
+        }
+
+
+__all__ = [
+    "JobService",
+    "DaySheetService",
+    "ShiftService",
+    "ShiftAggregationService",
+    "ManagerService",
+    "CorrectionService",
+    "AnomalyService",
+    "BranchService",
+]

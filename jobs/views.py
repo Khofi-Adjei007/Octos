@@ -4,6 +4,8 @@ from jobs.models import Job
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from employees.auth.guards import require_employee_login, require_permission
+from django.core.exceptions import PermissionDenied
 
 # import the service layer you created
 from .jobs_services import (
@@ -33,65 +35,57 @@ __all__ = ["JobViewSet", "JobRecordViewSet", "JobAttachmentViewSet", "job_receip
 
 
 
-@login_required
+@require_employee_login
+@require_permission("record_job")
 def attendant_dashboard(request):
     """
-    Renders the attendant dashboard. Attendants are always pinned to a single branch.
-    The branch is inferred from the user (employee.branch, user.branch) or fallback.
+    Renders the attendant dashboard.
+
+    Guarded by:
+    - active employee
+    - record_job permission
+    Branch scope is enforced below.
     """
+
     user = request.user
 
-    # permission check
-    if not user_is_attendant(user):
-        return HttpResponseForbidden("You are not permitted to access the attendant dashboard.")
-
-    # try to infer assigned branch (object or dict with id/name)
-    assigned_branch_obj = None
-    try:
-        emp = getattr(user, "employee", None)
-        if emp and getattr(emp, "branch", None):
-            assigned_branch_obj = emp.branch
-    except Exception:
-        assigned_branch_obj = None
+    # --------------------------------------------------
+    # Resolve assigned branch (authoritative)
+    # --------------------------------------------------
+    assigned_branch_obj = getattr(user, "branch", None)
 
     if not assigned_branch_obj:
-        # try direct attribute
-        try:
-            if getattr(user, "branch", None):
-                assigned_branch_obj = user.branch
-        except Exception:
-            assigned_branch_obj = None
-
-    # for template convenience build a lightweight dict for active_branch
-    active_branch = None
-    if assigned_branch_obj:
-        active_branch = {"id": getattr(assigned_branch_obj, "pk", getattr(assigned_branch_obj, "id", None)),
-                         "name": getattr(assigned_branch_obj, "name", str(assigned_branch_obj))}
-    else:
-        # fallback to facade that returns available branches as dicts
-        branches_list = get_user_branches(user) or []
-        if branches_list:
-            active_branch = branches_list[0]
-
-    # provide 'branches' for compatibility (but attendants cannot switch in UI)
-    branches = []
-    try:
+        # Fallback to branch service resolution
         branches = get_user_branches(user) or []
-    except Exception:
-        branches = []
+        if not branches:
+            raise PermissionDenied("No branch assigned for attendant access.")
 
-    # queue for the active branch
+        active_branch = branches[0]
+    else:
+        active_branch = {
+            "id": assigned_branch_obj.pk,
+            "name": assigned_branch_obj.name,
+        }
+
+    # --------------------------------------------------
+    # Queue (branch-safe)
+    # --------------------------------------------------
     queue = []
-    if active_branch and active_branch.get("id"):
-        try:
-            queue = get_branch_queue_summary(active_branch["id"])
-        except Exception:
-            queue = []
+    try:
+        queue = get_branch_queue_summary(active_branch["id"])
+    except Exception:
+        queue = []
 
     context = {
         "user": user,
-        "branches": branches,
+        "branches": [active_branch],  # attendants cannot switch branches
         "active_branch": active_branch,
         "queue": queue,
     }
-    return render(request, "attendant/attendant_dashboard.html", context)
+
+    return render(
+        request,
+        "attendant/attendant_dashboard.html",
+        context,
+    )
+

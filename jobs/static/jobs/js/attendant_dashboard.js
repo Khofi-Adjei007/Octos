@@ -340,9 +340,15 @@ document.addEventListener("keydown", (e) => {
         lastJob = resData;
       }
 
-      if (lastJob?.id) {
-        window.open(`/jobs/receipt/${lastJob.id}/`, "_blank");
-      }
+ if (lastJob?.id) {
+  const pdfUrl = `/api/jobs/receipt/${lastJob.id}/pdf/`;
+  const win = window.open(pdfUrl, "_blank");
+  if (win) {
+    win.onload = () => win.print();
+  }
+}
+
+
 
       serviceLinesBox.innerHTML = "";
       createServiceLine();
@@ -362,4 +368,104 @@ document.addEventListener("keydown", (e) => {
     }
   });
 
+})();
+
+/* ============================================================
+ * ATTENDANT TABS + UNDERLINE (DESKTOP & MOBILE)
+ * ============================================================ */
+(function () {
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const panels = document.querySelectorAll(".tab-panel");
+
+  const desktopNav = document.getElementById("attendantDesktopNav");
+  const mobileNav = document.getElementById("attendantMobileNav");
+
+  const desktopUnderline = document.getElementById("attTabUnderline");
+  const mobileUnderline = document.getElementById("attMobileUnderline");
+
+  if (!tabButtons.length) return;
+
+  function activateTab(tab) {
+    const tabName = tab.dataset.tab;
+    if (!tabName) return;
+
+    // Panels
+    panels.forEach(panel => {
+      panel.classList.toggle(
+        "hidden",
+        panel.id !== `panel-${tabName}`
+      );
+    });
+
+    // Button styles
+    tabButtons.forEach(btn => {
+      btn.setAttribute("aria-pressed", "false");
+      btn.classList.remove("bg-white", "text-red-700");
+      btn.classList.add("bg-transparent", "text-white");
+    });
+
+    tab.setAttribute("aria-pressed", "true");
+    tab.classList.remove("bg-transparent", "text-white");
+    tab.classList.add("bg-white", "text-red-700");
+
+    // Underline movement
+    const rect = tab.getBoundingClientRect();
+
+    if (desktopNav && desktopUnderline && desktopNav.contains(tab)) {
+      const parentRect = desktopNav.getBoundingClientRect();
+      desktopUnderline.style.width = `${rect.width}px`;
+      desktopUnderline.style.transform =
+        `translateX(${rect.left - parentRect.left}px)`;
+    }
+
+    if (mobileNav && mobileUnderline && mobileNav.contains(tab)) {
+      const parentRect = mobileNav.getBoundingClientRect();
+      mobileUnderline.style.width = `${rect.width}px`;
+      mobileUnderline.style.left =
+        `${rect.left - parentRect.left}px`;
+    }
+  }
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => activateTab(btn));
+  });
+
+  // Default tab → JOB
+  const defaultTab =
+    document.querySelector('.tab-btn[data-tab="job"]') || tabButtons[0];
+
+  activateTab(defaultTab);
+})();
+/* ============================================================
+ * USER PROFILE DROPDOWN
+ * ============================================================ */
+(function () {
+  const button = document.getElementById("user-menu-btn");
+  const menu = document.getElementById("user-menu");
+
+  if (!button || !menu) return;
+
+  function closeMenu() {
+    menu.classList.add("hidden");
+    button.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleMenu(e) {
+    e.stopPropagation();
+    const isOpen = !menu.classList.contains("hidden");
+    menu.classList.toggle("hidden");
+    button.setAttribute("aria-expanded", String(!isOpen));
+  }
+
+  button.addEventListener("click", toggleMenu);
+
+  document.addEventListener("click", (e) => {
+    if (!menu.contains(e.target) && !button.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
 })();
