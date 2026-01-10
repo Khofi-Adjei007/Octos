@@ -100,9 +100,6 @@ class Location(models.Model):
         return f"{self.name} ({self.type})"
 
 
-
-
-
 class Branch(models.Model):
     """
     Branch model with geographic, capability and contact fields.

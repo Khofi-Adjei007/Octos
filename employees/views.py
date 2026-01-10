@@ -83,9 +83,9 @@ def employeesLogin(request):
     Authenticate employee and establish session.
 
     Responsibilities:
-    - Authentication
-    - Session creation
-    - Safe redirection only
+    - Delegate authentication decisions to the form
+    - Create session on success
+    - Perform safe redirection only
 
     DOES NOT:
     - Decide dashboard
@@ -96,18 +96,17 @@ def employeesLogin(request):
         form = EmployeeLoginForm(request.POST, request=request)
 
         if form.is_valid():
-            identifier = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
+            # --------------------------------------------------
+            # Case 1: Authenticated user (approved + active)
+            # --------------------------------------------------
+            if form.user:
+                login(request, form.user)
+                logger.info(
+                    "User %s logged in successfully",
+                    form.user.employee_email,
+                )
 
-            user = authenticate(request, username=identifier, password=password)
-
-            if user is not None:
-                login(request, user)
-                logger.info("User %s logged in successfully", identifier)
-
-                # --------------------------------------------------
-                # 1. Safe ?next= handling
-                # --------------------------------------------------
+                # Safe ?next= handling
                 next_url = request.POST.get("next") or request.GET.get("next")
                 if next_url and url_has_allowed_host_and_scheme(
                     next_url,
@@ -116,18 +115,25 @@ def employeesLogin(request):
                 ):
                     return redirect(next_url)
 
-                # --------------------------------------------------
-                # 2. Neutral system entry point
-                # --------------------------------------------------
                 return redirect("employeeHomepage")
 
-            messages.error(request, "Invalid credentials")
-            logger.warning("Failed login attempt for %s", identifier)
+            # --------------------------------------------------
+            # Case 2: Valid form but blocked by business rules
+            # --------------------------------------------------
+            if getattr(form, "pending_message", None):
+                messages.warning(request, form.pending_message)
+            else:
+                messages.error(request, "Invalid email or password.")
+
+        else:
+            messages.error(request, "Invalid email or password.")
 
     else:
-        form = EmployeeLoginForm()
+        form = EmployeeLoginForm(request=request)
 
     return render(request, "employeesLogin.html", {"form": form})
+
+
 
 
 
