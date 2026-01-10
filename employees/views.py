@@ -205,8 +205,20 @@ def employeeHomepage(request):
     # --------------------------------------------------
     if employee_has_permission(user, "record_job"):
         return redirect("jobs:attendant-dashboard")
+    
+    # --------------------------------------------------
+    # 4. HR routing (cross-branch, non-operational)
+    # --------------------------------------------------
+    if user.role and user.role.code in {
+        "HR_MANAGER",
+        "HR_MANAGER_SOUTH",
+        "HR_MANAGER_MID",
+        "HR_MANAGER_NORTH",
+    }:
+        return redirect("human_resources:dashboard")
 
     # --------------------------------------------------
-    # 4. Absolute fallback
+    # 5. Absolute fallback (authenticated but unauthorized)
     # --------------------------------------------------
-    return redirect("employeesLogin")
+    raise PermissionDenied("No dashboard available for this role.")
+

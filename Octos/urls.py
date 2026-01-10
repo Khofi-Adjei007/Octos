@@ -25,6 +25,7 @@ urlpatterns = [
     path('employees/', include('employees.urls')),
     path('__reload__/', include('django_browser_reload.urls')),
     path('hr/', hr_views.human_resource, name='human_resources'),
+    path("human-resources/",include(("Human_Resources.urls", "human_resources"),namespace="human_resources")),
     path('', include('public.urls')),
     path("api/public/", include("public.api.urls")),
     

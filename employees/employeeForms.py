@@ -81,11 +81,22 @@ class EmployeeLoginForm(forms.Form):
             return cleaned_data
 
         # -------------------------------------------------
-        # 4. Branch assignment gate
+        # 4. Branch assignment gate (role-aware)
         # -------------------------------------------------
-        if employee.branch is None:
+        BRANCH_EXEMPT_ROLES = {
+            "HR_MANAGER",
+            "HR_MANAGER_SOUTH",
+            "HR_MANAGER_MID",
+            "HR_MANAGER_NORTH",
+            "super_admin",
+            "admin",
+        }
+        employee_role_code = employee.role.code if employee.role else None
+
+        if employee.branch is None and employee_role_code not in BRANCH_EXEMPT_ROLES:
             self.pending_message = "Your account is not assigned to a branch. Contact HR."
             return cleaned_data
+
 
         # -------------------------------------------------
         # 5. Authenticate credentials LAST
