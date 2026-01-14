@@ -2,365 +2,359 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>HR Dashboard — Farhat Printing Press</title>
 
-  <!-- Tailwind CDN (kept for utilities) -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
 
   <style>
-    /* --- Solid red & white theme (mobile-first) --- */
     :root{
-      --red-500: #FF0A14;     /* primary red */
-      --red-600: #E40A12;     /* stronger */
-      --red-700: #B60A10;     /* dark */
-      --white:    #FFFFFF;
-      --muted:    #6B7280;
-      --bg:       #fff6f6;    /* very light red tint for page bg */
-      --card-shadow: 0 10px 30px rgba(182,10,16,0.08);
+      --red:#FF0A14;
+      --red-dark:#B60A10;
+      --bg:#fff6f6;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --shadow:0 14px 40px rgba(182,10,16,.08);
     }
-    html,body { height:100%; }
+
+    *{ box-sizing:border-box }
     body{
       margin:0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: var(--bg);
-      color: #111827;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      -webkit-text-size-adjust:100%;
+      font-family:Inter,system-ui,-apple-system;
+      background:var(--bg);
+      color:#111827;
     }
 
-    /* header */
-    .hr-top { background: var(--red-600); color: var(--white); border-bottom: 1px solid rgba(0,0,0,0.04); }
-    .hr-top a, .hr-top .text-muted { color: rgba(255,255,255,0.95); }
+    /* Header */
+    header{
+      background:var(--red);
+      color:white;
+      position:sticky;
+      top:0;
+      z-index:40;
+    }
+    .header-inner{
+      max-width:1200px;
+      margin:auto;
+      padding:1rem 1.25rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .brand{
+      display:flex;
+      gap:.75rem;
+      align-items:center;
+    }
+    .brand img{ height:38px; background:white; border-radius:8px; }
+    .brand small{ opacity:.85; display:block; font-size:.75rem }
 
-    /* simple layout */
-    .container { max-width: 1000px; margin: 0 auto; padding: 1rem; }
+    .user{
+      display:flex;
+      gap:1rem;
+      align-items:center;
+      font-size:.9rem;
+    }
+    .user a{
+      color:white;
+      text-decoration:none;
+      border:1px solid rgba(255,255,255,.25);
+      padding:.35rem .65rem;
+      border-radius:8px;
+    }
 
-    /* cards */
-    .panel { background: var(--white); border-radius: 12px; padding: 0.9rem; box-shadow: var(--card-shadow); }
-    .panel-lg { padding: 1.1rem; }
+    /* Page */
+    main{
+      max-width:1200px;
+      margin:auto;
+      padding:1.5rem 1.25rem 3rem;
+    }
 
-    /* metrics */
-    .metric { border-radius: 10px; padding: 0.9rem; background: linear-gradient(180deg,var(--white),#fff7f7); box-shadow: 0 8px 28px rgba(0,0,0,0.04); }
-    .metric .k { font-size: 1.4rem; font-weight:700; color: #111827; }
-    .metric .label { font-size: .85rem; color: var(--muted); }
+    /* Metric Context Switcher */
+    .metric-switch{
+      display:flex;
+      gap:.5rem;
+      margin-bottom:1rem;
+      flex-wrap:wrap;
+    }
+    .switch-btn{
+      background:transparent;
+      border:1px solid #f1dada;
+      padding:.4rem .9rem;
+      border-radius:999px;
+      font-size:.8rem;
+      color:var(--muted);
+      cursor:pointer;
+    }
+    .switch-btn.active{
+      background:var(--red);
+      color:white;
+      border-color:var(--red);
+    }
 
-    /* tabs */
-    .tab-row { display:flex; gap:0.5rem; overflow:auto; }
-    .tab-btn { padding:.5rem .75rem; border-radius: .6rem; background: transparent; color: var(--muted); border:1px solid transparent; font-weight:600; white-space:nowrap; }
-    .tab-btn.active { background: var(--white); color: var(--red-700); box-shadow: 0 12px 30px rgba(182,10,16,0.06); border-color: rgba(182,10,16,0.06); }
+    /* Metrics */
+    .metrics{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:1.25rem;
+      margin-bottom:2rem;
+    }
+    .metric{
+      background:var(--card);
+      border-radius:18px;
+      padding:1.25rem;
+      box-shadow:var(--shadow);
+    }
+    .metric span{
+      color:var(--muted);
+      font-size:.85rem;
+    }
+    .metric strong{
+      display:block;
+      margin-top:.5rem;
+      font-size:2rem;
+      font-weight:700;
+    }
 
-    /* buttons */
-    .btn-primary { background: var(--red-500); color: white; padding:.45rem .75rem; border-radius:8px; border:none; display:inline-block; font-weight:600; }
-    .btn-primary:hover{ background: var(--red-600); }
-    .btn-outline { background:transparent; border:1px solid rgba(0,0,0,0.06); padding:.4rem .65rem; border-radius:8px; color:var(--muted); }
+    /* Main grid */
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:1.5rem;
+    }
+    @media(min-width:900px){
+      .grid{
+        grid-template-columns:2.2fr 1.3fr;
+      }
+    }
 
-    /* small helpers */
-    .small-muted { color: var(--muted); font-size: .92rem; }
-    .table-fixed { width:100%; border-collapse:collapse; font-size:.95rem; }
-    .table-fixed th, .table-fixed td { padding:.55rem .6rem; border-bottom:1px solid #f2f2f2; text-align:left; vertical-align:middle; }
+    .card{
+      background:var(--card);
+      border-radius:22px;
+      padding:1.5rem;
+      box-shadow:var(--shadow);
+    }
+    .card h3{
+      margin:0 0 1rem;
+      font-size:1.1rem;
+    }
 
-    /* responsive grid mobile-first */
-    .grid-1 { display:grid; grid-template-columns: 1fr; gap: 0.75rem; }
-    @media (min-width: 720px){ .grid-2 { grid-template-columns: repeat(2,1fr); } }
-    @media (min-width: 980px){ .grid-3 { grid-template-columns: repeat(3,1fr); } }
+    /* Attention list */
+    .attention{
+      display:flex;
+      flex-direction:column;
+      gap:.75rem;
+    }
+    .attention-item{
+      padding:.9rem 1rem;
+      border-radius:14px;
+      border:1px solid #f1dada;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#fffafa;
+    }
+    .attention-item span{
+      font-size:.9rem;
+    }
+    .attention-item a{
+      font-size:.8rem;
+      color:var(--red-dark);
+      text-decoration:none;
+      font-weight:600;
+    }
 
-    /* small tweaks */
-    .muted-very { color: rgba(17,24,39,0.6); font-size:.9rem; }
+    /* Breakdown */
+    .breakdown{
+      display:flex;
+      flex-direction:column;
+      gap:.6rem;
+      margin-top:.5rem;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      font-size:.9rem;
+    }
+
+    /* Activity */
+    .activity{
+      display:flex;
+      flex-direction:column;
+      gap:.7rem;
+    }
+    .activity-item{
+      font-size:.85rem;
+      color:#374151;
+    }
+    .activity-item small{
+      color:var(--muted);
+      display:block;
+      font-size:.7rem;
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
 
-  <!-- Top header -->
-  <header class="hr-top sticky top-0 z-50">
-    <div class="container flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="{% static 'public/logo-square.png' %}" alt="Farhat" class="h-9 w-9 rounded-md bg-white object-contain"/>
-        <div>
-          <div class="text-sm font-semibold" style="color:var(--white)">Farhat Printing Press</div>
-          <div class="text-xs muted-very">Human Resources</div>
-        </div>
-      </div>
+<body>
 
-      <div class="flex items-center gap-3">
-        <div class="text-sm muted-very hidden sm:block">Signed in as <strong>{{ request.user.first_name }} {{ request.user.last_name }}</strong></div>
-        <a href="{% url 'employee_logout' %}" class="text-sm inline-flex items-center gap-2 px-3 py-1 rounded" style="background:rgba(255,255,255,0.06); color:var(--white); border:1px solid rgba(255,255,255,0.06);">Logout</a>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <img src="{% static 'public/logo-square.png' %}" alt="Farhat"/>
+      <div>
+        <strong>Farhat Printing Press</strong>
+        <small>Human Resources Dashboard</small>
       </div>
     </div>
-  </header>
 
-  <main class="container flex-1 py-6">
-
-    <!-- metrics (mobile-first stacked) -->
-    <div class="grid-1 grid-3 md:grid-3 mb-4" style="display:grid; gap:12px;">
-      
-
-  <!-- Total Employees -->
-  <div class="metric panel-lg border-l-4 rounded-lg p-4"
-       style="border-color:#FF3344; background:#FFF5F5;">
-    <div class="text-sm small-muted flex items-center gap-2">
-      👥 <span>Total employees</span>
+    <div class="user">
+      <span>{{ request.user.first_name }} {{ request.user.last_name }}</span>
+      <a href="{% url 'employee_logout' %}">Logout</a>
     </div>
-    <div id="total-employees" class="k mt-2 text-2xl font-semibold text-gray-800">—</div>
-    <div class="text-xs small-muted mt-2">All active staff across branches</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Metric Context Switcher -->
+  <div class="metric-switch">
+    <button class="switch-btn active" data-context="employees">Employees</button>
+    <button class="switch-btn" data-context="payroll">Payroll</button>
+    <button class="switch-btn" data-context="recruitment">Recruitment</button>
   </div>
 
-  <!-- Pending Applications -->
-  <div class="metric panel-lg border-l-4 rounded-lg p-4"
-       style="border-color:#FF6A3D; background:#FFF8F3;">
-    <div class="text-sm small-muted flex items-center gap-2">
-      📝 <span>Pending applications</span>
+  <!-- Metrics -->
+  <section class="metrics">
+    <div class="metric">
+      <span id="metric-label-1">Total Employees</span>
+      <strong id="metric-1">—</strong>
     </div>
-    <div id="pending-apps" class="k mt-2 text-2xl font-semibold text-gray-800">—</div>
-    <div class="text-xs small-muted mt-2">Applications awaiting HR review</div>
-  </div>
-
-  <!-- Active Branches -->
-  <div class="metric panel-lg border-l-4 rounded-lg p-4"
-       style="border-color:#0F3E33; background:#F1F8F6;">
-    <div class="text-sm small-muted flex items-center gap-2">
-      🏢 <span>Active branches</span>
+    <div class="metric">
+      <span id="metric-label-2">Active Employees</span>
+      <strong id="metric-2">—</strong>
     </div>
-    <div id="active-branches" class="k mt-2 text-2xl font-semibold text-gray-800">—</div>
-    <div class="text-xs small-muted mt-2">Operational locations</div>
-  </div>
-
-
-
+    <div class="metric">
+      <span id="metric-label-3">Unassigned Department</span>
+      <strong id="metric-3">—</strong>
     </div>
+  </section>
 
-    <!-- tabs -->
-    <div class="tab-row mb-4">
-      <button class="tab-btn active" data-tab="overview">
-    <i class="ri-dashboard-line mr-1 text-base"></i>
-    Overview
-  </button>
+  <!-- Main -->
+  <section class="grid">
 
-  <button class="tab-btn" data-tab="applications">
-    <i class="ri-file-list-3-line mr-1 text-base"></i>
-    Applications
-  </button>
+    <!-- Left -->
+    <div class="card">
+      <h3>Attention Required</h3>
+      <div class="attention" id="attention-list"></div>
 
-  <button class="tab-btn" data-tab="employees">
-    <i class="ri-group-line mr-1 text-base"></i>
-    Employees
-  </button>
+      <hr style="margin:1.5rem 0; border:none; border-top:1px solid #f1dada;">
 
-  <button class="tab-btn" data-tab="departments">
-    <i class="ri-layout-grid-line mr-1 text-base"></i>
-    Departments
-  </button>
-
-  <button class="tab-btn no-shadow" data-tab="payroll">
-    <i class="ri-money-dollar-circle-line mr-1 text-base"></i>
-    Payroll &amp; benefits
-  </button>
-      <div style="flex:1"></div>
-      <button id="quick-create" class="btn-primary">Quick action</button>
+      <h3>Recent HR Activity</h3>
+      <div class="activity">
+        <div class="activity-item">New employee approved <small>2 hours ago</small></div>
+        <div class="activity-item">Application rejected <small>Yesterday</small></div>
+        <div class="activity-item">Department updated <small>2 days ago</small></div>
+      </div>
     </div>
 
-    <!-- panels -->
-   {% include "hr/overview.html" %}
+    <!-- Right -->
+    <div class="card">
+      <h3>Workforce Snapshot</h3>
+      <div id="dept-breakdown" class="breakdown"></div>
+    </div>
 
-    {% include "hr/applications.html" %}
+  </section>
 
-    {% include "hr/employees.html" %}
+</main>
 
-    {%  include "hr/departments.html"  %}
-   
-    {% include "hr/payroll.html" %}
+<script>
+(() => {
+  const api = '/hr/api';
+  const q = s => document.querySelector(s);
+  const qa = s => Array.from(document.querySelectorAll(s));
+  let context = 'employees';
 
-  </main>
+  qa('.switch-btn').forEach(btn => {
+    btn.onclick = () => {
+      context = btn.dataset.context;
+      qa('.switch-btn').forEach(b => b.classList.toggle('active', b === btn));
+      loadDashboard();
+    };
+  });
 
-  <footer class="container py-4 text-center muted-very">
-    &copy; {{ now.year }} Farhat Printing Press — HR
-  </footer>
+  async function loadDashboard(){
+    const employees = await fetch(api+'/employees/').then(r=>r.json()).catch(()=>[]);
+    const apps = await fetch(api+'/applications/').then(r=>r.json()).catch(()=>[]);
 
-  <!-- safe JS (guards to avoid runtime crash) -->
-  <script>
-    (function(){
-      const q = sel => document.querySelector(sel);
-      const qa = sel => Array.from(document.querySelectorAll(sel));
+    // Labels reset
+    const labels = [
+      q('#metric-label-1'),
+      q('#metric-label-2'),
+      q('#metric-label-3')
+    ];
 
-      // tab logic - safe guards
-      const tabs = qa('.tab-btn') || [];
-      const panels = qa('.tab-panel') || [];
-      function showTab(key){
-        panels.forEach(p => { if(!p.id) return; p.id === key ? p.classList.remove('hidden') : p.classList.add('hidden'); });
-        tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === key));
-      }
-      tabs.forEach(t => t.addEventListener('click', ()=> showTab(t.getAttribute('data-tab'))));
-      // default already shows overview
+    if(context === 'employees'){
+      labels[0].textContent = 'Total Employees';
+      labels[1].textContent = 'Active Employees';
+      labels[2].textContent = 'Unassigned Department';
 
-      const apiBase = '/hr/api';
+      q('#metric-1').textContent = employees.length;
+      q('#metric-2').textContent = employees.filter(e=>e.is_active).length;
+      q('#metric-3').textContent = employees.filter(e=>!e.department_name).length;
 
-      const jsonOrError = async (res) => {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      };
+      q('#attention-list').innerHTML = `
+        <div class="attention-item"><span>Employees without department</span><a href="#">Resolve</a></div>
+        <div class="attention-item"><span>Inactive employees</span><a href="#">Review</a></div>
+      `;
+    }
 
-      function getCSRF(){
-        const match = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
-        return match ? match.pop() : '';
-      }
+    if(context === 'recruitment'){
+      labels[0].textContent = 'Pending Applications';
+      labels[1].textContent = 'Approved';
+      labels[2].textContent = 'Rejected';
 
-      // UI loaders (guarded)
-      async function loadOverview(){
-        const totalEl = q('#total-employees');
-        const pendingEl = q('#pending-apps');
-        const branchesEl = q('#active-branches');
-        const breakdownEl = q('#dept-breakdown');
-        if(!totalEl || !pendingEl || !branchesEl || !breakdownEl) return;
+      q('#metric-1').textContent = apps.filter(a=>a.status==='pending').length;
+      q('#metric-2').textContent = apps.filter(a=>a.status==='approved').length;
+      q('#metric-3').textContent = apps.filter(a=>a.status==='rejected').length;
 
-        try {
-          const empResp = await fetch(apiBase + '/employees/', {credentials:'same-origin'});
-          const empJson = await jsonOrError(empResp);
-          const employees = empJson.results || empJson || [];
-          totalEl.textContent = employees.length || '0';
+      q('#attention-list').innerHTML = `
+        <div class="attention-item"><span>Pending applications</span><a href="#">Review</a></div>
+        <div class="attention-item"><span>Old applications (7+ days)</span><a href="#">Check</a></div>
+      `;
+    }
 
-          const appsResp = await fetch(apiBase + '/applications/', {credentials:'same-origin'});
-          const appsJson = await jsonOrError(appsResp);
-          const appsList = appsJson.results || appsJson || [];
-          const pendingCount = (appsList.filter && appsList.filter(a => (a.status || '').toLowerCase() === 'pending').length) || 0;
-          pendingEl.textContent = pendingCount;
+    if(context === 'payroll'){
+      labels[0].textContent = 'Payroll Due';
+      labels[1].textContent = 'Paid This Month';
+      labels[2].textContent = 'Adjustments';
 
-          try {
-            const brResp = await fetch(apiBase + '/branches/', {credentials:'same-origin'});
-            const brJson = await jsonOrError(brResp);
-            const branches = brJson.results || brJson || [];
-            branchesEl.textContent = branches.length || '0';
-          } catch(_){
-            branchesEl.textContent = '—';
-          }
+      q('#metric-1').textContent = '—';
+      q('#metric-2').textContent = '—';
+      q('#metric-3').textContent = '—';
 
-          const byDept = {};
-          (employees || []).forEach(e => {
-            const d = (e.department_name || (e.department && (e.department.name || e.department)) || 'Unassigned');
-            byDept[d] = (byDept[d] || 0) + 1;
-          });
-          if(Object.keys(byDept).length === 0){
-            breakdownEl.innerHTML = '<div class="small-muted">No employees yet.</div>';
-          } else {
-            breakdownEl.innerHTML = Object.entries(byDept).map(([k,v]) => `<div style="display:flex;justify-content:space-between;"><div>${k}</div><div class="small-muted">${v}</div></div>`).join('');
-          }
+      q('#attention-list').innerHTML = `
+        <div class="attention-item"><span>Payroll pending approval</span><a href="#">Review</a></div>
+        <div class="attention-item"><span>Missing payroll data</span><a href="#">Fix</a></div>
+      `;
+    }
 
-        } catch(e){
-          totalEl.textContent = '—';
-          pendingEl.textContent = '—';
-          branchesEl.textContent = '—';
-          breakdownEl.textContent = 'API not reachable';
-        }
-      }
+    // Workforce snapshot
+    const byDept = {};
+    employees.forEach(e=>{
+      const d = e.department_name || 'Unassigned';
+      byDept[d] = (byDept[d]||0)+1;
+    });
 
-      async function loadApplications(){
-        const container = q('#apps-container');
-        if(!container) return;
-        container.innerHTML = '<div class="small-muted">Loading applications…</div>';
-        try {
-          const resp = await fetch(apiBase + '/applications/', {credentials:'same-origin'});
-          const data = await jsonOrError(resp);
-          const list = data.results || data || [];
-          if(!list.length){ container.innerHTML = '<div class="small-muted">No applications found.</div>'; return; }
+    q('#dept-breakdown').innerHTML =
+      Object.entries(byDept).map(([k,v]) =>
+        `<div class="row"><span>${k}</span><span>${v}</span></div>`
+      ).join('');
+  }
 
-          container.innerHTML = list.map(a => `
-            <div style="border-radius:8px;border:1px solid #f5e8e8;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;">
-              <div>
-                <div style="font-weight:600">${a.first_name} ${a.last_name}</div>
-                <div class="small-muted" style="font-size:12px">${a.email || ''} • ${a.phone || ''}</div>
-                <div class="small-muted" style="font-size:12px;margin-top:6px">${a.recommended_role_display || a.recommended_role || ''}</div>
-              </div>
-              <div style="text-align:right;">
-                <div class="small-muted" style="font-size:12px">${new Date(a.created_at || a.created || '').toLocaleString()}</div>
-                <div style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">
-                  <button data-id="${a.id}" class="btn-primary approve-btn">Approve</button>
-                  <button data-id="${a.id}" class="btn-outline reject-btn">Reject</button>
-                </div>
-                ${a.resume ? `<a href="${a.resume}" target="_blank" style="display:block;margin-top:6px;font-size:12px;color:var(--red-700)">View resume</a>` : ''}
-              </div>
-            </div>
-          `).join('');
+  loadDashboard();
+})();
+</script>
 
-          // wire buttons
-          qa('.approve-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const id = btn.getAttribute('data-id');
-              if(!confirm('Approve this application and create employee record?')) return;
-              try {
-                const res = await fetch(apiBase + `/applications/${id}/approve/`, { method:'POST', credentials:'same-origin', headers:{ 'X-CSRFToken': getCSRF() }});
-                if(!res.ok) throw new Error('Approve failed');
-                await loadApplications(); await loadEmployees(); await loadOverview();
-                alert('Application approved.');
-              } catch(err){ alert('Error: ' + err.message); }
-            });
-          });
-
-          qa('.reject-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const id = btn.getAttribute('data-id');
-              if(!confirm('Reject this application?')) return;
-              try {
-                const res = await fetch(apiBase + `/applications/${id}/reject/`, { method:'POST', credentials:'same-origin', headers:{ 'X-CSRFToken': getCSRF() }});
-                if(!res.ok) throw new Error('Reject failed');
-                await loadApplications(); await loadOverview();
-                alert('Application rejected.');
-              } catch(err){ alert('Error: ' + err.message); }
-            });
-          });
-
-        } catch(e){
-          container.innerHTML = '<div class="small-muted">Cannot load applications (API unavailable or unauthorized).</div>';
-        }
-      }
-
-      async function loadEmployees(){
-        const container = q('#employees-container');
-        if(!container) return;
-        container.innerHTML = '<div class="small-muted">Loading employees…</div>';
-        try {
-          const resp = await fetch(apiBase + '/employees/', {credentials:'same-origin'});
-          const data = await jsonOrError(resp);
-          const list = data.results || data || [];
-          if(!list.length){ container.innerHTML = '<div class="small-muted">No employees found.</div>'; return; }
-
-          const rows = list.map(e => `<tr><td>${e.first_name} ${e.last_name}</td><td>${e.employee_email || e.email || ''}</td><td>${(e.department_name || (e.department && e.department.name) || '—')}</td><td>${e.is_active ? 'Active' : 'Pending'}</td></tr>`).join('');
-          container.innerHTML = `<div style="overflow:auto"><table class="table-fixed"><thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-
-        } catch(e){
-          container.innerHTML = '<div class="small-muted">Cannot load employees (API unavailable or unauthorized).</div>';
-        }
-      }
-
-      async function loadDepartments(){
-        const container = q('#departments-container');
-        if(!container) return;
-        container.innerHTML = '<div class="small-muted">Loading departments…</div>';
-        try {
-          const resp = await fetch(apiBase + '/departments/', {credentials:'same-origin'});
-          const data = await jsonOrError(resp);
-          const list = data.results || data || [];
-          if(!list.length){ container.innerHTML = '<div class="small-muted">No departments found.</div>'; return; }
-          container.innerHTML = `<ul>${list.map(d => `<li style="display:flex;justify-content:space-between;padding:8px 0"><div><strong>${d.name}</strong><div class="small-muted" style="font-size:12px">${d.description || ''}</div></div><div class="small-muted">${d.employee_count || ''}</div></li>`).join('')}</ul>`;
-        } catch(e){
-          container.innerHTML = '<div class="small-muted">Cannot load departments (API unavailable or unauthorized).</div>';
-        }
-      }
-
-      // bindings (guarded)
-      const btnRefreshEmployees = q('#refresh-employees');
-      if(btnRefreshEmployees) btnRefreshEmployees.addEventListener('click', loadEmployees);
-      const btnReloadApps = q('#reload-apps');
-      if(btnReloadApps) btnReloadApps.addEventListener('click', loadApplications);
-      const btnRefreshOverview = q('#refresh-overview');
-      if(btnRefreshOverview) btnRefreshOverview.addEventListener('click', () => { loadOverview(); loadApplications(); loadEmployees(); });
-
-      // initial load
-      try { loadOverview(); loadApplications(); loadEmployees(); loadDepartments(); }
-      catch(e){ console.warn('Initial loaders error', e); }
-
-    })();
-  </script>
 </body>
 </html>

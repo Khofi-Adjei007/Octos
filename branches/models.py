@@ -22,26 +22,65 @@ class Country(models.Model):
 
 
 class Region(models.Model):
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='regions')
-    code = models.CharField(max_length=16, blank=True, null=True)  # e.g. 'GA' or 'BR'
-    name = models.CharField(max_length=120)
+    """
+    Administrative region within a country.
+    Immutable geographic unit used for HR scoping and branch grouping.
+    """
+
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE,
+        related_name="regions",
+    )
+
+    belt = models.ForeignKey(
+        "Human_Resources.Belt",
+        on_delete=models.PROTECT,
+        related_name="regions",
+        null=True,          # TEMPORARY
+        blank=True,         # TEMPORARY
+        help_text="Geographic belt this region belongs to",
+    )
+
+    code = models.CharField(
+        max_length=16,
+        # TEMPORARY: made nullable for data migration
+        blank=True,
+        null=True,
+        help_text="Optional region code e.g. GA, ER",
+    )
+
+    name = models.CharField(
+        max_length=120,
+        help_text="Official region name",
+    )
+
+    # DEPRECATED — retained temporarily for backward compatibility
     hr_manager = models.OneToOneField(
-        'employees.Employee',
+        "employees.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='hr_region'
+        related_name="legacy_hr_region",
+        help_text="DEPRECATED: Use HRScopeAssignment instead",
     )
-    meta = models.JSONField(default=dict, blank=True)
+
+    meta = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Extensible metadata for region",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (('country', 'name'),)
-        ordering = ['name']
+        unique_together = (("country", "name"),)
+        ordering = ["name"]
 
     def __str__(self):
         return f"{self.name} — {self.country.code}"
+
 
 
 class City(models.Model):

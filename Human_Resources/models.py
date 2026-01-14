@@ -306,3 +306,171 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} @ {self.timestamp}"
+
+# ============================================================
+#Human resource Authority Models
+# ============================================================
+class Belt(models.Model):
+    """
+    Geopolitical authority layer.
+    Immutable classification used for HR scoping.
+    """
+
+    code = models.CharField(
+        max_length=16,
+        unique=True,
+        help_text="Short immutable code e.g. SOUTH, MID, NORTH",
+    )
+
+    name = models.CharField(
+        max_length=100,
+        help_text="Human-readable belt name",
+    )
+
+    order = models.PositiveSmallIntegerField(
+        help_text="Ordering from south to north",
+    )
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.name
+
+class HRResponsibility(models.Model):
+    """
+    Defines a specific HR capability.
+    Examples: Recruitment, Payroll Preparation, Compliance.
+    """
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Machine-readable code e.g. PAYROLL_PREP",
+    )
+
+    name = models.CharField(
+        max_length=100,
+        help_text="Human-readable responsibility name",
+    )
+
+    description = models.TextField(
+        blank=True,
+        help_text="Optional description of responsibility",
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class HRScope(models.Model):
+    """
+    Defines an HR authority boundary.
+    Scope is either belt-level OR region-level.
+    """
+
+    name = models.CharField(
+        max_length=150,
+        help_text="Descriptive scope name",
+    )
+
+    belt = models.ForeignKey(
+        "Belt",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="hr_scopes",
+        help_text="Belt-level scope (mutually exclusive with region)",
+    )
+
+    region = models.ForeignKey(
+        "branches.Region",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="hr_scopes",
+        help_text="Region-level scope (mutually exclusive with belt)",
+    )
+
+    responsibilities = models.ManyToManyField(
+        HRResponsibility,
+        related_name="scopes",
+        help_text="Responsibilities granted within this scope",
+    )
+
+    visibility_level = models.CharField(
+        max_length=20,
+        choices=[
+            ("LOCAL", "Local"),
+            ("BELT", "Belt"),
+            ("GLOBAL", "Global"),
+        ],
+        default="LOCAL",
+        help_text="Defines visibility breadth without implying authority",
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(belt__isnull=False, region__isnull=True)
+                    | models.Q(belt__isnull=True, region__isnull=False)
+                ),
+                name="hrscope_requires_exactly_one_geography",
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class HRScopeAssignment(models.Model):
+    """
+    Assigns an HR scope to an employee.
+    This is the actual authority grant.
+    """
+
+    employee = models.ForeignKey(
+        "employees.Employee",
+        on_delete=models.CASCADE,
+        related_name="hr_scope_assignments",
+    )
+
+    scope = models.ForeignKey(
+        HRScope,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+    )
+
+    is_primary = models.BooleanField(
+        default=False,
+        help_text="Marks the employee's primary HR scope",
+    )
+
+    start_date = models.DateField(
+        help_text="When this assignment becomes active",
+    )
+
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Optional end date for temporary or acting assignments",
+    )
+
+    assigned_by = models.ForeignKey(
+        "employees.Employee",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="hr_scope_assignments_given",
+    )
+
+    class Meta:
+        unique_together = ("employee", "scope", "start_date")
+
+    def __str__(self):
+        return f"{self.employee} → {self.scope}"
+
+
