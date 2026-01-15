@@ -7,197 +7,14 @@
   <title>HR Dashboard — Farhat Printing Press</title>
 
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
-
-  <style>
-    :root{
-      --red:#FF0A14;
-      --red-dark:#B60A10;
-      --bg:#fff6f6;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --shadow:0 14px 40px rgba(182,10,16,.08);
-    }
-
-    *{ box-sizing:border-box }
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system;
-      background:var(--bg);
-      color:#111827;
-    }
-
-    /* Header */
-    header{
-      background:var(--red);
-      color:white;
-      position:sticky;
-      top:0;
-      z-index:40;
-    }
-    .header-inner{
-      max-width:1200px;
-      margin:auto;
-      padding:1rem 1.25rem;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .brand{
-      display:flex;
-      gap:.75rem;
-      align-items:center;
-    }
-    .brand img{ height:38px; background:white; border-radius:8px; }
-    .brand small{ opacity:.85; display:block; font-size:.75rem }
-
-    .user{
-      display:flex;
-      gap:1rem;
-      align-items:center;
-      font-size:.9rem;
-    }
-    .user a{
-      color:white;
-      text-decoration:none;
-      border:1px solid rgba(255,255,255,.25);
-      padding:.35rem .65rem;
-      border-radius:8px;
-    }
-
-    /* Page */
-    main{
-      max-width:1200px;
-      margin:auto;
-      padding:1.5rem 1.25rem 3rem;
-    }
-
-    /* Metric Context Switcher */
-    .metric-switch{
-      display:flex;
-      gap:.5rem;
-      margin-bottom:1rem;
-      flex-wrap:wrap;
-    }
-    .switch-btn{
-      background:transparent;
-      border:1px solid #f1dada;
-      padding:.4rem .9rem;
-      border-radius:999px;
-      font-size:.8rem;
-      color:var(--muted);
-      cursor:pointer;
-    }
-    .switch-btn.active{
-      background:var(--red);
-      color:white;
-      border-color:var(--red);
-    }
-
-    /* Metrics */
-    .metrics{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:1.25rem;
-      margin-bottom:2rem;
-    }
-    .metric{
-      background:var(--card);
-      border-radius:18px;
-      padding:1.25rem;
-      box-shadow:var(--shadow);
-    }
-    .metric span{
-      color:var(--muted);
-      font-size:.85rem;
-    }
-    .metric strong{
-      display:block;
-      margin-top:.5rem;
-      font-size:2rem;
-      font-weight:700;
-    }
-
-    /* Main grid */
-    .grid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:1.5rem;
-    }
-    @media(min-width:900px){
-      .grid{
-        grid-template-columns:2.2fr 1.3fr;
-      }
-    }
-
-    .card{
-      background:var(--card);
-      border-radius:22px;
-      padding:1.5rem;
-      box-shadow:var(--shadow);
-    }
-    .card h3{
-      margin:0 0 1rem;
-      font-size:1.1rem;
-    }
-
-    /* Attention list */
-    .attention{
-      display:flex;
-      flex-direction:column;
-      gap:.75rem;
-    }
-    .attention-item{
-      padding:.9rem 1rem;
-      border-radius:14px;
-      border:1px solid #f1dada;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background:#fffafa;
-    }
-    .attention-item span{
-      font-size:.9rem;
-    }
-    .attention-item a{
-      font-size:.8rem;
-      color:var(--red-dark);
-      text-decoration:none;
-      font-weight:600;
-    }
-
-    /* Breakdown */
-    .breakdown{
-      display:flex;
-      flex-direction:column;
-      gap:.6rem;
-      margin-top:.5rem;
-    }
-    .row{
-      display:flex;
-      justify-content:space-between;
-      font-size:.9rem;
-    }
-
-    /* Activity */
-    .activity{
-      display:flex;
-      flex-direction:column;
-      gap:.7rem;
-    }
-    .activity-item{
-      font-size:.85rem;
-      color:#374151;
-    }
-    .activity-item small{
-      color:var(--muted);
-      display:block;
-      font-size:.7rem;
-    }
-  </style>
+  <link href="{% static 'hr/css/dashboard.css' %}" rel="stylesheet">
 </head>
 
 <body>
 
+<!-- =========================
+     GLOBAL HEADER
+========================= -->
 <header>
   <div class="header-inner">
     <div class="brand">
@@ -217,144 +34,53 @@
 
 <main>
 
-  <!-- Metric Context Switcher -->
-  <div class="metric-switch">
-    <button class="switch-btn active" data-context="employees">Employees</button>
-    <button class="switch-btn" data-context="payroll">Payroll</button>
-    <button class="switch-btn" data-context="recruitment">Recruitment</button>
-  </div>
+  <!-- =========================
+       CONTEXT SWITCHER
+  ========================= -->
+  <nav class="metric-switch">
+    <button class="switch-btn active" data-context="overview">
+      Overview
+    </button>
+    <button class="switch-btn" data-context="employees">
+      Employees
+    </button>
+    <button class="switch-btn" data-context="payroll">
+      Payroll
+    </button>
+    <button class="switch-btn" data-context="recruitment">
+      Recruitment
+    </button>
+  </nav>
 
-  <!-- Metrics -->
-  <section class="metrics">
-    <div class="metric">
-      <span id="metric-label-1">Total Employees</span>
-      <strong id="metric-1">—</strong>
-    </div>
-    <div class="metric">
-      <span id="metric-label-2">Active Employees</span>
-      <strong id="metric-2">—</strong>
-    </div>
-    <div class="metric">
-      <span id="metric-label-3">Unassigned Department</span>
-      <strong id="metric-3">—</strong>
-    </div>
-  </section>
+  <!-- =========================
+       CONTEXT PANELS
+  ========================= -->
+  <section class="context-container">
 
-  <!-- Main -->
-  <section class="grid">
+    <!-- Overview -->
+    <section class="context-panel" data-context="overview">
+      {% include 'hr/overview.html' %}
+    </section>
 
-    <!-- Left -->
-    <div class="card">
-      <h3>Attention Required</h3>
-      <div class="attention" id="attention-list"></div>
+    <!-- Employees -->
+    <section class="context-panel hidden" data-context="employees">
+      {% include 'hr/employees.html' %}
+    </section>
 
-      <hr style="margin:1.5rem 0; border:none; border-top:1px solid #f1dada;">
+    <!-- Payroll -->
+    <section class="context-panel hidden" data-context="payroll">
+      {% include 'hr/payroll.html' %}
+    </section>
 
-      <h3>Recent HR Activity</h3>
-      <div class="activity">
-        <div class="activity-item">New employee approved <small>2 hours ago</small></div>
-        <div class="activity-item">Application rejected <small>Yesterday</small></div>
-        <div class="activity-item">Department updated <small>2 days ago</small></div>
-      </div>
-    </div>
-
-    <!-- Right -->
-    <div class="card">
-      <h3>Workforce Snapshot</h3>
-      <div id="dept-breakdown" class="breakdown"></div>
-    </div>
+    <!-- Recruitment -->
+    <section class="context-panel hidden" data-context="recruitment">
+      {% include 'hr/recruitment.html' %}
+    </section>
 
   </section>
 
 </main>
 
-<script>
-(() => {
-  const api = '/hr/api';
-  const q = s => document.querySelector(s);
-  const qa = s => Array.from(document.querySelectorAll(s));
-  let context = 'employees';
-
-  qa('.switch-btn').forEach(btn => {
-    btn.onclick = () => {
-      context = btn.dataset.context;
-      qa('.switch-btn').forEach(b => b.classList.toggle('active', b === btn));
-      loadDashboard();
-    };
-  });
-
-  async function loadDashboard(){
-    const employees = await fetch(api+'/employees/').then(r=>r.json()).catch(()=>[]);
-    const apps = await fetch(api+'/applications/').then(r=>r.json()).catch(()=>[]);
-
-    // Labels reset
-    const labels = [
-      q('#metric-label-1'),
-      q('#metric-label-2'),
-      q('#metric-label-3')
-    ];
-
-    if(context === 'employees'){
-      labels[0].textContent = 'Total Employees';
-      labels[1].textContent = 'Active Employees';
-      labels[2].textContent = 'Unassigned Department';
-
-      q('#metric-1').textContent = employees.length;
-      q('#metric-2').textContent = employees.filter(e=>e.is_active).length;
-      q('#metric-3').textContent = employees.filter(e=>!e.department_name).length;
-
-      q('#attention-list').innerHTML = `
-        <div class="attention-item"><span>Employees without department</span><a href="#">Resolve</a></div>
-        <div class="attention-item"><span>Inactive employees</span><a href="#">Review</a></div>
-      `;
-    }
-
-    if(context === 'recruitment'){
-      labels[0].textContent = 'Pending Applications';
-      labels[1].textContent = 'Approved';
-      labels[2].textContent = 'Rejected';
-
-      q('#metric-1').textContent = apps.filter(a=>a.status==='pending').length;
-      q('#metric-2').textContent = apps.filter(a=>a.status==='approved').length;
-      q('#metric-3').textContent = apps.filter(a=>a.status==='rejected').length;
-
-      q('#attention-list').innerHTML = `
-        <div class="attention-item"><span>Pending applications</span><a href="#">Review</a></div>
-        <div class="attention-item"><span>Old applications (7+ days)</span><a href="#">Check</a></div>
-      `;
-    }
-
-    if(context === 'payroll'){
-      labels[0].textContent = 'Payroll Due';
-      labels[1].textContent = 'Paid This Month';
-      labels[2].textContent = 'Adjustments';
-
-      q('#metric-1').textContent = '—';
-      q('#metric-2').textContent = '—';
-      q('#metric-3').textContent = '—';
-
-      q('#attention-list').innerHTML = `
-        <div class="attention-item"><span>Payroll pending approval</span><a href="#">Review</a></div>
-        <div class="attention-item"><span>Missing payroll data</span><a href="#">Fix</a></div>
-      `;
-    }
-
-    // Workforce snapshot
-    const byDept = {};
-    employees.forEach(e=>{
-      const d = e.department_name || 'Unassigned';
-      byDept[d] = (byDept[d]||0)+1;
-    });
-
-    q('#dept-breakdown').innerHTML =
-      Object.entries(byDept).map(([k,v]) =>
-        `<div class="row"><span>${k}</span><span>${v}</span></div>`
-      ).join('');
-  }
-
-  loadDashboard();
-})();
-</script>
-
+<script src="{% static 'hr/hr_js/hr_.js' %}"></script>
 </body>
 </html>

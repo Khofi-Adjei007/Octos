@@ -1,13 +1,69 @@
-    <section id="employees" class="tab-panel panel hidden mb-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold">Employees</h2>
-        <div>
-          <button id="refresh-employees" class="btn-outline">Refresh</button>
-          <a href="#" class="btn-outline" style="margin-left:8px">New Employee</a>
-        </div>
-      </div>
+<!-- =====================================================
+     EMPLOYEES · HEADER & ACTIONS
+===================================================== -->
+<section class="employees-header">
 
-      <div id="employees-container">
-        <div class="text-sm small-muted">Loading employees…</div>
-      </div>
-    </section>
+  <div class="employees-header-left">
+    <h2>Employees</h2>
+    <p class="employees-subtitle">
+      Showing all staff across Greater Accra Region
+    </p>
+  </div>
+
+  <div class="employees-header-right">
+    <button class="btn-primary" id="add-employee-btn">
+      <i class="ri-user-add-line"></i>
+      Add Employee
+    </button>
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     EMPLOYEES · STATUS FILTERS
+===================================================== -->
+<section class="employees-filters">
+
+  <button class="filter-chip active" data-filter="all">
+    All
+  </button>
+
+  <button class="filter-chip" data-filter="active">
+    Active
+  </button>
+
+  <button class="filter-chip" data-filter="inactive">
+    Inactive
+  </button>
+
+  <button class="filter-chip" data-filter="unassigned">
+    Unassigned
+  </button>
+
+</section>
+
+
+<!-- =====================================================
+     EMPLOYEES · LIST
+===================================================== -->
+<section class="employees-list">
+
+  <!-- Empty / Loading state -->
+  <div class="employees-empty" id="employees-empty">
+    No employees found.
+  </div>
+
+  <!-- Employee rows injected by JS -->
+  <div class="employee-row">
+    <div class="employee-main">
+      <strong class="employee-name">—</strong>
+      <span class="employee-meta">—</span>
+    </div>
+
+    <div class="employee-status">
+      <span class="status-pill status-active">Active</span>
+    </div>
+  </div>
+
+</section>

@@ -1,25 +1,196 @@
- <section id="overview" class="tab-panel panel mb-4">
-      <div class="flex items-start justify-between">
-        <div>
-          <h2 class="text-lg font-semibold">Overview</h2>
-          <p class="small-muted mt-1">HR quick glance — approve public applications, manage staff and complaints.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="refresh-overview" class="btn-outline">Refresh</button>
-        </div>
+<!-- =====================================================
+     OVERVIEW · REGION CONTEXT
+===================================================== -->
+<section class="overview">
+
+  <div class="overview-left">
+    <h2 id="region-name">—</h2>
+    <p class="overview-sub">
+      <span id="branch-count">—</span> branches ·
+      <span id="region-employees">—</span> employees
+    </p>
+  </div>
+
+  <div class="overview-right" id="critical-summary">
+    <!-- JS injects critical signals -->
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     OVERVIEW · KEY METRICS
+===================================================== -->
+<section class="metrics metrics-modern metrics-compact">
+
+  <!-- Metric: Total Employees -->
+  <div class="metric metric-modern-card">
+    <div class="metric-top">
+      <div class="metric-icon bg-red-soft" id="metric-icon-1">
+        <i class="ri-group-line"></i>
+      </div>
+    </div>
+    <div class="metric-body">
+      <span id="metric-label-1">Total Employees</span>
+      <strong id="metric-1">—</strong>
+    </div>
+  </div>
+
+  <!-- Metric: Active Employees -->
+  <div class="metric metric-modern-card">
+    <div class="metric-top">
+      <div class="metric-icon bg-green-soft" id="metric-icon-2">
+        <i class="ri-user-follow-line"></i>
+      </div>
+    </div>
+    <div class="metric-body">
+      <span id="metric-label-2">Active Employees</span>
+      <strong id="metric-2">—</strong>
+    </div>
+  </div>
+
+  <!-- Metric: Pending Actions -->
+  <div class="metric metric-modern-card">
+    <div class="metric-top">
+      <div class="metric-icon bg-orange-soft" id="metric-icon-3">
+        <i class="ri-error-warning-line"></i>
+      </div>
+    </div>
+    <div class="metric-body">
+      <span id="metric-label-3">Pending Actions</span>
+      <strong id="metric-3">—</strong>
+    </div>
+  </div>
+
+  <!-- Metric: Branch Coverage -->
+  <div class="metric metric-modern-card">
+    <div class="metric-top">
+      <div class="metric-icon bg-blue-soft" id="metric-icon-4">
+        <i class="ri-building-line"></i>
+      </div>
+    </div>
+    <div class="metric-body">
+      <span id="metric-label-4">Branches Covered</span>
+      <strong id="metric-4">—</strong>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     OVERVIEW · PRIMARY INSIGHTS
+===================================================== -->
+<section class="grid">
+
+  <!-- ATTENTION & ACTIVITY -->
+  <div class="card">
+    <h3>Attention Required</h3>
+
+    <div class="attention" id="attention-list">
+      <!-- JS injects overview attention items -->
+    </div>
+
+    <hr class="divider">
+
+    <h3>Recent HR Activity</h3>
+
+    <div class="activity">
+      <div class="activity-item">
+        New employee approved
+        <small>2 hours ago</small>
+      </div>
+      <div class="activity-item">
+        Application rejected
+        <small>Yesterday</small>
+      </div>
+      <div class="activity-item">
+        Department updated
+        <small>2 days ago</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKFORCE SNAPSHOT -->
+  <div class="card">
+    <h3>Workforce Snapshot</h3>
+
+    <div id="dept-breakdown" class="breakdown">
+      <!-- JS injects department breakdown -->
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     OVERVIEW · LAYER 2 (DEEPER INSIGHTS)
+===================================================== -->
+<section class="grid overview-layer-2">
+
+  <!-- Workforce Movement -->
+  <div class="card">
+    <h3>Workforce Movement</h3>
+    <p class="card-subtitle">Last 30 days</p>
+
+    <div class="stat-list">
+      <div class="stat-row">
+        <span>New hires</span>
+        <strong id="movement-hires">—</strong>
       </div>
 
-      <div class="grid-1 grid-2 mt-4" style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));">
-        <div class="panel">
-          <div class="text-sm small-muted">Employees by department</div>
-          <div id="dept-breakdown" class="mt-3 text-sm small-muted">Loading…</div>
-        </div>
-
-        <div class="panel">
-          <div class="text-sm small-muted">Recent activity</div>
-          <ul id="recent-activity" class="mt-3 text-sm small-muted">
-            <li>No activity yet.</li>
-          </ul>
-        </div>
+      <div class="stat-row">
+        <span>Deactivations</span>
+        <strong id="movement-deactivations">—</strong>
       </div>
-    </section>
+
+      <div class="stat-row stat-emphasis">
+        <span>Net change</span>
+        <strong id="movement-net">—</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branch Load Distribution -->
+  <div class="card">
+    <h3>Branch Load Distribution</h3>
+    <p class="card-subtitle">Employees by branch</p>
+
+    <div class="distribution-list" id="branch-distribution">
+      <!-- JS injects rows -->
+      <div class="distribution-row">
+        <span>—</span>
+        <span>—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Department Composition -->
+  <div class="card">
+    <h3>Department Composition</h3>
+    <p class="card-subtitle">Current workforce mix</p>
+
+    <div class="distribution-list" id="department-composition">
+      <!-- JS injects rows -->
+      <div class="distribution-row">
+        <span>—</span>
+        <span>—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HR Pressure Queue -->
+  <div class="card">
+    <h3>HR Pressure Queue</h3>
+    <p class="card-subtitle">Items requiring attention</p>
+
+    <div class="queue-list" id="pressure-queue">
+      <!-- JS injects queue items -->
+      <div class="queue-item">
+        <span>—</span>
+        <strong>—</strong>
+      </div>
+    </div>
+  </div>
+
+</section>

@@ -1,0 +1,55 @@
+<!-- =====================================================
+     RECRUITMENT · HEADER
+===================================================== -->
+<section class="recruitment-header">
+
+  <div class="recruitment-header-left">
+    <h2>Recruitment</h2>
+    <p class="recruitment-subtitle">
+      Review and manage incoming applications
+    </p>
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     RECRUITMENT · FILTERS
+===================================================== -->
+<section class="recruitment-filters">
+
+  <button class="filter-chip active" data-filter="applications">
+    Applications
+  </button>
+
+  <button class="filter-chip" data-filter="pending">
+    Pending
+  </button>
+
+  <button class="filter-chip" data-filter="approved">
+    Approved
+  </button>
+
+  <button class="filter-chip" data-filter="rejected">
+    Rejected
+  </button>
+
+</section>
+
+
+<!-- =====================================================
+     RECRUITMENT · APPLICATION LIST
+===================================================== -->
+<section class="recruitment-list">
+
+  <!-- Empty state (persistent, never wiped) -->
+  <div class="recruitment-empty" id="recruitment-empty">
+    No applications found.
+  </div>
+
+  <!-- Applications container (JS wipes & repopulates this only) -->
+  <div class="recruitment-items">
+    <!-- JS injects application rows here -->
+  </div>
+
+</section>
