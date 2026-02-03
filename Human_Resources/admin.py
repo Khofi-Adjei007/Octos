@@ -2,13 +2,11 @@
 
 from django.contrib import admin
 
-from .models import (
+from Human_Resources.models import (
     Department,
     Role,
     Permission,
     RolePermission,
-    UserProfile,
-    Recommendation,
     AuditLog,
 )
 
@@ -51,31 +49,7 @@ class RolePermissionAdmin(admin.ModelAdmin):
     ordering = ("role__name",)
 
 
-# ============================================================
-# User / HR Admins
-# ============================================================
-
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "role", "department", "managed_branch")
-    list_filter = ("role", "department")
-    search_fields = ("user__employee_email",)
-
-
-@admin.register(Recommendation)
-class RecommendationAdmin(admin.ModelAdmin):
-    list_display = (
-        "first_name",
-        "last_name",
-        "email",
-        "recommended_role",
-        "status",
-        "branch",
-        "created_at",
-    )
-    list_filter = ("status", "recommended_role", "branch")
-    search_fields = ("first_name", "last_name", "email")
-    ordering = ("-created_at",)
+#
 
 
 # ============================================================

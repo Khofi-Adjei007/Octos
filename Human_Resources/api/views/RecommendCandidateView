@@ -1,0 +1,45 @@
+# Human_Resources/api/views/recruitment.py
+
+from django.shortcuts import get_object_or_404
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+
+from Human_Resources.models import RecruitmentApplication
+from Human_Resources.recruitment_services.commands import advance_application
+from Human_Resources.recruitment_services.exceptions import RecruitmentError
+
+
+class RecruitmentActionView(APIView):
+    """
+    Handles approve / reject actions on a recruitment application.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, application_id, action):
+        application = get_object_or_404(
+            RecruitmentApplication,
+            pk=application_id,
+        )
+
+        try:
+            advance_application(
+                application=application,
+                action=action,
+                actor=request.user,
+            )
+        except RecruitmentError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {
+                "application_id": application.id,
+                "new_status": application.status,
+            },
+            status=status.HTTP_200_OK,
+        )

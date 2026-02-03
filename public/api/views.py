@@ -1,6 +1,8 @@
 # public/api/views.py
 from rest_framework import generics, permissions
-from Human_Resources.models import PublicApplication
+from Human_Resources.models.common import validate_resume_file
+from hr_workflows.models import recruitment_legacy as rec_legacy
+from hr_workflows.models.recruitment_legacy import PublicApplication
 from .serializers import PublicApplicationSerializer
 
 class PublicApplicationCreateView(generics.CreateAPIView):

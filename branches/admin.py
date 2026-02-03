@@ -12,7 +12,7 @@ class CountryAdmin(admin.ModelAdmin):
 
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'country', 'hr_manager', 'created_at')
+    list_display = ('name', 'country', 'created_at')
     search_fields = ('name', 'country__name')
     list_filter = ('country',)
 

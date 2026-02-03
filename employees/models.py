@@ -3,8 +3,7 @@ import uuid
 from django.utils import timezone
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models, transaction
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from Human_Resources.models import Role  
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin  
 from branches.models import Branch  
 
 # Phone validator (E.164-ish)
@@ -124,7 +123,7 @@ class Employee(AbstractBaseUser, PermissionsMixin):
         related_name='employees'
     )
 
-    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
+    role = models.ForeignKey("Human_Resources.Role",on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
     primary_role = models.CharField(max_length=100, blank=True, null=True)   # quick primary role code
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     region = models.CharField(max_length=100, blank=True, null=True)

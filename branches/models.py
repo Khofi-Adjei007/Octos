@@ -55,15 +55,15 @@ class Region(models.Model):
         help_text="Official region name",
     )
 
-    # DEPRECATED — retained temporarily for backward compatibility
-    hr_manager = models.OneToOneField(
-        "employees.Employee",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="legacy_hr_region",
-        help_text="DEPRECATED: Use HRScopeAssignment instead",
-    )
+    # # DEPRECATED — retained temporarily for backward compatibility
+    # hr_manager = models.OneToOneField(
+    #     "employees.Employee",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name="legacy_hr_region",
+    #     help_text="DEPRECATED: Use HRScopeAssignment instead",
+    # )
 
     meta = models.JSONField(
         default=dict,
@@ -156,14 +156,14 @@ class Branch(models.Model):
     # flexible location pointer for other countries or non-standard hierarchies
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True, related_name='branches')
 
-    # manager / contact
-    manager = models.OneToOneField(
-        'employees.Employee',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='managed_branch'
-    )
+    # # manager / contact
+    # manager = models.OneToOneField(
+    #     'employees.Employee',
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='managed_branch'
+    # )
     contact_person = models.CharField(max_length=120, blank=True, null=True)
     phone = models.CharField(max_length=24, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)

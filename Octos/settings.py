@@ -72,7 +72,8 @@ INSTALLED_APPS = [
     'Human_Resources',
     'services',
     'public',
-    'jobs'
+    'jobs',
+    'hr_workflows',
 ]
 
 # Tailwind / NPM config

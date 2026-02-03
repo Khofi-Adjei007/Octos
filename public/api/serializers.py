@@ -1,10 +1,11 @@
 # public/api/serializers.py
 from rest_framework import serializers
-from Human_Resources.models import PublicApplication, Role
+from hr_workflows.models import recruitment_legacy as rec_legacy
+from hr_workflows.models.recruitment_legacy import PublicApplication
 
 class PublicApplicationSerializer(serializers.ModelSerializer):
     recommended_role = serializers.PrimaryKeyRelatedField(
-        queryset=Role.objects.all(), required=False, allow_null=True
+        queryset=rec_legacy.Role.objects.all(), required=False, allow_null=True
     )
     resume = serializers.FileField(required=False, allow_null=True)
 

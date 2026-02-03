@@ -11,7 +11,8 @@ from employees.models import Employee
 from services.services import EmployeeService, MetricsService
 from django.contrib import messages
 from .RecommendationForm import RecommendationForm
-from .models import Recommendation, AuditLog, UserProfile, Role
+from .models import AuditLog, Role
+from hr_workflows.models import Recommendation, user_profile as UserProfile
 from employees.employeeForms import EmployeeRegistrationForm
 import datetime
 

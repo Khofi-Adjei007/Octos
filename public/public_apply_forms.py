@@ -1,13 +1,14 @@
 # public/public_apply_forms.py
 from django import forms
-from Human_Resources.models import PublicApplication, validate_resume_file
+from hr_workflows.models import recruitment_legacy as rec_legacy
+from hr_workflows.models.recruitment_legacy import PublicApplication
 
 COMMON_INPUT_CLASSES = "mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:ring-2 focus:ring-[var(--brand-green)]"
 
 class PublicApplyForm(forms.ModelForm):
     resume = forms.FileField(
         required=False,
-        validators=[validate_resume_file],
+        validators=[rec_legacy.validate_resume_file],
         widget=forms.ClearableFileInput(attrs={
             "class": "mt-1 block w-full text-sm",
             "accept": ".pdf,.doc,.docx,.pdf"

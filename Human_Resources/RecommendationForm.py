@@ -1,6 +1,6 @@
 # Human_Resources/forms.py
 from django import forms
-from .models import Recommendation  # Removed Role import
+from hr_workflows.models import Recommendation
 from branches.models import Branch
 
 class RecommendationForm(forms.ModelForm):
