@@ -124,6 +124,8 @@ class Employee(AbstractBaseUser, PermissionsMixin):
     )
 
     role = models.ForeignKey("Human_Resources.Role",on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
+    authority_roles = models.ManyToManyField("Human_Resources.AuthorityRole", blank=True, related_name="employees")
+
     primary_role = models.CharField(max_length=100, blank=True, null=True)   # quick primary role code
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     region = models.CharField(max_length=100, blank=True, null=True)
