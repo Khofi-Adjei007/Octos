@@ -19,33 +19,22 @@
   }
 
   /* -----------------------------------------
-   * CONTEXT SWITCHING (TABS)
+   * CONTEXT SWITCHING
    * ----------------------------------------- */
   function bindContextSwitching() {
     qa('.switch-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         context = btn.dataset.context;
 
-        // Toggle active tab
         qa('.switch-btn').forEach(b =>
           b.classList.toggle('active', b === btn)
         );
 
-        // Show correct panel
         showContext(context);
 
-        // Load context data
-        if (context === 'overview') {
-          loadOverview();
-        }
-
-        if (context === 'recruitment') {
-          loadRecruitment();
-        }
-
-        if (context === 'employees') {
-          loadEmployees?.(); // safe call (future)
-        }
+        if (context === 'overview') loadOverview();
+        if (context === 'recruitment') loadRecruitment();
+        if (context === 'employees') loadEmployees?.();
       });
     });
   }
@@ -90,7 +79,7 @@
   }
 
   /* -----------------------------------------
-   * RECRUITMENT
+   * RECRUITMENT FILTERS
    * ----------------------------------------- */
   function bindRecruitmentFilters() {
     qa('.recruitment-filters .filter-chip').forEach(btn => {
@@ -105,73 +94,128 @@
     });
   }
 
+  /* -----------------------------------------
+   * RECRUITMENT LOAD
+   * ----------------------------------------- */
   async function loadRecruitment() {
-  const list  = q('.recruitment-items');
-  const empty = q('#recruitment-empty');
+    const list  = q('#recruitment-items');
+    const empty = q('#recruitment-empty');
 
-  if (!list || !empty) return;
+    if (!list || !empty) return;
 
-  // Reset UI
-  list.innerHTML = '';
-  empty.style.display = 'none';
+    list.innerHTML = '';
+    empty.style.display = 'none';
 
-  let applications = [];
+    let applications = [];
 
-  try {
-    const res = await fetch(api + '/applications/');
-    applications = await res.json();
-  } catch (err) {
-    empty.style.display = 'block';
-    empty.textContent = 'Failed to load applications.';
-    return;
-  }
+    try {
+      const res = await fetch(api + '/applications/');
+      applications = await res.json();
+    } catch (err) {
+      empty.style.display = 'block';
+      empty.textContent = 'Failed to load applications.';
+      return;
+    }
 
-  // Filter logic
-  const filtered =
-    recruitmentFilter === 'applications'
-      ? applications
-      : applications.filter(a => a.status === recruitmentFilter);
+    const filtered =
+      recruitmentFilter === 'applications'
+        ? applications
+        : applications.filter(a => a.status === recruitmentFilter);
 
-  // Empty state
-  if (!filtered.length) {
-    empty.style.display = 'block';
-    empty.textContent = 'No applications found.';
-    return;
-  }
+    if (!filtered.length) {
+      empty.style.display = 'block';
+      empty.textContent = 'No applications found.';
+      return;
+    }
 
-  // Render rows
-  filtered.forEach(app => {
-    const row = document.createElement('div');
-    row.className = 'application-row';
+    filtered.forEach(app => {
 
-    row.innerHTML = `
-      <div class="application-main">
-        <strong class="application-name">
-          ${app.first_name} ${app.last_name}
-        </strong>
-        <span class="application-meta">
-          ${app.recommended_role || '—'} • ${app.email || '—'}
-        </span>
+      const appliedDate = new Date(app.created_at);
+      const now = new Date();
+      const diffHours = Math.floor((now - appliedDate) / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffHours / 24);
+
+      let appliedText;
+      if (diffHours < 24) {
+        appliedText =
+          diffHours <= 1
+            ? "Applied 1 hour ago"
+            : `Applied ${diffHours} hours ago`;
+      } else {
+        appliedText =
+          diffDays === 1
+            ? "Applied 1 day ago"
+            : `Applied ${diffDays} days ago`;
+      }
+
+      const card = document.createElement('div');
+      card.className = 'application-card';
+      card.dataset.id = app.id;
+
+     card.innerHTML = `
+  <div class="application-card-header">
+    <div>
+      <div class="application-name">
+        ${app.first_name.toUpperCase()} ${app.last_name.toUpperCase()}
       </div>
-
-      <div class="application-actions">
-        ${
-          app.status === 'pending'
-            ? `
-              <button class="btn-approve">Approve</button>
-              <button class="btn-reject">Reject</button>
-            `
-            : `<span class="status-pill status-${app.status}">
-                 ${app.status}
-               </span>`
-        }
+      <div class="application-role">
+        ${app.role_applied_for}
       </div>
-    `;
+    </div>
 
-    list.appendChild(row);
-  });
-}
+    <div class="status-pill status-${app.status}">
+      ${app.status.toUpperCase()}
+    </div>
+  </div>
 
+  <div class="application-details">
+    <div><strong>Email:</strong> ${app.email || '—'}</div>
+
+    ${app.branch_name ? `
+      <div><strong>Branch:</strong> ${app.branch_name}</div>
+    ` : ''}
+
+    <!-- SOURCE + RESUME SIDE BY SIDE -->
+    <div class="card-meta-row">
+      <span class="source-badge source-${app.source}">
+        ${app.source.toUpperCase()}
+      </span>
+
+      ${
+        app.resume_url
+          ? `
+            <span class="resume-badge">
+              📄 Resume Attached
+            </span>
+          `
+          : ''
+      }
+    </div>
+
+    ${app.recommender_name ? `
+      <div>
+        <strong>Recommended by:</strong>
+        ${app.recommender_name}
+        ${app.recommender_branch ? ` (${app.recommender_branch})` : ''}
+      </div>
+    ` : ''}
+  </div>
+
+  <div class="application-footer">
+    <div class="application-applied">
+      ${appliedText}
+    </div>
+
+    <button class="btn-review" data-id="${app.id}">
+      Review
+    </button>
+  </div>
+`;
+
+
+      list.appendChild(card);
+    });
+  }
 
   /* -----------------------------------------
    * HELPERS
@@ -192,7 +236,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindContextSwitching();
     bindRecruitmentFilters();
-
     showContext('overview');
     loadOverview();
   });

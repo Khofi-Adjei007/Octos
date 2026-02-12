@@ -19,6 +19,6 @@ class RecruitmentListAPI(APIView):
         if status_param:
             queryset = queryset.filter(status=status_param)
 
-        serializer = RecruitmentListSerializer(queryset, many=True)
-
+        serializer = RecruitmentListSerializer(queryset, many=True, context={"request": request})
+        
         return Response(serializer.data)

@@ -40,7 +40,7 @@ class RecruitmentApplication(models.Model):
     )
 
     role_applied_for = models.CharField(max_length=150)
-
+    resume = models.FileField(upload_to="recruitment/resumes/", null=True, blank=True, help_text="Uploaded CV / Resume document")
     status = models.CharField(
         max_length=20,
         choices=RecruitmentStatus.choices,

@@ -790,3 +790,272 @@ main{
   }
 }
 
+/* =====================================================
+   RECRUITMENT · GRID LAYOUT
+===================================================== */
+
+.recruitment-items{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:18px;
+}
+
+
+/* =====================================================
+   RECRUITMENT · CARD
+===================================================== */
+
+.application-card{
+  background:#ffffff;
+  border-radius:16px;
+  padding:18px 18px 16px;
+  display:flex;
+  flex-direction:column;
+  min-height:240px;
+  border:1px solid #f1dada;
+  box-shadow:0 6px 18px rgba(0,0,0,.04);
+  transition:all .25s ease;
+  position:relative;
+  border-left:4px solid transparent;
+}
+
+.application-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 28px rgba(0,0,0,.08);
+}
+
+
+/* =====================================================
+   CARD HEADER
+===================================================== */
+
+.application-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:10px;
+}
+
+.application-name{
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+.status-pill{
+  font-size:10px;
+  padding:5px 10px;
+  border-radius:999px;
+  font-weight:600;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+}
+
+.status-submitted{
+  background:#f3f4f6;
+  color:#374151;
+}
+
+.status-approved{
+  background:#e6f7ed;
+  color:#1e7f4f;
+}
+
+.status-rejected{
+  background:#fde8e8;
+  color:#c53030;
+}
+
+
+/* =====================================================
+   ROLE (Primary Context)
+===================================================== */
+
+.application-role{
+  font-size:13px;
+  font-weight:600;
+  color:var(--red-dark);
+  margin-bottom:8px;
+}
+
+
+/* =====================================================
+   META DETAILS
+===================================================== */
+
+.application-details{
+  font-size:12px;
+  color:#4b5563;
+  line-height:1.6;
+}
+
+.application-details div{
+  margin-bottom:4px;
+}
+
+.application-details strong{
+  font-weight:600;
+  color:#111827;
+}
+
+
+/* =====================================================
+   RESUME INDICATOR
+===================================================== */
+
+.resume-indicator{
+  margin-top:8px;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--red-dark);
+}
+
+.resume-indicator i{
+  font-size:13px;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.application-footer{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.application-applied{
+  font-size:11px;
+  color:var(--muted);
+}
+
+
+/* =====================================================
+   FULL WIDTH REVIEW BUTTON
+===================================================== */
+
+.btn-review{
+  width:100%;
+  padding:9px 0;
+  border:none;
+  border-radius:10px;
+  background:var(--red);
+  color:white;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.btn-review:hover{
+  background:var(--red-dark);
+}
+
+/* ==========================================
+   STATUS LEFT ACCENT
+========================================== */
+
+.application-card.status-submitted{
+  border-left-color:#9ca3af;
+}
+
+.application-card.status-approved{
+  border-left-color:#16a34a;
+}
+
+.application-card.status-rejected{
+  border-left-color:#dc2626;
+}
+
+/* ==========================================
+   SOURCE BADGE
+========================================== */
+
+.source-badge{
+  display:inline-block;
+  font-size:10px;
+  font-weight:600;
+  padding:4px 8px;
+  border-radius:999px;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  margin-top:6px;
+}
+
+/* Variants */
+
+.source-public{
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.source-recommendation{
+  background:#fff1e6;
+  color:#b45309;
+}
+
+/* ================================
+   META ROW (Source + Resume)
+================================ */
+
+.card-meta-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  flex-wrap:wrap;
+}
+
+/* Source badge */
+
+.source-badge{
+  font-size:11px;
+  font-weight:600;
+  padding:4px 8px;
+  border-radius:20px;
+  text-transform:uppercase;
+}
+
+/* Source variants */
+
+.source-public{
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.source-recommendation{
+  background:#fff4e6;
+  color:#b45309;
+}
+
+/* Resume badge */
+
+.resume-badge{
+  font-size:11px;
+  font-weight:600;
+  padding:4px 8px;
+  border-radius:20px;
+  background:#f1f5f9;
+  color:#334155;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.card-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.resume-badge {
+  font-size: 12px;
+  color: #e21d2f;
+  font-weight: 500;
+}

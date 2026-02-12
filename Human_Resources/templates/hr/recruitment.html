@@ -22,8 +22,8 @@
     Applications
   </button>
 
-  <button class="filter-chip" data-filter="pending">
-    Pending
+  <button class="filter-chip" data-filter="submitted">
+    Submitted
   </button>
 
   <button class="filter-chip" data-filter="approved">
@@ -42,14 +42,58 @@
 ===================================================== -->
 <section class="recruitment-list">
 
-  <!-- Empty state (persistent, never wiped) -->
-  <div class="recruitment-empty" id="recruitment-empty">
-    No applications found.
-  </div>
+  <div class="recruitment-grid">
 
-  <!-- Applications container (JS wipes & repopulates this only) -->
-  <div class="recruitment-items">
-    <!-- JS injects application rows here -->
+    <!-- Empty state -->
+    <div class="recruitment-empty" id="recruitment-empty">
+      No applications found.
+    </div>
+
+    <!-- Applications container (JS injects cards here) -->
+    <div class="recruitment-items" id="recruitment-items">
+
+      <!--
+        JS Injected Structure:
+
+        <div class="application-card" data-id="1">
+
+          <div class="application-card-header">
+            <div>
+              <div class="application-name">YAW DUDAH AMOAH</div>
+              <div class="application-role">Technician</div>
+            </div>
+
+            <div class="status-pill status-submitted">
+              SUBMITTED
+            </div>
+          </div>
+
+          <div class="application-details">
+            <div><strong>Email:</strong> contact@email.com</div>
+            <div><strong>Branch:</strong> Westland</div>
+            <div><strong>Source:</strong> Recommended</div>
+            <div><strong>Recommended by:</strong> Kwesi (Westland)</div>
+
+            <div class="resume-indicator">
+              📄 Resume Attached
+            </div>
+          </div>
+
+          <div class="application-footer">
+            <div class="application-applied">
+              Applied 2 days ago
+            </div>
+
+            <button class="btn-review">
+              Review
+            </button>
+          </div>
+
+        </div>
+      -->
+
+    </div>
+
   </div>
 
 </section>
