@@ -19,10 +19,28 @@ class RecruitmentListSerializer(serializers.ModelSerializer):
     recommender_name = serializers.SerializerMethodField()
     recommender_branch = serializers.SerializerMethodField()
 
-    # Status normalized
+    # Status normalized (terminal)
     status = serializers.SerializerMethodField()
 
-    #resume
+    # NEW: workflow stage
+    current_stage = serializers.SerializerMethodField()
+
+    # NEW: reviewer
+    assigned_reviewer = serializers.SerializerMethodField()
+
+    # NEW: interview schedule
+    interview_date = serializers.DateTimeField(allow_null=True)
+
+    # NEW: priority
+    priority = serializers.CharField()
+
+    # NEW: stage timestamp
+    stage_updated_at = serializers.DateTimeField()
+
+    # NEW: freshness
+    is_new = serializers.SerializerMethodField()
+
+    # Resume
     resume_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -38,12 +56,29 @@ class RecruitmentListSerializer(serializers.ModelSerializer):
             "recommender_name",
             "recommender_branch",
             "status",
+            "current_stage",
+            "assigned_reviewer",
+            "interview_date",
+            "priority",
+            "stage_updated_at",
+            "is_new",
             "created_at",
             "resume_url",
         ]
 
     def get_status(self, obj):
         return obj.status.lower()
+
+    def get_current_stage(self, obj):
+        return obj.current_stage.lower()
+
+    def get_assigned_reviewer(self, obj):
+        if obj.assigned_reviewer:
+            return f"{obj.assigned_reviewer.first_name} {obj.assigned_reviewer.last_name}"
+        return None
+
+    def get_is_new(self, obj):
+        return obj.is_new
 
     def get_branch_name(self, obj):
         if obj.recommended_branch:

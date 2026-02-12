@@ -7,9 +7,11 @@ class RecruitmentStatus(models.TextChoices):
     SUBMITTED = "submitted", "Submitted"
     SCREENING = "screening", "Screening"
     INTERVIEW = "interview", "Interview"
-    APPROVED = "approved", "Approved"
+    FINAL_REVIEW = "final_review", "Final Review"
+    OFFER = "offer", "Offer"
     ONBOARDED = "onboarded", "Onboarded"
     REJECTED = "rejected", "Rejected"
+
 
 class RecruitmentSource(models.TextChoices):
     PUBLIC = "public", "Public"
