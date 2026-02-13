@@ -5,8 +5,8 @@ from rest_framework.generics import get_object_or_404
 
 from hr_workflows.models import RecruitmentApplication
 from Human_Resources.services.query_scope import scoped_recruitment_queryset
-from Human_Resources.api.serializers.recruitment_list import (
-    RecruitmentListSerializer,
+from Human_Resources.api.serializers.recruitment_detail import (
+    RecruitmentDetailSerializer,
 )
 
 
@@ -18,7 +18,7 @@ class RecruitmentDetailAPI(APIView):
         queryset = scoped_recruitment_queryset(request.user)
         application = get_object_or_404(queryset, pk=pk)
 
-        serializer = RecruitmentListSerializer(
+        serializer = RecruitmentDetailSerializer(
             application,
             context={"request": request}
         )

@@ -15,6 +15,9 @@ from .models import AuditLog, Role
 from hr_workflows.models import Recommendation, user_profile as UserProfile
 from employees.employeeForms import EmployeeRegistrationForm
 import datetime
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +309,9 @@ def recommend_employee(request):
         'form': form,
     }
     return render(request, 'branch_manager_dashboard.html', context)
+
+class RecruitmentApplicationDetailView(LoginRequiredMixin, TemplateView):
+    template_name = "hr/candidate_pass.html"
 
 def complete_registration(request, token):
     # Validate the token

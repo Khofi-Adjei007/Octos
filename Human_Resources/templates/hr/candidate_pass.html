@@ -1,0 +1,179 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Candidate Review</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% tailwind_css %}
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
+<div class="h-1 w-full bg-red-600"></div>
+
+<div class="max-w-7xl mx-auto px-6 pt-2 pb-6">
+
+    <!-- STICKY CONTROL LAYER -->
+    <div class="sticky top-0 z-40 backdrop-blur-md bg-white/85 border-b border-gray-200 mb-6">
+
+        <div class="pt-2 pb-4">
+
+            <!-- Back -->
+            <a href="/hr/"
+               class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-red-600 mb-3">
+                ← Back to Recruitment
+            </a>
+
+            <!-- HEADER -->
+            <div class="relative bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 overflow-hidden">
+
+                <div class="absolute left-0 top-0 h-full w-1 bg-blue-600"></div>
+
+                <div class="flex justify-between items-start pl-4">
+
+                    <div class="space-y-0.5">
+                        <h1 id="applicant-fullname"
+                            class="text-lg font-semibold text-gray-900">
+                            Test Candidate
+                        </h1>
+
+                        <p id="applicant-role"
+                           class="text-sm text-gray-600">
+                            Graphic Designer
+                        </p>
+
+                        <div class="text-xs text-gray-500">
+                            test@example.com
+                        </div>
+                    </div>
+
+                    <span id="current-stage-badge"
+                          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase bg-blue-100 text-blue-700 border border-blue-200">
+                        Screening
+                    </span>
+
+                </div>
+            </div>
+
+            <!-- WORKFLOW RIBBON -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
+
+                <div class="flex overflow-hidden rounded-full text-xs font-semibold uppercase tracking-wide">
+
+                    <div class="flex-1 text-center py-2 bg-blue-600 text-white">
+                        Screening
+                    </div>
+
+                    <div class="flex-1 text-center py-2 bg-amber-100 text-amber-700">
+                        Interview
+                    </div>
+
+                    <div class="flex-1 text-center py-2 bg-purple-100 text-purple-700">
+                        Final Review
+                    </div>
+
+                    <div class="flex-1 text-center py-2 bg-red-100 text-red-700">
+                        Decision
+                    </div>
+
+                    <div class="flex-1 text-center py-2 bg-green-100 text-green-700">
+                        Onboarding
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <!-- MAIN GRID -->
+    <div class="grid grid-cols-12 gap-6">
+
+        <!-- LEFT -->
+        <div class="col-span-12 lg:col-span-8 space-y-6">
+
+            <div class="rounded-xl p-4 bg-blue-50/60 border border-blue-100">
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                            Curriculum Vitae
+                        </h2>
+
+                        <span class="text-xs text-blue-600 font-semibold uppercase">
+                            Screening Stage
+                        </span>
+                    </div>
+
+                    <div id="cv-viewer"
+                         class="w-full h-[520px] border border-gray-200 rounded-md bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
+                        No resume uploaded.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="rounded-xl p-4 bg-blue-50/60 border border-blue-100">
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+                    <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-4">
+                        Screening Evaluation
+                    </h2>
+
+                    <div class="text-sm text-gray-600">
+                        Screening form content will render here.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+
+                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-4">
+                    Progress Timeline
+                </h2>
+
+                <div class="text-sm text-gray-500">
+                    Timeline will render here
+                </div>
+
+            </div>
+
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+
+                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-4">
+                    Interview Details
+                </h2>
+
+                <div class="text-sm text-gray-500">
+                    No interview scheduled
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module" src="{% static 'js/hr/recruitment/recruitment.detail.js' %}"></script>
+
+</body>
+</html>

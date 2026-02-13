@@ -5,8 +5,19 @@ from . import views
 app_name = "human_resources"
 
 urlpatterns = [
+    # Dashboard
     path("", views.human_resource, name="dashboard"),
+
+    # Applications tab view (still dashboard-based)
     path("applications/", views.human_resource, name="applications"),
+
+    # NEW: Dedicated Application Detail Page
+    path(
+        "applications/<int:pk>/",
+        views.RecruitmentApplicationDetailView.as_view(),
+        name="recruitment_application_detail",
+    ),
+
     path("employees/", views.human_resource, name="employees"),
     path("departments/", views.human_resource, name="departments"),
 

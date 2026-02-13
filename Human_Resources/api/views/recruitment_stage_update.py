@@ -8,7 +8,8 @@ from django.utils import timezone
 from hr_workflows.models import RecruitmentApplication
 from Human_Resources.services.query_scope import scoped_recruitment_queryset
 from Human_Resources.constants import RecruitmentStatus
-from Human_Resources.api.serializers.recruitment_list import RecruitmentListSerializer
+from Human_Resources.api.serializers.recruitment_detail import RecruitmentDetailSerializer
+
 
 
 STAGE_ORDER = [
@@ -55,7 +56,7 @@ class RecruitmentStageUpdateAPI(APIView):
             application.closed_at = timezone.now()
             application.save()
 
-            serializer = RecruitmentListSerializer(
+            serializer = RecruitmentDetailSerializer(
                 application,
                 context={"request": request}
             )
@@ -87,7 +88,7 @@ class RecruitmentStageUpdateAPI(APIView):
 
         application.save()
 
-        serializer = RecruitmentListSerializer(
+        serializer = RecruitmentDetailSerializer(
             application,
             context={"request": request}
         )
