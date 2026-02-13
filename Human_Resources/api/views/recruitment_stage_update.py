@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.generics import get_object_or_404
+from hr_workflows.models import RecruitmentEvaluation
+
 
 from django.utils import timezone
 
@@ -20,6 +22,8 @@ STAGE_ORDER = [
     RecruitmentStatus.OFFER,
     RecruitmentStatus.ONBOARDED,
 ]
+
+
 
 
 class RecruitmentStageUpdateAPI(APIView):
@@ -78,7 +82,45 @@ class RecruitmentStageUpdateAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Apply transition
+        # -------------------------
+        # SCREENING THRESHOLD CHECK
+        # -------------------------
+
+        if (
+            application.current_stage == RecruitmentStatus.SCREENING
+            and new_stage == RecruitmentStatus.INTERVIEW
+        ):
+
+            evaluation = RecruitmentEvaluation.objects.filter(
+                application=application,
+                stage=RecruitmentStatus.SCREENING
+            ).first()
+
+            if not evaluation:
+                return Response(
+                    {"detail": "Screening evaluation required before proceeding."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if evaluation.score is None:
+                return Response(
+                    {"detail": "Screening score not provided."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if float(evaluation.score) < 4:
+                return Response(
+                    {
+                        "detail": "Candidate below screening threshold (minimum 4.0 required)."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+
+        # -------------------------
+        # APPLY TRANSITION
+        # -------------------------
+
         application.current_stage = new_stage
         application.status = new_stage
         application.stage_updated_at = timezone.now()

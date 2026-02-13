@@ -91,78 +91,30 @@
 
 
     <!-- MAIN GRID -->
-    <div class="grid grid-cols-12 gap-6">
+   <!-- MAIN CONTENT -->
 
-        <!-- LEFT -->
-        <div class="col-span-12 lg:col-span-8 space-y-6">
+<div class="grid grid-cols-12 gap-6">
 
-            <div class="rounded-xl p-4 bg-blue-50/60 border border-blue-100">
+    <!-- LEFT: CV -->
+    <div class="col-span-12 lg:col-span-7">
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="rounded-xl p-4 bg-blue-50/60 border border-blue-100 h-full">
 
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                            Curriculum Vitae
-                        </h2>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 h-full flex flex-col">
 
-                        <span class="text-xs text-blue-600 font-semibold uppercase">
-                            Screening Stage
-                        </span>
-                    </div>
-
-                    <div id="cv-viewer"
-                         class="w-full h-[520px] border border-gray-200 rounded-md bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
-                        No resume uploaded.
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="rounded-xl p-4 bg-blue-50/60 border border-blue-100">
-
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
-                    <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-4">
-                        Screening Evaluation
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                        Curriculum Vitae
                     </h2>
 
-                    <div class="text-sm text-gray-600">
-                        Screening form content will render here.
-                    </div>
-
+                    <span class="text-xs text-blue-600 font-semibold uppercase">
+                        Screening Stage
+                    </span>
                 </div>
 
-            </div>
-
-        </div>
-
-
-        <!-- RIGHT -->
-        <div class="col-span-12 lg:col-span-4 space-y-6">
-
-            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-
-                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-4">
-                    Progress Timeline
-                </h2>
-
-                <div class="text-sm text-gray-500">
-                    Timeline will render here
-                </div>
-
-            </div>
-
-
-            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-
-                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-4">
-                    Interview Details
-                </h2>
-
-                <div class="text-sm text-gray-500">
-                    No interview scheduled
+                <div id="cv-viewer"
+                     class="flex-1 w-full border border-gray-200 rounded-md bg-gray-50 flex items-center justify-center text-gray-400 text-sm overflow-hidden">
+                    No resume uploaded.
                 </div>
 
             </div>
@@ -170,6 +122,17 @@
         </div>
 
     </div>
+
+
+    <!-- RIGHT: Screening Evaluation -->
+    <div class="col-span-12 lg:col-span-5">
+
+        {% include "hr/screening_scores.html" %}
+
+    </div>
+
+</div>
+
 
 </div>
 
