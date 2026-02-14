@@ -2,16 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.generics import get_object_or_404
-from hr_workflows.models import RecruitmentEvaluation
-
 
 from django.utils import timezone
 
-from hr_workflows.models import RecruitmentApplication
+from hr_workflows.models import RecruitmentApplication, RecruitmentEvaluation
 from Human_Resources.services.query_scope import scoped_recruitment_queryset
 from Human_Resources.constants import RecruitmentStatus
 from Human_Resources.api.serializers.recruitment_detail import RecruitmentDetailSerializer
-
 
 
 STAGE_ORDER = [
@@ -22,8 +19,6 @@ STAGE_ORDER = [
     RecruitmentStatus.OFFER,
     RecruitmentStatus.ONBOARDED,
 ]
-
-
 
 
 class RecruitmentStageUpdateAPI(APIView):
@@ -42,7 +37,10 @@ class RecruitmentStageUpdateAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Terminal protection
+        # -----------------------------------
+        # TERMINAL PROTECTION
+        # -----------------------------------
+
         if application.status in {
             RecruitmentStatus.ONBOARDED,
             RecruitmentStatus.REJECTED,
@@ -52,7 +50,10 @@ class RecruitmentStageUpdateAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Reject is always allowed
+        # -----------------------------------
+        # REJECT ALWAYS ALLOWED
+        # -----------------------------------
+
         if new_stage == RecruitmentStatus.REJECTED:
             application.status = RecruitmentStatus.REJECTED
             application.current_stage = RecruitmentStatus.REJECTED
@@ -66,7 +67,10 @@ class RecruitmentStageUpdateAPI(APIView):
             )
             return Response(serializer.data)
 
-        # Enforce forward-only
+        # -----------------------------------
+        # ENFORCE FORWARD-ONLY PROGRESSION
+        # -----------------------------------
+
         try:
             current_index = STAGE_ORDER.index(application.current_stage)
             next_stage = STAGE_ORDER[current_index + 1]
@@ -82,9 +86,9 @@ class RecruitmentStageUpdateAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # -------------------------
-        # SCREENING THRESHOLD CHECK
-        # -------------------------
+        # -----------------------------------
+        # SCREENING → INTERVIEW CHECKS
+        # -----------------------------------
 
         if (
             application.current_stage == RecruitmentStatus.SCREENING
@@ -102,13 +106,19 @@ class RecruitmentStageUpdateAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if evaluation.score is None:
+            if not evaluation.is_finalized:
                 return Response(
-                    {"detail": "Screening score not provided."},
+                    {"detail": "Screening must be finalized before proceeding."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if float(evaluation.score) < 4:
+            if evaluation.weighted_score is None:
+                return Response(
+                    {"detail": "Screening score not available."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if float(evaluation.weighted_score) < 4:
                 return Response(
                     {
                         "detail": "Candidate below screening threshold (minimum 4.0 required)."
@@ -116,10 +126,9 @@ class RecruitmentStageUpdateAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-
-        # -------------------------
-        # APPLY TRANSITION
-        # -------------------------
+        # -----------------------------------
+        # APPLY STAGE TRANSITION
+        # -----------------------------------
 
         application.current_stage = new_stage
         application.status = new_stage

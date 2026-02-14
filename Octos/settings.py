@@ -148,6 +148,8 @@ DATABASES = {
     }
 }
 
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 # -----------------------
 # Password validation
 # -----------------------

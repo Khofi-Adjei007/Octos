@@ -8,6 +8,7 @@ from Human_Resources.services.query_scope import scoped_recruitment_queryset
 from Human_Resources.api.serializers.recruitment_evaluation import (
     RecruitmentEvaluationSerializer,
 )
+from django.utils import timezone
 
 
 class RecruitmentEvaluationAPI(APIView):
@@ -38,7 +39,6 @@ class RecruitmentEvaluationAPI(APIView):
     # -------------------------
 
     def post(self, request, pk):
-
         queryset = scoped_recruitment_queryset(request.user)
         application = get_object_or_404(queryset, pk=pk)
 
@@ -56,10 +56,10 @@ class RecruitmentEvaluationAPI(APIView):
             stage=stage
         ).first()
 
-        # If evaluation exists but stage already changed, block editing
-        if evaluation and application.current_stage != stage:
+        #Block editing if finalized
+        if evaluation and evaluation.is_finalized:
             return Response(
-                {"detail": "Cannot edit evaluation after stage transition."},
+                {"detail": "Evaluation is finalized and cannot be edited."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -81,3 +81,36 @@ class RecruitmentEvaluationAPI(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+
+
+    def patch(self, request, pk):
+
+        queryset = scoped_recruitment_queryset(request.user)
+        application = get_object_or_404(queryset, pk=pk)
+
+        evaluation = RecruitmentEvaluation.objects.filter(
+            application=application,
+            stage=application.current_stage
+        ).first()
+
+        if not evaluation:
+            return Response(
+                {"detail": "No evaluation found to finalize."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if evaluation.is_finalized:
+            return Response(
+                {"detail": "Evaluation already finalized."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        evaluation.is_finalized = True
+        evaluation.finalized_at = timezone.now()
+        evaluation.finalized_by = request.user
+        evaluation.save()
+
+        return Response({"detail": "Screening finalized successfully."})
+

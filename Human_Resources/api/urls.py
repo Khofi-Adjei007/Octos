@@ -4,6 +4,8 @@ from Human_Resources.api.views.recruitment_list import RecruitmentListAPI
 from Human_Resources.api.views.recruitment_detail import RecruitmentDetailAPI
 from Human_Resources.api.views.recruitment_stage_update import RecruitmentStageUpdateAPI
 from Human_Resources.api.views.recruitment_evaluation import RecruitmentEvaluationAPI
+from Human_Resources.api.views.schedule_interview import ScheduleInterviewAPI
+
 
 
 app_name = "hr_api"
@@ -30,4 +32,11 @@ urlpatterns = [
         RecruitmentEvaluationAPI.as_view(),
         name="recruitment-evaluation",
     ),
+
+    path(
+    "applications/<int:pk>/schedule-interview/",
+    ScheduleInterviewAPI.as_view(),
+    name="schedule-interview",
+),
+
 ]

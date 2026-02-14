@@ -53,6 +53,7 @@ export function initRecruitmentModal() {
 ========================================================= */
 
 export async function openRecruitmentModal(id) {
+  window.location.href = `/hr/applications/${id}/`;
 
   if (!modalEl) return;
 
