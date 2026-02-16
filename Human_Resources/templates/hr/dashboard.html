@@ -18,11 +18,16 @@
 <header>
   <div class="header-inner">
     <div class="brand">
-      <img src="/static/images/farhat-logo-small.png" alt="Farhat Logo" class="rounded-full w-10 h-10">
+      <img src="/static/images/farhat-logo-small.png" alt="Farhat Logo" class="rounded-full w-16 h-16">
       <div>
-        <strong>Farhat Printing Press</strong>
-        <small>Human Resources Dashboard</small>
-      </div>
+  <strong>Farhat Printing Press</strong>
+  <small>
+    Human Resources Dashboard
+    {% if request.user.region %}
+    {% endif %}
+  </small>
+</div>
+
     </div>
 
     <div class="user">
@@ -37,20 +42,28 @@
   <!-- =========================
        CONTEXT SWITCHER
   ========================= -->
-  <nav class="metric-switch">
-    <button class="switch-btn active" data-context="overview">
-      Overview
-    </button>
-    <button class="switch-btn" data-context="employees">
-      Employees
-    </button>
-    <button class="switch-btn" data-context="payroll">
-      Payroll
-    </button>
-    <button class="switch-btn" data-context="recruitment">
-      Recruitment
-    </button>
-  </nav>
+<nav class="metric-switch">
+  <button class="switch-btn active" data-context="overview">
+    Overview
+  </button>
+
+  <button class="switch-btn" data-context="branches">
+    Branches
+  </button>
+
+  <button class="switch-btn" data-context="employees">
+    Employees
+  </button>
+
+  <button class="switch-btn" data-context="payroll">
+    Payroll
+  </button>
+
+  <button class="switch-btn" data-context="recruitment">
+    Recruitment
+  </button>
+</nav>
+
 
   <!-- =========================
        CONTEXT PANELS
@@ -61,6 +74,12 @@
     <section class="context-panel" data-context="overview">
       {% include 'hr/overview.html' %}
     </section>
+
+        <!-- Branches -->
+    <section class="context-panel hidden" data-context="branches">
+      {% include 'hr/branches.html' %}
+    </section>
+
 
     <!-- Employees -->
     <section class="context-panel hidden" data-context="employees">

@@ -3,13 +3,24 @@
 ===================================================== -->
 <section class="overview">
 
-  <div class="overview-left">
-    <h2 id="region-name">—</h2>
-    <p class="overview-sub">
-      <span id="branch-count">—</span> branches ·
-      <span id="region-employees">—</span> employees
-    </p>
-  </div>
+ <div class="overview-left">
+
+  <h2 id="region-name">
+    {% if request.user.region %}
+        {{ request.user.region }}
+    {% elif request.user.branch and request.user.branch.region %}
+        {{ request.user.branch.region.name }}
+    {% else %}
+        National Scope
+    {% endif %}
+  </h2>
+
+  <p class="overview-sub">
+    <span id="branch-count">—</span> branches ·
+    <span id="region-employees">—</span> employees
+  </p>
+
+</div>
 
   <div class="overview-right" id="critical-summary">
     <!-- JS injects critical signals -->

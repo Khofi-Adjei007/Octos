@@ -18,7 +18,7 @@ export async function loadOverview() {
     overview = await response.json();
   } catch (err) {
     overview = {
-      region_name: '—',
+      region_name: null,
       branch_count: 0,
       total_employees: 0,
       critical: []
@@ -34,12 +34,31 @@ export async function loadOverview() {
  * ----------------------------------------- */
 function renderOverview(data) {
 
+  // =========================
+  // REGION HEADER
+  // =========================
   setText('#region-name', data.region_name);
   setText('#branch-count', data.branch_count);
   setText('#region-employees', data.total_employees);
 
-  const criticalBox = q('#critical-summary');
+  const branchLabel = q('#branch-label');
+  if (branchLabel) {
+    branchLabel.textContent =
+      data.branch_count === 1 ? 'branch' : 'branches';
+  }
 
+  // =========================
+  // METRIC CARDS
+  // =========================
+  setText('#metric-1', data.total_employees);
+  setText('#metric-2', data.active_employees);
+  setText('#metric-3', data.pending);
+  setText('#metric-4', data.branch_count);
+
+  // =========================
+  // CRITICAL SIGNALS
+  // =========================
+  const criticalBox = q('#critical-summary');
   if (!criticalBox) return;
 
   criticalBox.innerHTML = '';
@@ -66,5 +85,9 @@ function renderOverview(data) {
  * ----------------------------------------- */
 function setText(selector, value) {
   const el = q(selector);
-  if (el) el.textContent = value;
+  if (!el) return;
+
+  if (value !== null && value !== undefined) {
+    el.textContent = value;
+  }
 }
