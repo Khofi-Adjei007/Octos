@@ -1,0 +1,157 @@
+
+/* =====================================================
+   FULL WIDTH REVIEW BUTTON
+===================================================== */
+
+.btn-review{
+  width:100%;
+  padding:9px 0;
+  border:none;
+  border-radius:10px;
+  background:var(--red);
+  color:white;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.btn-review:hover{
+  background:var(--red-dark);
+}
+
+/* ==========================================
+   STATUS LEFT ACCENT
+========================================== */
+
+.application-card.status-submitted{
+  border-left-color:#9ca3af;
+}
+
+.application-card.status-approved{
+  border-left-color:#16a34a;
+}
+
+.application-card.status-rejected{
+  border-left-color:#dc2626;
+}
+
+/* ==========================================
+   SOURCE BADGE
+========================================== */
+
+.source-badge{
+  display:inline-block;
+  font-size:10px;
+  font-weight:600;
+  padding:4px 8px;
+  border-radius:999px;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  margin-top:6px;
+}
+
+/* Variants */
+
+.source-public{
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.source-recommendation{
+  background:#fff1e6;
+  color:#b45309;
+}
+
+/* =========================================
+   CARD META ROW (Source + Resume)
+========================================= */
+
+.card-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+/* Source badge */
+
+.source-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.source-public {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.source-recommendation {
+  background: #fff4e6;
+  color: #b45309;
+}
+
+/* Resume badge */
+
+.resume-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #e21d2f;
+}
+
+/* =========================================
+   APPLICATION TYPOGRAPHY
+========================================= */
+
+.application-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.application-role {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.meta-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  display: inline-block;
+}
+
+.detail-line {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.small-muted {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+
+/* =========================================
+   APPLICATION FOOTER
+========================================= */
+
+.application-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+

@@ -2,14 +2,12 @@
      RECRUITMENT · HEADER
 ===================================================== -->
 <section class="recruitment-header">
-
   <div class="recruitment-header-left">
     <h2>Recruitment</h2>
     <p class="recruitment-subtitle">
       Review and manage incoming applications
     </p>
   </div>
-
 </section>
 
 
@@ -17,25 +15,11 @@
      RECRUITMENT · FILTERS
 ===================================================== -->
 <section class="recruitment-filters">
-
-  <button class="filter-chip active" data-filter="all">
-    All
-  </button>
-
-  <button class="filter-chip" data-filter="pipeline">
-    Pipeline
-  </button>
-
-  <button class="filter-chip" data-filter="onboarded">
-    Onboarded
-  </button>
-
-  <button class="filter-chip" data-filter="rejected">
-    Rejected
-  </button>
-
+  <button class="filter-chip active" data-filter="all">All</button>
+  <button class="filter-chip" data-filter="pipeline">Pipeline</button>
+  <button class="filter-chip" data-filter="onboarded">Onboarded</button>
+  <button class="filter-chip" data-filter="rejected">Rejected</button>
 </section>
-
 
 
 <!-- =====================================================
@@ -43,57 +27,55 @@
 ===================================================== -->
 <section class="recruitment-list">
 
-  <div class="recruitment-grid">
+  <!-- Empty state -->
+  <div class="recruitment-empty hidden" id="recruitment-empty">
+    No applications found.
+  </div>
 
-    <!-- Empty state -->
-    <div class="recruitment-empty" id="recruitment-empty">
-      No applications found.
-    </div>
+  <!-- Applications grid -->
+  <div class="recruitment-items" id="recruitment-items">
 
-    <!-- Applications container (JS injects cards here) -->
-    <div class="recruitment-items" id="recruitment-items">
+    <!--
+      JS Injected Structure:
 
-      <!--
-        JS Injected Structure:
+      <div class="application-card stage-submitted" data-id="1">
 
-        <div class="application-card" data-id="1">
+        <div class="card-accent"></div>
 
-          <div class="application-card-header">
-            <div>
-              <div class="application-name">YAW DUDAH AMOAH</div>
-              <div class="application-role">Technician</div>
-            </div>
-
-            <div class="status-pill status-submitted">
-              SUBMITTED
-            </div>
+        <div class="application-card-header">
+          <div>
+            <div class="application-name">Yaw Dudah Amoah</div>
+            <div class="application-role">Technician</div>
           </div>
 
-          <div class="application-details">
-            <div><strong>Email:</strong> contact@email.com</div>
-            <div><strong>Branch:</strong> Westland</div>
-            <div><strong>Source:</strong> Recommended</div>
-            <div><strong>Recommended by:</strong> Kwesi (Westland)</div>
-
-            <div class="resume-indicator">
-              📄 Resume Attached
-            </div>
-          </div>
-
-          <div class="application-footer">
-            <div class="application-applied">
-              Applied 2 days ago
-            </div>
-
-            <button class="btn-review">
-              Review
-            </button>
-          </div>
-
+          <span class="badge status-submitted">
+            Submitted
+          </span>
         </div>
-      -->
 
-    </div>
+        <div class="application-details">
+          <div><strong>Email:</strong> contact@email.com</div>
+          <div><strong>Branch:</strong> Westland</div>
+          <div><strong>Source:</strong> Recommended</div>
+          <div><strong>Recommended by:</strong> Kwesi (Westland)</div>
+
+          <div class="resume-indicator">
+            📄 Resume Attached
+          </div>
+        </div>
+
+        <div class="application-footer">
+          <div class="application-applied">
+            Applied 2 days ago
+          </div>
+
+          <button class="btn-review">
+            Review
+          </button>
+        </div>
+
+      </div>
+    -->
 
   </div>
 

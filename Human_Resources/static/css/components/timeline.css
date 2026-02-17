@@ -1,0 +1,66 @@
+
+/* =========================================
+   TIMELINE
+========================================= */
+
+.timeline-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.timeline-node {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-transform: capitalize;
+  border: 1px solid #e5e7eb;
+}
+
+.timeline-node.completed {
+  background: #e5e7eb;
+}
+
+.timeline-node.active {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.timeline-node.upcoming {
+  background: #f9fafb;
+  color: #9ca3af;
+}
+
+.reject-node {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.timeline-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.timeline-next {
+  background: #ef4444;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.timeline-reject {
+  background: #ffffff;
+  color: #b91c1c;
+  border: 1px solid #b91c1c;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.timeline-locked {
+  color: #6b7280;
+}

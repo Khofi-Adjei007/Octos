@@ -1,0 +1,51 @@
+
+/* =========================================
+   RECRUITMENT MODAL
+========================================= */
+
+.recruitment-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.modal-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -45%) scale(0.96);
+  width: 85%;
+  max-width: 1200px;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow-y: auto;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition:
+    transform 240ms cubic-bezier(.16,.8,.32,1),
+    opacity 200ms ease;
+}
+
+.recruitment-modal.is-open {
+  pointer-events: auto;
+}
+
+.recruitment-modal.is-open .modal-backdrop {
+  opacity: 1;
+}
+
+.recruitment-modal.is-open .modal-container {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}

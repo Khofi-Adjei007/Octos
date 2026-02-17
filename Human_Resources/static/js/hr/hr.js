@@ -15,6 +15,12 @@ import {
   openRecruitmentModal
 } from './recruitment/recruitment.modal.js';
 
+import { applyBranchGradients } from './branches.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyBranchGradients();
+});
+
 
 /* -----------------------------------------
  * BOOTSTRAP APPLICATION

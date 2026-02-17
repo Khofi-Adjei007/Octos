@@ -1,3 +1,21 @@
+@import url("base.css");
+@import url("layout.css");
+
+@import url("components/cards.css");
+@import url("components/badges.css");
+@import url("components/buttons.css");
+@import url("components/modals.css");
+@import url("components/timeline.css");
+
+@import url("views/branches.css");
+@import url("views/overview.css");
+@import url("views/employees.css");
+
+
+/* =====================================================
+   THEME VARIABLES
+===================================================== */
+
 :root{
   --red:#FF0A14;
   --red-dark:#B60A10;
@@ -16,23 +34,27 @@ body{
   color:#111827;
 }
 
-/* =========================
+
+/* =====================================================
    UTILITIES
-========================= */
+===================================================== */
+
 .hidden{
   display:none !important;
 }
 
-/* =========================
+
+/* =====================================================
    HEADER
-========================= */
+===================================================== */
+
 header{
   background:var(--red);
   color:white;
   position:sticky;
   top:0;
   z-index:40;
-  border-bottom: #ffbf00 5px solid;
+  border-bottom:#ffbf00 5px solid;
 }
 
 .header-inner{
@@ -77,18 +99,22 @@ header{
   border-radius:8px;
 }
 
-/* =========================
-   PAGE
-========================= */
+
+/* =====================================================
+   PAGE WRAPPER
+===================================================== */
+
 main{
   max-width:1200px;
   margin:auto;
   padding:1.5rem 1.25rem 3rem;
 }
 
-/* =========================
+
+/* =====================================================
    CONTEXT SWITCHER
-========================= */
+===================================================== */
+
 .metric-switch{
   display:flex;
   gap:.5rem;
@@ -112,9 +138,11 @@ main{
   border-color:var(--red);
 }
 
-/* =========================
-   CONTEXT PANELS
-========================= */
+
+/* =====================================================
+   CONTEXT PANEL ANIMATION
+===================================================== */
+
 .context-panel{
   animation: fadeContext .25s ease;
 }
@@ -124,9 +152,11 @@ main{
   to{ opacity:1; transform:translateY(0); }
 }
 
-/* =========================
-   OVERVIEW
-========================= */
+
+/* =====================================================
+   OVERVIEW HEADER
+===================================================== */
+
 .overview{
   display:flex;
   justify-content:space-between;
@@ -164,9 +194,11 @@ main{
   font-weight:600;
 }
 
-/* =========================
-   METRICS
-========================= */
+
+/* =====================================================
+   METRIC GRID
+===================================================== */
+
 .metrics{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -174,14 +206,10 @@ main{
   margin-bottom:2rem;
 }
 
-/* Compact variant */
 .metrics-compact .metric{
   padding:1rem;
 }
 
-/* =========================
-   MODERN METRIC CARDS
-========================= */
 .metric{
   background:var(--card);
   border-radius:16px;
@@ -210,7 +238,6 @@ main{
   font-size:1.1rem;
 }
 
-/* Soft backgrounds */
 .bg-red-soft{
   background:#ffe8ea;
   color:var(--red-dark);
@@ -231,7 +258,6 @@ main{
   color:#3730a3;
 }
 
-/* Metric body */
 .metric-body span{
   font-size:.75rem;
   color:var(--muted);
@@ -242,9 +268,11 @@ main{
   font-weight:700;
 }
 
-/* =========================
+
+/* =====================================================
    MAIN GRID
-========================= */
+===================================================== */
+
 .grid{
   display:grid;
   grid-template-columns:1fr;
@@ -269,9 +297,11 @@ main{
   font-size:1.05rem;
 }
 
-/* =========================
-   ATTENTION
-========================= */
+
+/* =====================================================
+   ATTENTION BLOCK
+===================================================== */
+
 .attention{
   display:flex;
   flex-direction:column;
@@ -299,16 +329,17 @@ main{
   font-weight:600;
 }
 
-/* Divider */
 .divider{
   margin:1.25rem 0;
   border:none;
   border-top:1px solid #f1dada;
 }
 
-/* =========================
+
+/* =====================================================
    WORKFORCE SNAPSHOT
-========================= */
+===================================================== */
+
 .breakdown{
   display:flex;
   flex-direction:column;
@@ -321,9 +352,11 @@ main{
   font-size:.85rem;
 }
 
-/* =========================
+
+/* =====================================================
    ACTIVITY
-========================= */
+===================================================== */
+
 .activity{
   display:flex;
   flex-direction:column;
@@ -341,38 +374,21 @@ main{
   font-size:.7rem;
 }
 
-/* =========================
-   ANIMATIONS
-========================= */
-.metric-animate{
-  animation: fadeUp .25s ease;
-}
 
-@keyframes fadeUp{
-  from{ opacity:0; transform:translateY(4px); }
-  to{ opacity:1; transform:translateY(0); }
-}
-
-
-/* =========================
-   OVERVIEW · LAYER 2
-   Deeper Insights
-========================= */
+/* =====================================================
+   OVERVIEW LAYER 2
+===================================================== */
 
 .overview-layer-2{
   margin-top:2rem;
 }
 
-/* Subtitle under card headers */
 .card-subtitle{
   margin:-0.25rem 0 1rem;
   font-size:0.75rem;
   color:var(--muted);
 }
 
-/* =========================
-   STAT LIST (Workforce Movement)
-========================= */
 .stat-list{
   display:flex;
   flex-direction:column;
@@ -396,10 +412,11 @@ main{
   border-top:1px dashed #f1dada;
 }
 
-/* =========================
+
+/* =====================================================
    DISTRIBUTION LISTS
-   (Branch Load & Departments)
-========================= */
+===================================================== */
+
 .distribution-list{
   display:flex;
   flex-direction:column;
@@ -413,7 +430,6 @@ main{
   font-size:0.85rem;
 }
 
-/* Optional visual weight bar (future-ready) */
 .distribution-row::after{
   content:"";
   display:block;
@@ -424,9 +440,11 @@ main{
   width:100%;
 }
 
-/* =========================
+
+/* =====================================================
    HR PRESSURE QUEUE
-========================= */
+===================================================== */
+
 .queue-list{
   display:flex;
   flex-direction:column;
@@ -449,9 +467,11 @@ main{
   color:var(--red-dark);
 }
 
-/* =========================
-   RESPONSIVE REFINEMENTS
-========================= */
+
+/* =====================================================
+   RESPONSIVE TWEAKS
+===================================================== */
+
 @media(max-width:640px){
   .overview-layer-2{
     margin-top:1.5rem;
@@ -466,859 +486,4 @@ main{
   .queue-item{
     font-size:0.8rem;
   }
-}
-
-/* =========================
-   EMPLOYEES · HEADER
-========================= */
-.employees-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  gap:1rem;
-  margin-bottom:1.25rem;
-  flex-wrap:wrap;
-}
-
-.employees-header-left h2{
-  margin:0;
-  font-size:1.5rem;
-  font-weight:700;
-}
-
-.employees-subtitle{
-  margin-top:0.25rem;
-  font-size:0.85rem;
-  color:var(--muted);
-}
-
-.employees-header-right{
-  display:flex;
-  align-items:center;
-}
-
-/* Primary action */
-.btn-primary{
-  background:var(--red);
-  color:white;
-  border:none;
-  padding:0.5rem 0.9rem;
-  border-radius:10px;
-  font-size:0.85rem;
-  font-weight:600;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:0.4rem;
-}
-
-.btn-primary i{
-  font-size:1rem;
-}
-
-.btn-primary:hover{
-  opacity:0.95;
-}
-
-
-/* =========================
-   EMPLOYEES · FILTERS
-========================= */
-.employees-filters{
-  display:flex;
-  gap:0.5rem;
-  flex-wrap:wrap;
-  margin-bottom:1.25rem;
-}
-
-.filter-chip{
-  background:#fffafa;
-  border:1px solid #f1dada;
-  padding:0.35rem 0.75rem;
-  border-radius:999px;
-  font-size:0.75rem;
-  color:var(--muted);
-  cursor:pointer;
-}
-
-.filter-chip.active{
-  background:var(--red);
-  color:white;
-  border-color:var(--red);
-}
-
-
-/* =========================
-   EMPLOYEES · LIST
-========================= */
-.employees-list{
-  display:flex;
-  flex-direction:column;
-  gap:0.5rem;
-}
-
-/* Empty state */
-.employees-empty{
-  text-align:center;
-  padding:2rem 1rem;
-  font-size:0.85rem;
-  color:var(--muted);
-  border:1px dashed #f1dada;
-  border-radius:14px;
-  background:#fffafa;
-}
-
-
-/* =========================
-   EMPLOYEE ROW
-========================= */
-.employee-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0.75rem 0.9rem;
-  background:var(--card);
-  border-radius:14px;
-  border:1px solid #f1dada;
-  box-shadow:var(--shadow);
-}
-
-.employee-main{
-  display:flex;
-  flex-direction:column;
-  gap:0.15rem;
-}
-
-.employee-name{
-  font-size:0.9rem;
-  font-weight:600;
-}
-
-.employee-meta{
-  font-size:0.75rem;
-  color:var(--muted);
-}
-
-
-/* =========================
-   EMPLOYEE STATUS
-========================= */
-.employee-status{
-  display:flex;
-  align-items:center;
-}
-
-/* Status pills */
-.status-pill{
-  padding:0.3rem 0.6rem;
-  border-radius:999px;
-  font-size:0.7rem;
-  font-weight:600;
-}
-
-/* Variants */
-.status-active{
-  background:#e8f8f1;
-  color:#0f766e;
-}
-
-.status-inactive{
-  background:#fff1e6;
-  color:#b45309;
-}
-
-.status-unassigned{
-  background:#fef2f2;
-  color:#b91c1c;
-}
-
-
-/* =========================
-   RESPONSIVE TWEAKS
-========================= */
-@media(max-width:640px){
-  .employee-row{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:0.5rem;
-  }
-
-  .employee-status{
-    align-self:flex-end;
-  }
-}
-
-
-/* =========================
-   RECRUITMENT · HEADER
-========================= */
-.recruitment-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  gap:1rem;
-  margin-bottom:1.25rem;
-  flex-wrap:wrap;
-}
-
-.recruitment-header-left h2{
-  margin:0;
-  font-size:1.5rem;
-  font-weight:700;
-}
-
-.recruitment-subtitle{
-  margin-top:0.25rem;
-  font-size:0.85rem;
-  color:var(--muted);
-}
-
-
-/* =========================
-   RECRUITMENT · FILTERS
-========================= */
-.recruitment-filters{
-  display:flex;
-  gap:0.5rem;
-  flex-wrap:wrap;
-  margin-bottom:1.25rem;
-}
-
-
-/* =========================
-   RECRUITMENT · LIST
-========================= */
-.recruitment-list{
-  display:flex;
-  flex-direction:column;
-  gap:0.6rem;
-}
-
-/* Empty state */
-.recruitment-empty{
-  text-align:center;
-  padding:2rem 1rem;
-  font-size:0.85rem;
-  color:var(--muted);
-  border:1px dashed #f1dada;
-  border-radius:14px;
-  background:#fffafa;
-}
-
-
-/* =========================
-   APPLICATION ROW
-========================= */
-.application-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0.8rem 0.95rem;
-  background:var(--card);
-  border-radius:14px;
-  border:1px solid #f1dada;
-  box-shadow:var(--shadow);
-}
-
-.application-main{
-  display:flex;
-  flex-direction:column;
-  gap:0.15rem;
-}
-
-.application-name{
-  font-size:0.9rem;
-  font-weight:600;
-}
-
-.application-meta{
-  font-size:0.75rem;
-  color:var(--muted);
-}
-
-
-/* =========================
-   APPLICATION ACTIONS
-========================= */
-.application-actions{
-  display:flex;
-  gap:0.5rem;
-}
-
-/* Approve */
-.btn-approve{
-  background:#e8f8f1;
-  color:#0f766e;
-  border:1px solid #bbf7d0;
-  padding:0.35rem 0.7rem;
-  border-radius:999px;
-  font-size:0.75rem;
-  font-weight:600;
-  cursor:pointer;
-}
-
-/* Reject */
-.btn-reject{
-  background:#fff1f2;
-  color:#b91c1c;
-  border:1px solid #fecaca;
-  padding:0.35rem 0.7rem;
-  border-radius:999px;
-  font-size:0.75rem;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.btn-approve:hover,
-.btn-reject:hover{
-  opacity:0.9;
-}
-
-
-/* =========================
-   RESPONSIVE TWEAKS
-========================= */
-@media(max-width:640px){
-  .application-row{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:0.6rem;
-  }
-
-  .application-actions{
-    align-self:flex-end;
-  }
-}
-
-/* =====================================================
-   RECRUITMENT · GRID LAYOUT
-===================================================== */
-
-.recruitment-items{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-  gap:18px;
-}
-
-
-/* =====================================================
-   RECRUITMENT · CARD
-===================================================== */
-
-.application-card{
-  background:#ffffff;
-  border-radius:16px;
-  padding:18px 18px 16px;
-  display:flex;
-  flex-direction:column;
-  min-height:240px;
-  border:1px solid #f1dada;
-  box-shadow:0 6px 18px rgba(0,0,0,.04);
-  transition:all .25s ease;
-  position:relative;
-  border-left:4px solid transparent;
-}
-
-.application-card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 12px 28px rgba(0,0,0,.08);
-}
-
-
-/* =====================================================
-   CARD HEADER
-===================================================== */
-
-.application-card-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:10px;
-}
-
-.application-name{
-  font-size:14px;
-  font-weight:700;
-  letter-spacing:.5px;
-  text-transform:uppercase;
-}
-
-.status-pill{
-  font-size:10px;
-  padding:5px 10px;
-  border-radius:999px;
-  font-weight:600;
-  letter-spacing:.4px;
-  text-transform:uppercase;
-}
-
-.status-submitted{
-  background:#f3f4f6;
-  color:#374151;
-}
-
-.status-approved{
-  background:#e6f7ed;
-  color:#1e7f4f;
-}
-
-.status-rejected{
-  background:#fde8e8;
-  color:#c53030;
-}
-
-
-/* =====================================================
-   ROLE (Primary Context)
-===================================================== */
-
-.application-role{
-  font-size:13px;
-  font-weight:600;
-  color:var(--red-dark);
-  margin-bottom:8px;
-}
-
-
-/* =====================================================
-   META DETAILS
-===================================================== */
-
-.application-details{
-  font-size:12px;
-  color:#4b5563;
-  line-height:1.6;
-}
-
-.application-details div{
-  margin-bottom:4px;
-}
-
-.application-details strong{
-  font-weight:600;
-  color:#111827;
-}
-
-
-/* =====================================================
-   RESUME INDICATOR
-===================================================== */
-
-.resume-indicator{
-  margin-top:8px;
-  font-size:12px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  color:var(--red-dark);
-}
-
-.resume-indicator i{
-  font-size:13px;
-}
-
-
-/* =====================================================
-   FOOTER
-===================================================== */
-
-.application-footer{
-  margin-top:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.application-applied{
-  font-size:11px;
-  color:var(--muted);
-}
-
-
-/* =====================================================
-   FULL WIDTH REVIEW BUTTON
-===================================================== */
-
-.btn-review{
-  width:100%;
-  padding:9px 0;
-  border:none;
-  border-radius:10px;
-  background:var(--red);
-  color:white;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all .2s ease;
-}
-
-.btn-review:hover{
-  background:var(--red-dark);
-}
-
-/* ==========================================
-   STATUS LEFT ACCENT
-========================================== */
-
-.application-card.status-submitted{
-  border-left-color:#9ca3af;
-}
-
-.application-card.status-approved{
-  border-left-color:#16a34a;
-}
-
-.application-card.status-rejected{
-  border-left-color:#dc2626;
-}
-
-/* ==========================================
-   SOURCE BADGE
-========================================== */
-
-.source-badge{
-  display:inline-block;
-  font-size:10px;
-  font-weight:600;
-  padding:4px 8px;
-  border-radius:999px;
-  text-transform:uppercase;
-  letter-spacing:.4px;
-  margin-top:6px;
-}
-
-/* Variants */
-
-.source-public{
-  background:#eef2ff;
-  color:#3730a3;
-}
-
-.source-recommendation{
-  background:#fff1e6;
-  color:#b45309;
-}
-
-/* ================================
-   META ROW (Source + Resume)
-================================ */
-
-.card-meta-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:8px;
-  flex-wrap:wrap;
-}
-
-/* Source badge */
-
-.source-badge{
-  font-size:11px;
-  font-weight:600;
-  padding:4px 8px;
-  border-radius:20px;
-  text-transform:uppercase;
-}
-
-/* Source variants */
-
-.source-public{
-  background:#eef2ff;
-  color:#3730a3;
-}
-
-.source-recommendation{
-  background:#fff4e6;
-  color:#b45309;
-}
-
-/* Resume badge */
-
-.resume-badge{
-  font-size:11px;
-  font-weight:600;
-  padding:4px 8px;
-  border-radius:20px;
-  background:#f1f5f9;
-  color:#334155;
-  display:flex;
-  align-items:center;
-  gap:4px;
-}
-
-.card-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.resume-badge {
-  font-size: 12px;
-  color: #e21d2f;
-  font-weight: 500;
-}
-
-/* Card container */
-.card-elevated {
-  position: relative;
-  background: #fff;
-  border-radius: 14px;
-  padding: 0;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card-elevated:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.application-card-inner {
-  padding: 18px 20px;
-}
-
-/* Stage accent bar */
-.card-accent {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  border-radius: 14px 0 0 14px;
-}
-
-.stage-submitted .card-accent { background: #6b7280; }
-.stage-screening .card-accent { background: #3b82f6; }
-.stage-interview .card-accent { background: #f59e0b; }
-.stage-final_review .card-accent { background: #8b5cf6; }
-.stage-offer .card-accent { background: #10b981; }
-.stage-completed .card-accent { background: #16a34a; }
-.stage-rejected .card-accent { background: #dc2626; }
-
-/* Header hierarchy */
-.application-name {
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.application-role {
-  font-size: 13px;
-  color: #6b7280;
-  margin-top: 2px;
-}
-
-/* Meta row */
-.meta-badge {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: #f3f4f6;
-  color: #374151;
-  display: inline-block;
-}
-
-/* Detail lines */
-.detail-line {
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-
-.small-muted {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-/* Footer alignment */
-.application-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-}
-
-/* Base modal wrapper */
-.recruitment-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* Backdrop */
-.modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(3px);
-  opacity: 0;
-  transition: opacity 220ms ease;
-}
-
-/* Container */
-.modal-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -45%) scale(0.96);
-  width: 85%;
-  max-width: 1200px;
-  max-height: 85vh;
-  background: #fff;
-  border-radius: 16px;
-  overflow-y: auto;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.25);
-  opacity: 0;
-  transition: 
-    transform 240ms cubic-bezier(.16,.8,.32,1),
-    opacity 200ms ease;
-}
-
-/* OPEN STATE */
-.recruitment-modal.is-open {
-  pointer-events: auto;
-}
-
-.recruitment-modal.is-open .modal-backdrop {
-  opacity: 1;
-}
-
-.recruitment-modal.is-open .modal-container {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-}
-.timeline-bar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.timeline-node {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  text-transform: capitalize;
-  border: 1px solid #ddd;
-}
-
-.timeline-node.completed {
-  background: #e5e7eb;
-}
-
-.timeline-node.active {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
-}
-
-.timeline-node.upcoming {
-  background: #f9fafb;
-  color: #9ca3af;
-}
-
-.reject-node {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.timeline-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.timeline-next {
-  background: #ef4444;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-}
-
-.timeline-reject {
-  background: #fff;
-  color: #b91c1c;
-  border: 1px solid #b91c1c;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.timeline-locked {
-  color: #6b7280;
-}
-
-.branches-header {
-  margin-bottom: 2rem;
-}
-
-.branches-subtitle {
-  color: #6b7280;
-  margin-top: 4px;
-}
-
-.branches-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-.branch-card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 1.5rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-  transition: 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.branch-card:hover {
-  transform: translateY(-3px);
-}
-
-.branch-top h3 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.branch-metrics {
-  display: flex;
-  justify-content: space-between;
-  margin: 1.2rem 0;
-}
-
-.branch-metrics .metric span {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.branch-metrics .metric strong {
-  display: block;
-  font-size: 1.2rem;
-  margin-top: 4px;
-}
-
-.branch-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.branch-actions button {
-  flex: 1;
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #111827;
-  color: white;
-  font-size: 0.8rem;
-}
-
-.branch-actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }

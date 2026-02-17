@@ -1,0 +1,123 @@
+/* =========================================
+   BRANCHES HEADER
+========================================= */
+
+.branches-header {
+  margin-bottom: 1.75rem;
+}
+
+.branches-subtitle {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+
+/* =========================================
+   BRANCHES GRID
+========================================= */
+
+.branches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+
+/* =========================================
+   BRANCH CARD
+========================================= */
+
+.branch-card {
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+}
+
+.branch-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.branch-top h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.branch-top small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+
+/* =========================================
+   BRANCH METRICS
+========================================= */
+
+.branch-metrics {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+
+.branch-metrics span {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.branch-metrics strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   BRANCH ACTIONS
+========================================= */
+
+.branch-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.branch-actions button {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.branch-actions button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.branch-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   GRADIENTS (IDENTITY CLASSES)
+========================================= */
+
+.gradient-green   { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.gradient-blue    { background: linear-gradient(135deg, #396afc, #2948ff); }
+.gradient-purple  { background: linear-gradient(135deg, #834d9b, #d04ed6); }
+.gradient-orange  { background: linear-gradient(135deg, #f7971e, #ffd200); }
+.gradient-red     { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+.gradient-teal    { background: linear-gradient(135deg, #136a8a, #267871); }

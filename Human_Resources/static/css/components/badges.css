@@ -1,0 +1,90 @@
+/* =====================================================
+   BASE BADGE
+===================================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+
+/* =====================================================
+   SOURCE VARIANTS
+===================================================== */
+
+.source-public {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.source-recommendation {
+  background: #fff4e6;
+  color: #b45309;
+}
+
+
+/* =====================================================
+   STATUS VARIANTS (Recruitment)
+===================================================== */
+
+.status-submitted {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.status-approved {
+  background: #e6f7ed;
+  color: #1e7f4f;
+}
+
+.status-rejected {
+  background: #fde8e8;
+  color: #c53030;
+}
+
+
+/* =====================================================
+   STATUS VARIANTS (Employees)
+===================================================== */
+
+.status-active {
+  background: #e8f8f1;
+  color: #0f766e;
+}
+
+.status-inactive {
+  background: #fff1e6;
+  color: #b45309;
+}
+
+.status-unassigned {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+
+/* =====================================================
+   BRANCH HEALTH
+===================================================== */
+
+.health-stable {
+  background: #e8f8f1;
+  color: #0f766e;
+}
+
+.health-warning {
+  background: #fff4e6;
+  color: #b45309;
+}
+
+.health-critical {
+  background: #fde8e8;
+  color: #c53030;
+}

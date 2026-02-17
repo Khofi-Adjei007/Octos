@@ -11,15 +11,19 @@ export async function loadRecruitment() {
   if (!list || !empty) return;
 
   list.innerHTML = '';
-  empty.style.display = 'none';
+  empty.classList.add('hidden');
 
   try {
-    const applications = await fetchApplications();
+    const response = await fetchApplications();
+    const applications = Array.isArray(response)
+      ? response
+      : response.results || [];
+
     const filtered = applyRecruitmentFilter(applications);
 
+
     if (!filtered.length) {
-      empty.style.display = 'block';
-      empty.textContent = 'No applications found.';
+      empty.classList.remove('hidden');
       return;
     }
 
@@ -28,8 +32,8 @@ export async function loadRecruitment() {
       list.appendChild(card);
     });
 
-  } catch {
-    empty.style.display = 'block';
+  } catch (err) {
     empty.textContent = 'Failed to load applications.';
+    empty.classList.remove('hidden');
   }
 }
