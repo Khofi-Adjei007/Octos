@@ -5,35 +5,40 @@ import { applyRecruitmentFilter } from './recruitment.filters.js';
 
 export async function loadRecruitment() {
 
-  const list  = q('#recruitment-items');
-  const empty = q('#recruitment-empty');
+  const list  = document.querySelector('#recruitment-items');
+  const empty = document.querySelector('#recruitment-empty');
 
-  if (!list || !empty) return;
+  if (!list || !empty) {
+    console.log("Missing DOM nodes");
+    return;
+  }
 
   list.innerHTML = '';
-  empty.classList.add('hidden');
 
   try {
+
+    console.log("STEP 1: fetching...");
     const response = await fetchApplications();
-    const applications = Array.isArray(response)
-      ? response
-      : response.results || [];
+    console.log("STEP 2: raw response:", response);
 
-    const filtered = applyRecruitmentFilter(applications);
-
-
-    if (!filtered.length) {
-      empty.classList.remove('hidden');
-      return;
+    if (!Array.isArray(response)) {
+      console.log("NOT ARRAY:", response);
+      throw new Error("Response is not array");
     }
 
+    console.log("STEP 3: applying filter...");
+    const filtered = applyRecruitmentFilter(response);
+    console.log("STEP 4: filtered:", filtered);
+
     filtered.forEach(app => {
+      console.log("STEP 5: building card:", app.id);
       const card = buildApplicationCard(app);
       list.appendChild(card);
     });
 
-  } catch (err) {
-    empty.textContent = 'Failed to load applications.';
-    empty.classList.remove('hidden');
+    console.log("DONE RENDERING");
+
+  } catch (error) {
+    console.error("🔥 REAL ERROR:", error);
   }
 }

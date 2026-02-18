@@ -117,3 +117,33 @@ export function buildApplicationCard(app) {
 
   return card;
 }
+/* =========================================================
+   INTERNAL HELPERS
+========================================================= */
+
+function formatAppliedTime(createdAt) {
+
+  if (!createdAt) return '—';
+
+  const appliedDate = new Date(createdAt);
+  const now = new Date();
+
+  const diffHours = Math.floor((now - appliedDate) / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffHours < 24) {
+    return diffHours <= 1
+      ? 'Applied 1 hour ago'
+      : `Applied ${diffHours} hours ago`;
+  }
+
+  return diffDays === 1
+    ? 'Applied 1 day ago'
+    : `Applied ${diffDays} days ago`;
+}
+
+
+function formatDateTime(datetime) {
+  if (!datetime) return '—';
+  return new Date(datetime).toLocaleString();
+}

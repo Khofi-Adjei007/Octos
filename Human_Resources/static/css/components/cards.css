@@ -4,7 +4,6 @@
 
 .card-elevated {
   position: relative;
-  background: #ffffff;
   border-radius: 18px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -22,41 +21,98 @@
 
 .card-accent {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  border-radius: 18px 0 0 18px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  border-top-left-radius: 18px;
+  border-bottom-left-radius: 18px;
 }
-
-.stage-submitted   .card-accent { background: #6b7280; }
-.stage-screening   .card-accent { background: #3b82f6; }
-.stage-interview   .card-accent { background: #f59e0b; }
-.stage-final_review .card-accent { background: #8b5cf6; }
-.stage-offer       .card-accent { background: #10b981; }
-.stage-completed   .card-accent { background: #16a34a; }
-.stage-rejected    .card-accent { background: #dc2626; }
 
 
 /* =====================================================
-   APPLICATION CARD (GRID TILE READY)
+   APPLICATION CARD (BASE)
 ===================================================== */
 
 .application-card {
   position: relative;
-  background: #ffffff;
   border-radius: 18px;
   padding: 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 220px;
-  border: 1px solid #f1dada;
+  border: 1px solid rgba(0,0,0,0.06);
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   transition: all 0.2s ease;
+  overflow: hidden;
+  background: #ffffff;
 }
 
 .application-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+
+/* =====================================================
+   STAGE COLORS (ACCENT + TINTED BACKGROUND)
+===================================================== */
+
+/* SUBMITTED */
+.application-card.stage-submitted {
+  background: #f9fafb;
+}
+.stage-submitted .card-accent {
+  background: #6b7280;
+}
+
+/* SCREENING */
+.application-card.stage-screening {
+  background: #eff6ff;
+}
+.stage-screening .card-accent {
+  background: #3b82f6;
+}
+
+/* INTERVIEW */
+.application-card.stage-interview {
+  background: #fff7ed;
+}
+.stage-interview .card-accent {
+  background: #f59e0b;
+}
+
+/* FINAL REVIEW */
+.application-card.stage-final_review {
+  background: #f5f3ff;
+}
+.stage-final_review .card-accent {
+  background: #8b5cf6;
+}
+
+/* OFFER */
+.application-card.stage-offer {
+  background: #ecfdf5;
+}
+.stage-offer .card-accent {
+  background: #10b981;
+}
+
+/* COMPLETED */
+.application-card.stage-completed {
+  background: #f0fdf4;
+}
+.stage-completed .card-accent {
+  background: #16a34a;
+}
+
+/* REJECTED */
+.application-card.stage-rejected {
+  background: #fef2f2;
+}
+.stage-rejected .card-accent {
+  background: #dc2626;
 }
 
 
@@ -94,7 +150,7 @@
 
 .application-details {
   font-size: 12px;
-  color: #4b5563;
+  color: #374151;
   line-height: 1.5;
   margin-top: 6px;
 }
@@ -108,22 +164,9 @@
   color: #111827;
 }
 
-.resume-indicator {
-  margin-top: 6px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--red-dark);
-}
-
-.resume-indicator i {
-  font-size: 13px;
-}
-
 
 /* =====================================================
-   FOOTER (TILE BALANCED)
+   FOOTER
 ===================================================== */
 
 .application-footer {
@@ -137,4 +180,33 @@
 .application-applied {
   font-size: 11px;
   color: var(--muted);
+}
+
+
+/* =====================================================
+   RECRUITMENT GRID LAYOUT
+===================================================== */
+
+.recruitment-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1200px) {
+  .recruitment-items {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .recruitment-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .recruitment-items {
+    grid-template-columns: 1fr;
+  }
 }

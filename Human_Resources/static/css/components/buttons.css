@@ -20,21 +20,6 @@
   background:var(--red-dark);
 }
 
-/* ==========================================
-   STATUS LEFT ACCENT
-========================================== */
-
-.application-card.status-submitted{
-  border-left-color:#9ca3af;
-}
-
-.application-card.status-approved{
-  border-left-color:#16a34a;
-}
-
-.application-card.status-rejected{
-  border-left-color:#dc2626;
-}
 
 /* ==========================================
    SOURCE BADGE

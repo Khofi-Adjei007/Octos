@@ -1,0 +1,17 @@
+/* =========================================
+   RECRUITMENT FILTERS (Sticky Under Context Switcher)
+========================================= */
+
+.recruitment-filters {
+  position: sticky;
+  top: 132px; /* header + metric-switch height */
+  z-index: 30;
+
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+
+  background: var(--bg);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1dada;
+}

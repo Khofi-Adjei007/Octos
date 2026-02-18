@@ -10,6 +10,7 @@
 @import url("views/branches.css");
 @import url("views/overview.css");
 @import url("views/employees.css");
+@import url("views/recruitment.css");
 
 
 /* =====================================================
@@ -57,14 +58,15 @@ header{
   border-bottom:#ffbf00 5px solid;
 }
 
-.header-inner{
-  max-width:1200px;
-  margin:auto;
-  padding:1rem 1.25rem;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+.header-inner {
+  max-width: 1280px;   /* constrain width */
+  margin: 0 auto;      /* center content */
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+
 
 .brand{
   display:flex;
@@ -99,6 +101,107 @@ header{
   border-radius:8px;
 }
 
+/* =========================================
+   TABLET RESPONSIVE
+========================================= */
+
+@media (max-width: 1024px) {
+
+  .header-inner {
+    padding: 12px 18px;
+  }
+
+  .brand-meta strong {
+    font-size: 14px;
+  }
+
+  .brand-meta small {
+    font-size: 11px;
+  }
+
+  .header-utilities {
+    gap: 18px;
+  }
+
+  .user-name {
+    font-size: 13px;
+  }
+
+  .user-role {
+    font-size: 10px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .header-inner {
+    padding: 10px 14px;
+  }
+
+  .header-brand img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-meta strong {
+    font-size: 13px;
+  }
+
+  .brand-meta small {
+    display: none; /* hide subtitle on mobile */
+  }
+
+  .header-utilities {
+    gap: 14px;
+  }
+
+  .user-details {
+    display: none; /* hide name + role */
+  }
+
+  .dropdown-icon {
+    display: none;
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .notification-dropdown,
+  .profile-dropdown {
+    right: -10px;
+    width: 260px;
+  }
+}
+@media (max-width: 420px) {
+
+  .header-inner {
+    padding: 8px 10px;
+  }
+
+  .header-brand {
+    gap: 8px;
+  }
+
+  .header-utilities {
+    gap: 10px;
+  }
+
+  .notification-count {
+    font-size: 9px;
+    padding: 1px 5px;
+  }
+}
 
 /* =====================================================
    PAGE WRAPPER
@@ -115,12 +218,23 @@ main{
    CONTEXT SWITCHER
 ===================================================== */
 
-.metric-switch{
-  display:flex;
-  gap:.5rem;
-  margin-bottom:1.25rem;
-  flex-wrap:wrap;
+/* =========================
+   CONTEXT SWITCHER (Sticky)
+========================= */
+
+.metric-switch {
+  position: sticky;
+  top: 76px; /* height of header */
+  z-index: 35;
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  background: var(--bg);
+  padding: .75rem 0;
+
 }
+
 
 .switch-btn{
   background:transparent;
@@ -486,4 +600,452 @@ main{
   .queue-item{
     font-size:0.8rem;
   }
+}
+.hidden {
+  display: none !important;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.user-meta small {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* =========================
+   ENTERPRISE HEADER
+========================= */
+
+
+/* =========================================
+   APP HEADER FOUNDATION
+========================================= */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #ff1e1e;
+  color: #ffffff;
+  border-bottom: 3px solid #f4c542; /* subtle premium accent */
+  background: var(--red);
+}
+
+.header-inner {
+  max-width: 1280px;   /* constrain width */
+  margin: 0 auto;      /* center content */
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+
+/* =========================================
+   BRAND
+========================================= */
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-brand img {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: white;
+  padding: 4px;
+}
+
+.brand-meta strong {
+  font-size: 15px;
+  font-weight: 600;
+  display: block;
+}
+
+.brand-meta small {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+
+/* =========================================
+   UTILITIES
+========================================= */
+
+.header-utilities {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+
+/* Icon Buttons */
+
+.icon-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #ffbf00;
+  border-radius: 50%;
+}
+
+/* =========================================
+   USER PROFILE
+========================================= */
+
+.user-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-role {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #ff1e1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dropdown-icon {
+  font-size: 16px;
+}
+
+/* =========================
+   PROFILE DROPDOWN (ANIMATED)
+========================= */
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  width: 240px;
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 2000;
+}
+
+.user-profile.active .profile-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown-header {
+  padding: 14px 16px;
+  font-size: 12px;
+  background: #f9fafb;
+}
+
+.dropdown-header strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #f1f1f1;
+}
+
+.profile-dropdown a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  text-decoration: none;
+  color: #1f2937;
+  transition: background 0.2s ease;
+}
+
+.profile-dropdown a:hover {
+  background: #f3f4f6;
+}
+
+.logout-link {
+  color: #dc2626;
+}
+
+
+/* Active state */
+.profile-dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+/* =========================================
+   NOTIFICATIONS
+========================================= */
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-bell {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+}
+
+.notification-bell:hover {
+  opacity: 0.85;
+}
+
+.notification-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ffffff;
+  color: #ff1e1e;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 20px;
+}
+.notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: 38px;
+  width: 280px;
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 2000;
+}
+
+.notification-wrapper.active .notification-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.notification-header {
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.notification-item {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notification-item:hover {
+  background: #f9fafb;
+}
+
+.notification-item.unread strong {
+  font-weight: 600;
+}
+
+.notification-item span {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.notification-footer {
+  padding: 12px 16px;
+  font-size: 12px;
+  text-align: center;
+  border-top: 1px solid #f1f1f1;
+  cursor: pointer;
+}
+
+
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+
+  .header-inner {
+    padding: 12px 16px;
+  }
+
+  .header-brand img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-meta strong {
+    font-size: 14px;
+  }
+
+  .brand-meta small {
+    display: none; /* hide subtitle on mobile */
+  }
+
+}
+@media (max-width: 768px) {
+
+  .user-profile {
+    gap: 8px;
+  }
+
+  .user-details {
+    display: none; /* hide name + role on mobile */
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .dropdown-icon {
+    display: none;
+  }
+
+}
+.notification-bell {
+  position: relative;
+  font-size: 20px;
+}
+
+.notification-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: white;
+  color: #e11d2f;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 768px) {
+
+  .metric-switch {
+    position: sticky;
+    top: 64px; /* adjust if header height differs */
+    z-index: 40;
+    background: #f8f9fb;
+    padding: 10px 12px;
+    overflow-x: auto;
+    display: flex;
+    gap: 8px;
+    scrollbar-width: none;
+  }
+
+  .metric-switch::-webkit-scrollbar {
+    display: none;
+  }
+
+  .switch-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
 }

@@ -12,30 +12,124 @@
 
 <body>
 
+
 <!-- =========================
-     GLOBAL HEADER
+     GLOBAL HEADER · ENTERPRISE
 ========================= -->
-<header>
+<header class="app-header">
+
   <div class="header-inner">
-    <div class="brand">
-      <img src="/static/images/farhat-logo-small.png" alt="Farhat Logo" class="rounded-full w-16 h-16">
-      <div>
-  <strong>Farhat Printing Press</strong>
-  <small>
-    Human Resources Dashboard
-    {% if request.user.region %}
-    {% endif %}
-  </small>
-</div>
+
+    <!-- LEFT: BRAND -->
+    <div class="header-brand">
+
+  <img src="/static/images/farhat-logo-small.png" alt="Farhat Logo">
+
+  <div class="brand-meta">
+        <strong>Farhat Printing Press</strong>
+        <small>
+          Human Resources Dashboard
+          {% if request.user.region %}
+            · {{ request.user.region }}
+          {% endif %}
+        </small>
+      </div>
+    </div>
+
+
+    <!-- RIGHT: UTILITIES -->
+    <div class="header-utilities">
+
+      <!-- ================= Notifications ================= -->
+      <div class="notification-wrapper" id="notificationWrapper">
+
+        <button class="notification-bell" type="button">
+          <i class="ri-notification-3-line"></i>
+          <span class="notification-count">2</span>
+        </button>
+
+        <div class="notification-dropdown" id="notificationDropdown">
+          <div class="notification-header">
+            Notifications
+          </div>
+
+          <div class="notification-item unread">
+            <strong>New employee approved</strong>
+            <span>2 hours ago</span>
+          </div>
+
+          <div class="notification-item unread">
+            <strong>Application moved to Interview</strong>
+            <span>Today</span>
+          </div>
+
+          <div class="notification-footer">
+            View all notifications
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ================= User Profile ================= -->
+      <div class="user-profile" id="userProfile">
+
+        <!-- TEXT -->
+        <div class="user-details">
+          <div class="user-name">
+            {{ request.user.first_name }} {{ request.user.last_name }}
+          </div>
+          <div class="user-role">
+            Regional HR Manager
+          </div>
+        </div>
+
+        <!-- AVATAR -->
+        <div class="avatar">
+          {{ request.user.first_name|first }}{{ request.user.last_name|first }}
+        </div>
+
+        <!-- CARET -->
+        <i class="ri-arrow-down-s-line dropdown-icon"></i>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="dropdown-header">
+            Signed in as
+            <strong>
+              {{ request.user.first_name }} {{ request.user.last_name }}
+            </strong>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <a href="#">
+            <i class="ri-user-line"></i>
+            My Profile
+          </a>
+
+          <a href="#">
+            <i class="ri-settings-3-line"></i>
+            Settings
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <a href="{% url 'employee_logout' %}" class="logout-link">
+            <i class="ri-logout-box-r-line"></i>
+            Logout
+          </a>
+        </div>
+
+      </div>
 
     </div>
 
-    <div class="user">
-      <span>{{ request.user.first_name }} {{ request.user.last_name }}</span>
-      <a href="{% url 'employee_logout' %}">Logout</a>
-    </div>
   </div>
+
 </header>
+
+
 
 <main>
 

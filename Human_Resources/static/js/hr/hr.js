@@ -63,3 +63,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
+
+  const profile = document.getElementById('userProfile');
+  const dropdown = document.getElementById('profileDropdown');
+
+  profile.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+
+  document.addEventListener('click', () => {
+    dropdown.classList.remove('open');
+  });
+
+
+
+  const notificationWrapper = document.getElementById('notificationWrapper');
+  const notificationDropdown = document.getElementById('notificationDropdown');
+
+  notificationWrapper.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notificationDropdown.classList.toggle('open');
+  });
+
+  document.addEventListener('click', () => {
+    notificationDropdown.classList.remove('open');
+  });
+
+
