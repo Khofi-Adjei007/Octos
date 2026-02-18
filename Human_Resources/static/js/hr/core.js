@@ -85,7 +85,8 @@ function bindContextSwitching(onChange) {
 export function initApp({
   onOverview,
   onRecruitment,
-  onEmployees
+  onEmployees,
+  onPayroll    // ✅ Added Payroll hook
 } = {}) {
 
   bindContextSwitching((ctx) => {
@@ -100,6 +101,10 @@ export function initApp({
 
     if (ctx === 'employees') {
       onEmployees?.();
+    }
+
+    if (ctx === 'payroll') {     // ✅ Added Payroll condition
+      onPayroll?.();
     }
 
   });

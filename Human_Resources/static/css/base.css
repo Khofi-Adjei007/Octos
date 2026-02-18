@@ -1,0 +1,4 @@
+/* Prevent layout shift when switching contexts */
+html {
+  overflow-y: scroll;
+}

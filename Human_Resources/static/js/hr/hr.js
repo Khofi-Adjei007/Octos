@@ -17,6 +17,19 @@ import {
 
 import { applyBranchGradients } from './branches.js';
 
+
+/* -----------------------------------------
+ * TEMP: PAYROLL LOADER
+ * ----------------------------------------- */
+function loadPayroll() {
+  console.log('Payroll context loaded');
+  // We will connect real payroll logic later
+}
+
+
+/* -----------------------------------------
+ * INITIAL GRADIENT SETUP
+ * ----------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
   applyBranchGradients();
 });
@@ -31,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
      INIT MODAL SYSTEM
   ------------------------------ */
   initRecruitmentModal();
+
 
   /* -----------------------------
      REVIEW BUTTON (Event Delegation)
@@ -60,14 +74,19 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp({
     onOverview: loadOverview,
     onRecruitment: loadRecruitment,
+    onPayroll: loadPayroll   // ✅ Added Payroll hook
   });
 
 });
 
 
-  const profile = document.getElementById('userProfile');
-  const dropdown = document.getElementById('profileDropdown');
+/* -----------------------------------------
+   PROFILE DROPDOWN
+----------------------------------------- */
+const profile = document.getElementById('userProfile');
+const dropdown = document.getElementById('profileDropdown');
 
+if (profile && dropdown) {
   profile.addEventListener('click', (e) => {
     e.stopPropagation();
     dropdown.classList.toggle('open');
@@ -76,12 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', () => {
     dropdown.classList.remove('open');
   });
+}
 
 
+/* -----------------------------------------
+   NOTIFICATION DROPDOWN
+----------------------------------------- */
+const notificationWrapper = document.getElementById('notificationWrapper');
+const notificationDropdown = document.getElementById('notificationDropdown');
 
-  const notificationWrapper = document.getElementById('notificationWrapper');
-  const notificationDropdown = document.getElementById('notificationDropdown');
-
+if (notificationWrapper && notificationDropdown) {
   notificationWrapper.addEventListener('click', (e) => {
     e.stopPropagation();
     notificationDropdown.classList.toggle('open');
@@ -90,5 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', () => {
     notificationDropdown.classList.remove('open');
   });
+}
 
 

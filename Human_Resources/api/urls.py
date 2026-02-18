@@ -5,6 +5,8 @@ from Human_Resources.api.views.recruitment_detail import RecruitmentDetailAPI
 from Human_Resources.api.views.recruitment_stage_update import RecruitmentStageUpdateAPI
 from Human_Resources.api.views.recruitment_evaluation import RecruitmentEvaluationAPI
 from Human_Resources.api.views.schedule_interview import ScheduleInterviewAPI
+from Human_Resources.api.views.branches import BranchListAPI
+
 
 
 
@@ -39,4 +41,5 @@ urlpatterns = [
     name="schedule-interview",
 ),
 
+    path("branches/", BranchListAPI.as_view(), name="branches"),
 ]

@@ -1049,3 +1049,49 @@ main{
   }
 
 }
+
+
+/* =====================================================
+   Prayroll
+===================================================== */
+/* =========================================
+   PAYROLL POLISH
+========================================= */
+
+/* KPI hover lift */
+.payroll-kpi {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payroll-kpi:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+}
+
+/* Status badge subtle glow */
+.status-paid {
+  box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
+  transition: box-shadow 0.3s ease;
+}
+
+.status-paid:hover {
+  box-shadow: 0 0 8px 2px rgba(34,197,94,0.25);
+}
+
+.status-failed {
+  box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
+  transition: box-shadow 0.3s ease;
+}
+
+.status-failed:hover {
+  box-shadow: 0 0 8px 2px rgba(239,68,68,0.25);
+}
+
+/* Table row micro animation */
+.payroll-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.payroll-table tbody tr:hover {
+  transform: scale(1.01);
+}

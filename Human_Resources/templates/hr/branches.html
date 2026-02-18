@@ -1,3 +1,5 @@
+{% load static %}
+
 <section class="branches-view">
 
   <!-- =========================================
@@ -11,81 +13,16 @@
   </div>
 
   <!-- =========================================
-       BRANCH CARDS GRID
+       BRANCH CARDS GRID (Dynamic)
   ========================================== -->
-  <div class="branches-grid">
-
-    <!-- SAMPLE CARD -->
-    <div class="branch-card gradient-green">
-
-      <!-- Top Header -->
-      <div class="branch-header">
-        <div>
-          <h3>Westland Branch</h3>
-          <small>WESTLAND_HQ</small>
-        </div>
-
-        <span class="health-badge stable">
-          Stable
-        </span>
-      </div>
-
-      <!-- Meta -->
-      <div class="branch-meta">
-        <div>
-          <span class="meta-label">Manager</span>
-          <strong>John Doe</strong>
-        </div>
-
-        <div>
-          <span class="meta-label">Active since</span>
-          <strong>2018</strong>
-        </div>
-
-        <div>
-          <span class="meta-label">Distance from HQ</span>
-          <strong>12 km</strong>
-        </div>
-      </div>
-
-      <!-- Metrics -->
-      <div class="branch-metrics">
-        <div class="metric-box">
-          <span>Total</span>
-          <strong>12</strong>
-        </div>
-
-        <div class="metric-box">
-          <span>Active</span>
-          <strong>10</strong>
-        </div>
-
-        <div class="metric-box">
-          <span>Open Roles</span>
-          <strong>3</strong>
-        </div>
-      </div>
-
-      <!-- Trend -->
-      <div class="branch-trend positive">
-        +2 this month
-      </div>
-
-      <!-- Actions -->
-      <div class="branch-actions">
-        <button class="branch-btn">
-          <i class="ri-bar-chart-line"></i>
-          Analytics
-        </button>
-
-        <button class="branch-btn secondary">
-          <i class="ri-group-line"></i>
-          Employees
-        </button>
-      </div>
-
-    </div>
-
+  <div id="branchesGrid" class="branches-grid">
+    <!-- Cards will be injected dynamically by branches.js -->
   </div>
 
 </section>
+
+
+<!-- =========================================
+     BRANCHES JS
+========================================== -->
+<script type="module" src="{% static 'js/hr/branches.js' %}"></script>
