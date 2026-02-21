@@ -1,6 +1,7 @@
 /* =========================================================
    RECRUITMENT MODAL MODULE
-   Animated Version + Timeline Integrated
+   Opens application detail in a modal.
+   Timeline and actions rendered inside.
 ========================================================= */
 
 import { q } from '../core.js';
@@ -15,8 +16,7 @@ let modalEl = null;
 ========================================================= */
 
 export function initRecruitmentModal() {
-
-  if (modalEl) return; // Prevent double initialization
+  if (modalEl) return;
 
   modalEl = document.createElement('div');
   modalEl.className = 'recruitment-modal';
@@ -25,25 +25,23 @@ export function initRecruitmentModal() {
     <div class="modal-backdrop"></div>
 
     <div class="modal-container">
+
       <div class="modal-header">
         <div>
-          <h3 class="modal-title">Application Review</h3>
+          <h3 class="modal-title" id="modal-applicant-name">Loading...</h3>
           <div class="modal-subtitle" id="modal-role"></div>
         </div>
-
-        <button class="modal-close">&times;</button>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
       </div>
 
       <div class="modal-body" id="modal-content">
-        <div class="modal-loading">
-          Loading application...
-        </div>
+        <div class="modal-loading">Loading application...</div>
       </div>
+
     </div>
   `;
 
   document.body.appendChild(modalEl);
-
   bindModalEvents();
 }
 
@@ -53,14 +51,12 @@ export function initRecruitmentModal() {
 ========================================================= */
 
 export async function openRecruitmentModal(id) {
-  window.location.href = `/hr/applications/${id}/`;
-
-  if (!modalEl) return;
+  if (!modalEl) initRecruitmentModal();
 
   const content = q('#modal-content');
   content.innerHTML = `<div class="modal-loading">Loading application...</div>`;
 
-  // Trigger animation smoothly
+  // Animate in
   requestAnimationFrame(() => {
     modalEl.classList.add('is-open');
   });
@@ -73,7 +69,7 @@ export async function openRecruitmentModal(id) {
   } catch {
     content.innerHTML = `
       <div class="modal-error">
-        Failed to load application.
+        Failed to load application. Please try again.
       </div>
     `;
   }
@@ -85,7 +81,6 @@ export async function openRecruitmentModal(id) {
 ========================================================= */
 
 export function closeRecruitmentModal() {
-
   if (!modalEl) return;
 
   modalEl.classList.remove('is-open');
@@ -98,46 +93,67 @@ export function closeRecruitmentModal() {
 ========================================================= */
 
 function renderModalContent(app) {
-
   const content = q('#modal-content');
+  const nameEl = q('#modal-applicant-name');
   const roleEl = q('#modal-role');
 
+  nameEl.textContent = `${app?.first_name || ''} ${app?.last_name || ''}`;
   roleEl.textContent = app?.role_applied_for || '';
 
   content.innerHTML = `
-    <div class="modal-grid">
 
-      <div>
-        <strong>Name:</strong>
-        ${app?.first_name || ''} ${app?.last_name || ''}
+    <div class="modal-meta-grid">
+      <div class="modal-meta-item">
+        <span class="meta-label">Email</span>
+        <span class="meta-value">${app?.email || '—'}</span>
       </div>
 
-      <div>
-        <strong>Email:</strong>
-        ${app?.email || '—'}
+      <div class="modal-meta-item">
+        <span class="meta-label">Source</span>
+        <span class="meta-value">${app?.source?.toUpperCase() || '—'}</span>
       </div>
 
-      <div>
-        <strong>Current Stage:</strong>
-        ${formatStage(app?.current_stage || app?.status || 'submitted')}
-      </div>
-
-      ${app?.resume_url ? `
-        <div>
-          <strong>Resume:</strong>
-          <a href="${app.resume_url}" target="_blank">View Resume</a>
+      ${app?.branch_name ? `
+        <div class="modal-meta-item">
+          <span class="meta-label">Branch</span>
+          <span class="meta-value">${app.branch_name}</span>
         </div>
       ` : ''}
 
+      ${app?.assigned_reviewer ? `
+        <div class="modal-meta-item">
+          <span class="meta-label">Reviewer</span>
+          <span class="meta-value">${app.assigned_reviewer}</span>
+        </div>
+      ` : ''}
+
+      ${app?.interview_date ? `
+        <div class="modal-meta-item">
+          <span class="meta-label">Interview</span>
+          <span class="meta-value">${formatDateTime(app.interview_date)}</span>
+        </div>
+      ` : ''}
+
+      ${app?.resume_url ? `
+        <div class="modal-meta-item">
+          <span class="meta-label">Resume</span>
+          <span class="meta-value">
+            <a href="${app.resume_url}" target="_blank" class="resume-link">
+              📄 View Resume
+            </a>
+          </span>
+        </div>
+      ` : ''}
     </div>
 
     <div class="modal-section">
-      <h4>Workflow Progression</h4>
+      <h4 class="modal-section-title">Pipeline</h4>
       <div class="kanban-placeholder"></div>
     </div>
+
   `;
 
-  // Render the stage timeline engine
+  // Wire up the timeline engine
   renderTimeline(app);
 }
 
@@ -154,14 +170,14 @@ function bindModalEvents() {
       closeRecruitmentModal();
     }
 
-    if (e.target.classList.contains('modal-close')) {
+    if (e.target.id === 'modal-close-btn') {
       closeRecruitmentModal();
     }
 
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalEl.classList.contains('is-open')) {
+    if (e.key === 'Escape' && modalEl?.classList.contains('is-open')) {
       closeRecruitmentModal();
     }
   });
@@ -172,7 +188,7 @@ function bindModalEvents() {
    HELPERS
 ========================================================= */
 
-function formatStage(stage) {
-  if (!stage) return '';
-  return stage.replace('_', ' ');
+function formatDateTime(datetime) {
+  if (!datetime) return '—';
+  return new Date(datetime).toLocaleString();
 }

@@ -18,6 +18,13 @@ PERMISSIONS = [
     # Administration
     ("manage_employees", "Manage Employees", "HR employee management"),
     ("manage_branch", "Manage Branch", "Branch configuration and setup"),
+
+    # Recruitment
+    ("RECOMMEND_CANDIDATE", "Recommend Candidate", "Recommend a candidate for a role"),
+    ("ADVANCE_APPLICATION", "Advance Application", "Move an application through recruitment stages"),
+    ("HIRE_CANDIDATE", "Hire Candidate", "Approve, reject or extend offers to candidates"),
+    ("VIEW_RECRUITMENT", "View Recruitment", "View recruitment applications and pipeline"),
+    ("MANAGE_RECRUITMENT", "Manage Recruitment", "Full recruitment pipeline administration"),
 ]
 
 

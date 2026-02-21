@@ -34,16 +34,16 @@
             <div class="text-center">
                 <h1 id="applicant-fullname"
                     class="text-xl font-semibold text-gray-900">
-                    Annette Marsaono
+                    —
                 </h1>
             </div>
 
-            <!-- Right: Stage -->
+            <!-- Right: Stage Badge -->
             <div class="flex justify-end">
                 <span id="current-stage-badge"
                       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase bg-blue-100 text-blue-700 border border-blue-200">
                     <i class="ri-flag-line mr-1"></i>
-                    FINAL REVIEW
+                    —
                 </span>
             </div>
 
@@ -54,14 +54,14 @@
 
             <span id="applicant-role" class="inline-flex items-center gap-1">
                 <i class="ri-briefcase-line text-gray-500"></i>
-                Head of Human Resources
+                —
             </span>
 
             <span class="opacity-40">·</span>
 
             <span id="applicant-email" class="inline-flex items-center gap-1">
                 <i class="ri-mail-line text-gray-500"></i>
-                jissgroceries@gmail.com
+                —
             </span>
 
             <span class="opacity-40">·</span>
@@ -73,31 +73,18 @@
 
         </div>
 
-        <!-- Progress Ribbon -->
+        <!-- Progress Ribbon — Dynamic -->
         <div class="mt-6">
-            <div class="flex overflow-hidden rounded-full text-xs font-semibold uppercase tracking-wide shadow-sm">
-
-                <div class="flex-1 text-center py-2 bg-blue-600 text-white">
-                    Screening
-                </div>
-
-                <div class="flex-1 text-center py-2 bg-amber-100 text-amber-700">
-                    Interview
-                </div>
-
-                <div class="flex-1 text-center py-2 bg-purple-100 text-purple-700">
-                    Final Review
-                </div>
-
-                <div class="flex-1 text-center py-2 bg-red-100 text-red-700">
-                    Decision
-                </div>
-
-                <div class="flex-1 text-center py-2 bg-green-100 text-green-700">
-                    Onboarding
-                </div>
-
+            <div id="stage-ribbon"
+                 class="flex overflow-hidden rounded-full text-xs font-semibold uppercase tracking-wide shadow-sm">
+                <!-- Rendered dynamically by recruitment.detail.js -->
             </div>
+        </div>
+
+        <!-- Action Panel — Dynamic -->
+        <div id="action-panel"
+             class="flex gap-3 mt-4 flex-wrap items-center">
+            <!-- Rendered dynamically by recruitment.detail.js -->
         </div>
 
     </section>
@@ -120,7 +107,6 @@
                         <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">
                             Curriculum Vitae
                         </h2>
-
                         <span class="text-xs text-blue-600 font-semibold uppercase">
                             Screening Stage
                         </span>
@@ -138,7 +124,7 @@
         </div>
 
 
-        <!-- RIGHT PANEL: Screening Evaluation -->
+        <!-- RIGHT PANEL: Evaluation -->
         <div class="col-span-12 lg:col-span-5 flex flex-col overflow-hidden">
 
             <div class="flex-1 overflow-auto">
@@ -153,7 +139,7 @@
 
 
 <!-- ============================= -->
-<!-- INTERVIEW SCHEDULING MODAL -->
+<!-- INTERVIEW SCHEDULING MODAL  -->
 <!-- ============================= -->
 
 <div id="interview-modal"
@@ -209,6 +195,7 @@
 
     </div>
 </div>
+
 
 <script src="{% static 'js/hr/recruitment/recruitment.detail.js' %}"></script>
 

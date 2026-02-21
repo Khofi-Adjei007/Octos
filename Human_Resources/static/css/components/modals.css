@@ -49,3 +49,198 @@
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
 }
+
+/* =========================================================
+   HIRE MODAL — Celebratory
+========================================================= */
+
+.hire-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hire-modal-overlay.is-open {
+  opacity: 1;
+}
+
+.hire-modal-card {
+  background: white;
+  border-radius: 16px;
+  padding: 48px 40px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.hire-modal-overlay.is-open .hire-modal-card {
+  transform: translateY(0);
+}
+
+.hire-modal-emoji {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: bounce 0.6s ease infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-10px); }
+}
+
+.hire-modal-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 12px;
+}
+
+.hire-modal-message {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.hire-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-start-onboarding {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-start-onboarding:hover {
+  background: #c62828;
+}
+
+.btn-later {
+  background: transparent;
+  color: #888;
+  border: 1px solid #ddd;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-later:hover {
+  border-color: #aaa;
+  color: #555;
+}
+
+/* Timeline action buttons */
+.timeline-action {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary  { background: #1a73e8; color: white; }
+.btn-approve  { background: #2e7d32; color: white; }
+.btn-reject   { background: #e53935; color: white; }
+.btn-withdraw { background: #f57c00; color: white; }
+.btn-confirm  { background: #1a73e8; color: white; }
+
+.timeline-loading  { color: #888; font-size: 14px; padding: 12px 0; }
+.timeline-terminal { color: #555; font-size: 14px; padding: 12px 0; }
+
+.interview-date-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* =========================================================
+   MODAL META GRID
+========================================================= */
+
+.modal-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.modal-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 0.05em;
+}
+
+.meta-value {
+  font-size: 14px;
+  color: #222;
+  font-weight: 500;
+}
+
+.modal-section {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 20px;
+  margin-top: 8px;
+}
+
+.modal-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.resume-link {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.resume-link:hover {
+  text-decoration: underline;
+}
+
+.modal-error {
+  color: #e53935;
+  padding: 24px;
+  text-align: center;
+  font-size: 14px;
+}

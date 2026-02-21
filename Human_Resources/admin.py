@@ -49,16 +49,32 @@ class RolePermissionAdmin(admin.ModelAdmin):
     ordering = ("role__name",)
 
 
-#
-
-
 # ============================================================
 # Audit / Logs
 # ============================================================
 
 @admin.register(AuditLog)
 class AuditLogAdmin(admin.ModelAdmin):
-    list_display = ("action", "user", "timestamp")
-    list_filter = ("action",)
-    search_fields = ("details",)
-    ordering = ("-timestamp",)
+    list_display = ["action", "user", "content_type", "object_id", "ip_address", "timestamp"]
+    list_filter = ["action", "content_type"]
+    search_fields = ["details", "user__email", "user__username"]
+    ordering = ["-timestamp"]
+    readonly_fields = [
+        "action",
+        "user",
+        "content_type",
+        "object_id",
+        "details",
+        "ip_address",
+        "user_agent",
+        "timestamp",
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

@@ -2,3 +2,8 @@ from .recruitment_legacy import Recommendation
 from .recruitment_application import RecruitmentApplication
 from .applicant import Applicant
 from .recruitment_evaluation import RecruitmentEvaluation
+from .recruitment_policy import RecruitmentPolicy
+from .recruitment_transition_log import RecruitmentTransitionLog
+from .onboarding_record import OnboardingRecord, OnboardingStatus
+from .onboarding_phase import OnboardingPhase, PhaseStatus
+from .guarantor_detail import GuarantorDetail

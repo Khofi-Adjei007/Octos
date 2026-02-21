@@ -2,12 +2,16 @@ from django.urls import path
 from Human_Resources.api.views.overview import HROverviewAPI
 from Human_Resources.api.views.recruitment_list import RecruitmentListAPI
 from Human_Resources.api.views.recruitment_detail import RecruitmentDetailAPI
-from Human_Resources.api.views.recruitment_stage_update import RecruitmentStageUpdateAPI
 from Human_Resources.api.views.recruitment_evaluation import RecruitmentEvaluationAPI
-from Human_Resources.api.views.schedule_interview import ScheduleInterviewAPI
 from Human_Resources.api.views.branches import BranchListAPI
-
-
+from .views.recruitment_transition import RecruitmentTransitionAPI
+from Human_Resources.api.views.onboarding import (
+    OnboardingInitiateAPI,
+    OnboardingPhaseOneAPI,
+    OnboardingPhaseTwoAPI,
+    OnboardingPhaseThreeAPI,
+    OnboardingStatusAPI,
+)
 
 
 app_name = "hr_api"
@@ -24,22 +28,25 @@ urlpatterns = [
     ),
 
     path(
-        "applications/<int:pk>/stage/",
-        RecruitmentStageUpdateAPI.as_view(),
-        name="recruitment-stage-update",
-    ),
-
-    path(
         "applications/<int:pk>/evaluate/",
         RecruitmentEvaluationAPI.as_view(),
         name="recruitment-evaluation",
     ),
 
     path(
-    "applications/<int:pk>/schedule-interview/",
-    ScheduleInterviewAPI.as_view(),
-    name="schedule-interview",
-),
+        "recruitment/<int:pk>/transition/",
+        RecruitmentTransitionAPI.as_view(),
+        name="recruitment-transition",
+    ),
 
     path("branches/", BranchListAPI.as_view(), name="branches"),
+
+    # Add to urlpatterns:
+    path("onboarding/<int:pk>/initiate/", OnboardingInitiateAPI.as_view(), name="onboarding-initiate"),
+    path("onboarding/<int:pk>/phase-one/", OnboardingPhaseOneAPI.as_view(), name="onboarding-phase-one"),
+    path("onboarding/<int:pk>/phase-two/", OnboardingPhaseTwoAPI.as_view(), name="onboarding-phase-two"),
+    path("onboarding/<int:pk>/phase-three/", OnboardingPhaseThreeAPI.as_view(), name="onboarding-phase-three"),
+    path("onboarding/<int:pk>/status/", OnboardingStatusAPI.as_view(), name="onboarding-status"),
 ]
+
+

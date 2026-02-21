@@ -8,7 +8,9 @@ class RecruitmentEvaluationSerializer(serializers.ModelSerializer):
         model = RecruitmentEvaluation
         fields = "__all__"
         read_only_fields = [
+            "application",
             "reviewer",
+            "stage",
             "weighted_score",
             "created_at",
             "updated_at",
@@ -27,7 +29,6 @@ class RecruitmentEvaluationSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
         instance.calculate_weighted_score()
         instance.save()
         return instance

@@ -10,11 +10,6 @@ import { loadOverview } from './overview.js';
 import { loadRecruitment } from './recruitment/recruitment.ui.js';
 import { bindRecruitmentFilters } from './recruitment/recruitment.filters.js';
 
-import {
-  initRecruitmentModal,
-  openRecruitmentModal
-} from './recruitment/recruitment.modal.js';
-
 import { applyBranchGradients } from './branches.js';
 
 
@@ -41,13 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 
   /* -----------------------------
-     INIT MODAL SYSTEM
-  ------------------------------ */
-  initRecruitmentModal();
-
-
-  /* -----------------------------
      REVIEW BUTTON (Event Delegation)
+     Navigates directly to detail page.
   ------------------------------ */
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-review');
@@ -56,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const id = btn.dataset.id;
     if (!id) return;
 
-    openRecruitmentModal(id);
+    window.location.href = `/hr/applications/${id}/`;
   });
 
 
@@ -74,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp({
     onOverview: loadOverview,
     onRecruitment: loadRecruitment,
-    onPayroll: loadPayroll   // ✅ Added Payroll hook
+    onPayroll: loadPayroll,
   });
 
 });
@@ -114,5 +104,3 @@ if (notificationWrapper && notificationDropdown) {
     notificationDropdown.classList.remove('open');
   });
 }
-
-
