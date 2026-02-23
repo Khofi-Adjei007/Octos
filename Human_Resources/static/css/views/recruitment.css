@@ -128,3 +128,48 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
+/* =========================================================
+   ONBOARDING PAGE
+========================================================= */
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.04em;
+}
+
+.field-input {
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111;
+    background: #fafafa;
+    transition: border-color 0.2s ease;
+    width: 100%;
+}
+
+.field-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+}
+
+.onboarding-btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}

@@ -14,7 +14,7 @@ from Human_Resources.services.query_scope import scoped_recruitment_queryset
 class OnboardingInitiateAPI(APIView):
     """
     Called when HR clicks 'Start Onboarding' from the celebratory modal.
-    Returns the onboarding record status so the frontend knows where to go.
+    pk = application pk.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -28,7 +28,6 @@ class OnboardingInitiateAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Initiate or retrieve existing record
         record = OnboardingEngine.initiate(
             application=application,
             initiated_by=request.user,
@@ -38,7 +37,7 @@ class OnboardingInitiateAPI(APIView):
             "onboarding_id": record.pk,
             "current_phase": record.current_phase,
             "status": record.status,
-            "applicant": f"{application.applicant}",
+            "applicant": str(application.applicant),
             "role": application.role_applied_for,
             "message": "Onboarding record is ready.",
         }, status=status.HTTP_200_OK)
@@ -47,6 +46,7 @@ class OnboardingInitiateAPI(APIView):
 class OnboardingPhaseOneAPI(APIView):
     """
     HR completes Phase 1 — personal information and setup.
+    pk = onboarding record pk.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -65,6 +65,8 @@ class OnboardingPhaseOneAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        record.refresh_from_db()
+
         return Response({
             "onboarding_id": record.pk,
             "current_phase": record.current_phase,
@@ -77,6 +79,7 @@ class OnboardingPhaseTwoAPI(APIView):
     """
     HR completes Phase 2 — documentation.
     Handles file uploads and guarantor details for cashiers.
+    pk = onboarding record pk.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -96,6 +99,8 @@ class OnboardingPhaseTwoAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        record.refresh_from_db()
+
         return Response({
             "onboarding_id": record.pk,
             "current_phase": record.current_phase,
@@ -108,6 +113,7 @@ class OnboardingPhaseThreeAPI(APIView):
     """
     Branch manager confirms employee has physically reported.
     Activates employee account on completion.
+    pk = onboarding record pk.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -125,23 +131,26 @@ class OnboardingPhaseThreeAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        record.refresh_from_db()
+
         return Response({
             "onboarding_id": record.pk,
             "current_phase": record.current_phase,
             "status": record.status,
-            "message": f"Onboarding complete. Employee is now fully active.",
+            "message": "Onboarding complete. Employee is now fully active.",
         }, status=status.HTTP_200_OK)
 
 
 class OnboardingStatusAPI(APIView):
     """
     Returns current onboarding status.
-    Used by frontend to show progress and pending queue.
+    pk = application pk — looks up onboarding record via application.
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
-        record = get_object_or_404(OnboardingRecord, pk=pk)
+        # Look up by application pk not onboarding record pk
+        record = get_object_or_404(OnboardingRecord, application__pk=pk)
 
         phases = record.phases.all().order_by("phase_number")
         phase_data = [

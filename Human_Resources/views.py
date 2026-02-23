@@ -313,6 +313,9 @@ def recommend_employee(request):
 class RecruitmentApplicationDetailView(LoginRequiredMixin, TemplateView):
     template_name = "hr/candidate_pass.html"
 
+class OnboardingDetailView(LoginRequiredMixin, TemplateView):
+    template_name = "hr/onboarding.html"
+    
 def complete_registration(request, token):
     # Validate the token
     try:

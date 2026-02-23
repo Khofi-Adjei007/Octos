@@ -1,21 +1,13 @@
 /* =========================================================
    RECRUITMENT FILTER MODULE
-   v2 Workflow Aware Filtering
+   Stage-based filtering aligned with RecruitmentEngine
 ========================================================= */
 
 import { qa } from '../core.js';
 
 let currentFilter = 'all';
 
-const TERMINAL_STAGES = ['onboarded', 'rejected'];
-
-const PIPELINE_STAGES = [
-  'submitted',
-  'screening',
-  'interview',
-  'final_review',
-  'offer'
-];
+const CLOSED_STATUSES = ['hire_approved', 'rejected', 'withdrawn', 'closed'];
 
 
 /* -----------------------------------------
@@ -35,25 +27,17 @@ export function applyRecruitmentFilter(applications) {
     return applications;
   }
 
-  if (currentFilter === 'pipeline') {
+  if (currentFilter === 'closed') {
     return applications.filter(app =>
-      PIPELINE_STAGES.includes(app.current_stage)
+      CLOSED_STATUSES.includes(app.status)
     );
   }
 
-  if (currentFilter === 'onboarded') {
-    return applications.filter(app =>
-      app.current_stage === 'onboarded'
-    );
-  }
-
-  if (currentFilter === 'rejected') {
-    return applications.filter(app =>
-      app.current_stage === 'rejected'
-    );
-  }
-
-  return applications;
+  // Stage-based filters: submitted, screening, interview, final_review, decision
+  return applications.filter(app =>
+    app.current_stage === currentFilter &&
+    !CLOSED_STATUSES.includes(app.status)
+  );
 }
 
 

@@ -26,6 +26,7 @@ class RecruitmentDetailSerializer(RecruitmentListSerializer):
             return None
 
         return {
+            "stage": evaluation.stage,
             "career_score": evaluation.career_score,
             "career_notes": evaluation.career_notes,
             "experience_score": evaluation.experience_score,

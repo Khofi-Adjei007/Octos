@@ -18,7 +18,6 @@ import { applyBranchGradients } from './branches.js';
  * ----------------------------------------- */
 function loadPayroll() {
   console.log('Payroll context loaded');
-  // We will connect real payroll logic later
 }
 
 
@@ -51,19 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* -----------------------------
-     RECRUITMENT FILTERS
-  ------------------------------ */
-  bindRecruitmentFilters(() => {
-    loadRecruitment();
-  });
-
-
-  /* -----------------------------
      CORE CONTEXT ROUTING
   ------------------------------ */
   initApp({
     onOverview: loadOverview,
-    onRecruitment: loadRecruitment,
+    onRecruitment: () => {
+      loadRecruitment();
+      bindRecruitmentFilters(() => {
+        loadRecruitment();
+      });
+    },
     onPayroll: loadPayroll,
   });
 

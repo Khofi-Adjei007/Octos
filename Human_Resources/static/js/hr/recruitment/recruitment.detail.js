@@ -38,7 +38,6 @@ function extractApplicationId() {
 /* =========================================================
    LOAD APPLICATION
 ========================================================= */
-
 async function loadApplication(applicationId) {
   try {
     const response = await fetch(`/hr/api/applications/${applicationId}/`);
@@ -53,19 +52,19 @@ async function loadApplication(applicationId) {
     renderActionPanel(data);
     renderEvaluationPanel(data);
 
-    if (data.evaluation) {
+    if (data.evaluation && data.evaluation.stage === data.current_stage) {
       hydrateEvaluation(data.evaluation);
       if (data.evaluation.is_finalized) {
         lockEvaluationUI();
       }
+    } else {
+      resetEvaluationUI();
     }
 
   } catch (error) {
     console.error("Error loading application:", error);
   }
 }
-
-
 /* =========================================================
    RENDER HEADER
 ========================================================= */
@@ -93,10 +92,54 @@ function renderHeader(data) {
 /* =========================================================
    RENDER RESUME
 ========================================================= */
-
 function renderResume(data) {
   const container = document.getElementById("cv-viewer");
+  const panelTitle = document.getElementById("left-panel-title");
   if (!container) return;
+
+  if (data.current_stage === 'interview') {
+    if (panelTitle) panelTitle.innerText = "Interview";
+
+    container.innerHTML = `
+      <div style="
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        height: 100%; padding: 40px; text-align: center;
+        background: linear-gradient(135deg, #eff6ff, #ffffff);
+      ">
+        <div style="font-size: 80px; margin-bottom: 16px; line-height:1;">
+          🧑‍💼🤝👩‍💼
+        </div>
+        <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 8px;">
+          Interview In Progress
+        </h3>
+        <p style="font-size: 13px; color: #6b7280; max-width: 260px; line-height: 1.6;">
+          Score the candidate using the evaluation panel. Finalize when the interview is complete.
+        </p>
+
+        ${data.interview_date ? `
+        <div style="
+          margin-top: 24px; background: white; border: 1px solid #e5e7eb;
+          border-radius: 12px; padding: 16px 24px; font-size: 13px; color: #374151;
+        ">
+          <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">
+            📅 Scheduled
+          </div>
+          <div>${new Date(data.interview_date).toLocaleString()}</div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+    return;
+  }
+
+  if (data.current_stage === 'final_review') {
+    if (panelTitle) panelTitle.innerText = "Final Review";
+  } else if (data.current_stage === 'decision') {
+    if (panelTitle) panelTitle.innerText = "Decision";
+  } else {
+    if (panelTitle) panelTitle.innerText = "Curriculum Vitae";
+  }
 
   if (!data.resume_url) {
     container.innerHTML = `
@@ -121,34 +164,39 @@ function renderResume(data) {
 /* =========================================================
    RENDER PROGRESS RIBBON (DYNAMIC)
 ========================================================= */
-
 function renderProgressRibbon(data) {
   const ribbon = document.getElementById("stage-ribbon");
   if (!ribbon) return;
 
   const currentIndex = STAGES.indexOf(data.current_stage);
 
-  ribbon.innerHTML = STAGES.map((stage, index) => {
-    let classes = "flex-1 text-center py-2 text-xs font-semibold uppercase tracking-wide ";
+  const STAGE_STYLES = {
+    submitted:    'background:#6b7280; color:white;',
+    screening:    'background:#2563eb; color:white;',
+    interview:    'background:#f59e0b; color:white;',
+    final_review: 'background:#8b5cf6; color:white;',
+    decision:     'background:#ef4444; color:white;',
+  };
 
+  ribbon.innerHTML = STAGES.map((stage, index) => {
+    let style;
     if (index < currentIndex) {
-      classes += "bg-green-500 text-white";
+      style = 'background:#22c55e; color:white;';
     } else if (index === currentIndex) {
-      const color = STAGE_COLORS[stage] || { bg: 'bg-blue-600', text: 'text-white' };
-      classes += `${color.bg} ${color.text}`;
+      style = STAGE_STYLES[stage] || 'background:#2563eb; color:white;';
     } else {
-      classes += "bg-gray-100 text-gray-400";
+      style = 'background:#f3f4f6; color:#9ca3af;';
     }
 
     const label = stage.replace(/_/g, " ");
-    return `<div class="${classes}">${label}</div>`;
+    return `<div class="flex-1 text-center py-2 text-xs font-semibold uppercase tracking-wide" style="${style}">${label}</div>`;
   }).join('');
 }
 
 
 /* =========================================================
    RENDER EVALUATION PANEL
-   Updates title and labels based on current stage
+   Updates title based on current stage
 ========================================================= */
 
 function renderEvaluationPanel(data) {
@@ -172,7 +220,6 @@ function renderActionPanel(data) {
   const stage = data.current_stage;
   const status = data.status;
 
-  // Terminal state
   if (TERMINAL_STATUSES.includes(status)) {
     const messages = {
       hire_approved: "✅ Candidate hired. Onboarding initiated.",
@@ -198,30 +245,13 @@ function renderActionPanel(data) {
   }
 
   else if (stage === 'screening') {
-    panel.innerHTML = `
-      <button onclick="openInterviewModal()"
-        class="action-btn bg-blue-600 text-white hover:bg-blue-700"
-        id="proceed-interview">
-        Schedule Interview
-      </button>
-      <button onclick="handleTransition('reject')"
-        class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
-        Reject
-      </button>
-    `;
+    // Controlled from evaluation panel after finalization
+    panel.innerHTML = '';
   }
 
   else if (stage === 'interview') {
-    panel.innerHTML = `
-      <button onclick="handleTransition('complete_interview')"
-        class="action-btn bg-blue-600 text-white hover:bg-blue-700">
-        Complete Interview
-      </button>
-      <button onclick="handleTransition('reject')"
-        class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
-        Reject
-      </button>
-    `;
+    // Controlled from evaluation panel after finalization
+    panel.innerHTML = '';
   }
 
   else if (stage === 'final_review') {
@@ -229,10 +259,6 @@ function renderActionPanel(data) {
       <button onclick="handleTransition('submit_final_review')"
         class="action-btn bg-purple-600 text-white hover:bg-purple-700">
         Submit Final Review
-      </button>
-      <button onclick="handleTransition('reject')"
-        class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
-        Reject
       </button>
     `;
   }
@@ -268,7 +294,6 @@ function renderActionPanel(data) {
   }
 }
 
-
 /* =========================================================
    HANDLE TRANSITION
 ========================================================= */
@@ -290,10 +315,11 @@ async function handleTransition(action, payload = {}) {
     );
 
     if (!response.ok) {
-      const error = await response.json();
-      alert(error.detail || "Action failed.");
-      return;
-    }
+    const error = await response.json();
+    console.error("Transition error:", JSON.stringify(error));
+    alert(error.detail || "Action failed.");
+    return;
+  }
 
     const updated = await response.json();
     currentApp = updated;
@@ -318,11 +344,46 @@ async function handleTransition(action, payload = {}) {
    INTERVIEW MODAL
 ========================================================= */
 
+let selectedInterviewMode = 'in_person';
+
+function setInterviewMode(mode) {
+  selectedInterviewMode = mode;
+  const inPerson = document.getElementById('mode-inperson');
+  const virtual  = document.getElementById('mode-virtual');
+
+  if (mode === 'in_person') {
+    inPerson.className = 'flex-1 py-2 text-sm font-semibold rounded-lg border-2 border-blue-600 bg-blue-600 text-white';
+    virtual.className  = 'flex-1 py-2 text-sm font-semibold rounded-lg border-2 border-gray-200 text-gray-500';
+  } else {
+    virtual.className  = 'flex-1 py-2 text-sm font-semibold rounded-lg border-2 border-blue-600 bg-blue-600 text-white';
+    inPerson.className = 'flex-1 py-2 text-sm font-semibold rounded-lg border-2 border-gray-200 text-gray-500';
+  }
+}
+
+async function loadInterviewers() {
+  try {
+    const response = await fetch('/hr/api/interviewers/');
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const select = document.getElementById('interviewer-select');
+    if (!select) return;
+
+    select.innerHTML = `<option value="">Select interviewer...</option>` +
+      data.map(i => `<option value="${i.id}" data-name="${i.name}">${i.name}</option>`).join('');
+
+  } catch (err) {
+    console.error('Failed to load interviewers:', err);
+  }
+}
+
 function openInterviewModal() {
   const modal = document.getElementById("interview-modal");
   if (!modal) return;
   modal.classList.remove("hidden");
   modal.classList.add("flex");
+  selectedInterviewMode = 'in_person';
+  loadInterviewers();
 }
 
 function closeInterviewModal() {
@@ -341,18 +402,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("confirm-interview")
     ?.addEventListener("click", async () => {
-      const dateInput = document.getElementById("interview-date");
-      const interviewDate = dateInput?.value;
+      const dateInput         = document.getElementById("interview-date");
+      const interviewerSelect = document.getElementById("interviewer-select");
+      const interviewDate     = dateInput?.value;
 
       if (!interviewDate) {
         alert("Please select an interview date.");
         return;
       }
 
+      if (!interviewerSelect?.value) {
+        alert("Please select an interviewer.");
+        return;
+      }
+
       closeInterviewModal();
 
       await handleTransition("schedule_interview", {
-        interview_date: new Date(interviewDate).toISOString()
+        interview_date:   new Date(interviewDate).toISOString(),
+        interviewer_id:   interviewerSelect.value,
+        interviewer_name: interviewerSelect.selectedOptions[0]?.dataset.name || "",
+        interview_mode:   selectedInterviewMode,
       });
     });
 
@@ -427,7 +497,6 @@ async function saveEvaluation() {
 /* =========================================================
    FINALIZE EVALUATION
 ========================================================= */
-
 async function finalizeEvaluation() {
   if (!currentApp) return;
 
@@ -449,15 +518,22 @@ async function finalizeEvaluation() {
       return;
     }
 
-    showToast("Evaluation finalized.");
+    const stage = currentApp.current_stage;
+    const toastMessages = {
+      screening:    "✅ Evaluation finalized. Schedule the interview to proceed.",
+      interview:    "✅ Interview scored. Click Complete Interview to advance.",
+      final_review: "✅ Review finalized. Submit to proceed to decision.",
+    };
+
+    showToast(toastMessages[stage] || "✅ Evaluation finalized.");
     lockEvaluationUI();
-    await loadApplication(currentApp.id);
+
+    // DO NOT reload application here — it would overwrite lockEvaluationUI()
 
   } catch {
     alert("Error finalizing evaluation.");
   }
 }
-
 
 /* =========================================================
    CELEBRATORY HIRE MODAL
@@ -642,31 +718,101 @@ function hydrateEvaluation(evaluation) {
 /* =========================================================
    LOCK EVALUATION UI
 ========================================================= */
-
 function lockEvaluationUI() {
+  // Lock the entire evaluation panel — nothing clickable
+  const panel = document.getElementById("evaluation-panel");
+  if (panel) {
+    panel.style.pointerEvents = "none";
+    panel.style.opacity = "0.85";
+  }
+
+  // Replace actions div with stage-appropriate forward button
+  // Must temporarily re-enable pointer events on actions div only
+  const actionsDiv = document.getElementById("screening-actions");
+  if (!actionsDiv || !currentApp) return;
+
+  const stage = currentApp.current_stage;
+
+  if (stage === 'screening') {
+    actionsDiv.innerHTML = `
+      <button type="button"
+              onclick="openInterviewModal()"
+              style="pointer-events: auto;"
+              class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+        Schedule Interview
+      </button>
+    `;
+  } else if (stage === 'interview') {
+    actionsDiv.innerHTML = `
+      <button type="button"
+              onclick="handleTransition('complete_interview')"
+              style="pointer-events: auto;"
+              class="px-4 py-2 text-sm font-semibold text-white bg-amber-500 rounded-lg hover:bg-amber-600">
+        ✅ Complete Interview
+      </button>
+    `;
+  } else if (stage === 'final_review') {
+    actionsDiv.innerHTML = `
+      <button type="button"
+              onclick="handleTransition('submit_final_review')"
+              style="pointer-events: auto;"
+              class="px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700">
+        Submit Final Review
+      </button>
+    `;
+  }
+
+  // Re-enable pointer events on the actions div itself
+  actionsDiv.style.pointerEvents = "auto";
+}
+/* =========================================================
+   RESET EVALUATION UI
+   Clears form for fresh stage evaluation
+========================================================= */
+function resetEvaluationUI() {
+  // Re-enable the panel
+  const panel = document.getElementById("evaluation-panel");
+  if (panel) {
+    panel.style.pointerEvents = "auto";
+    panel.style.opacity = "1";
+  }
+
   document.querySelectorAll(".rating-btn").forEach(btn => {
-    btn.disabled = true;
-    btn.classList.add("opacity-60", "cursor-not-allowed");
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed", "ring-2", "ring-offset-1", "ring-black", "scale-105");
   });
 
   document.querySelectorAll("textarea").forEach(area => {
-    area.disabled = true;
-    area.classList.add("bg-gray-100");
+    area.value = "";
+    area.disabled = false;
+    area.classList.remove("bg-gray-100");
   });
 
-  const saveBtn = document.getElementById("save-screening");
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.classList.add("opacity-50", "cursor-not-allowed");
-  }
+  document.querySelectorAll(".rating-group").forEach(group => {
+    delete group.dataset.score;
+  });
 
-  const finalizeBtn = document.getElementById("finalize-screening");
-  if (finalizeBtn) {
-    finalizeBtn.disabled = true;
-    finalizeBtn.classList.add("opacity-50", "cursor-not-allowed");
+  const scoreDisplay = document.getElementById("overall-score");
+  const scoreBar = document.getElementById("score-bar");
+  if (scoreDisplay) scoreDisplay.innerText = "0.00 / 10";
+  if (scoreBar) scoreBar.style.width = "0%";
+
+  const actionsDiv = document.getElementById("screening-actions");
+  if (actionsDiv) {
+    actionsDiv.innerHTML = `
+      <button type="button" id="save-screening"
+              class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50">
+          Save Evaluation
+      </button>
+      <button type="button" id="finalize-screening"
+              class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700">
+          Finalize Evaluation
+      </button>
+    `;
+    document.getElementById("save-screening")?.addEventListener("click", () => saveEvaluation());
+    document.getElementById("finalize-screening")?.addEventListener("click", () => finalizeEvaluation());
   }
 }
-
 
 /* =========================================================
    TOAST NOTIFICATION

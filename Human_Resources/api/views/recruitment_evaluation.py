@@ -86,7 +86,6 @@ class RecruitmentEvaluationAPI(APIView):
 
 
     def patch(self, request, pk):
-
         queryset = scoped_recruitment_queryset(request.user)
         application = get_object_or_404(queryset, pk=pk)
 
@@ -112,5 +111,6 @@ class RecruitmentEvaluationAPI(APIView):
         evaluation.finalized_by = request.user
         evaluation.save()
 
-        return Response({"detail": "Screening finalized successfully."})
+        serializer = RecruitmentEvaluationSerializer(evaluation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 

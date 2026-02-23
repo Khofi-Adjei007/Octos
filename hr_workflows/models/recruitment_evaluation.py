@@ -128,7 +128,7 @@ class RecruitmentEvaluation(models.Model):
             + self.education_score * 0.2
             + self.skills_score * 0.2
         )
-        self.weighted_score = round(total, 2)
+        self.weighted_score = round(total * 2, 2)
 
     # ---------------------------
     # Save Override
