@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
+from hr_workflows.models import RecruitmentTransitionLog
 
 from hr_workflows.models import (
     RecruitmentApplication,
@@ -29,22 +30,26 @@ class RecruitmentEngine:
 
     @classmethod
     @transaction.atomic
+    @classmethod
+    @transaction.atomic
     def perform_action(cls, application: RecruitmentApplication, action: str, actor, payload=None):
 
         cls._ensure_not_terminal(application)
 
         payload = payload or {}
+        previous_stage  = application.current_stage
+        previous_status = application.status
 
         router = {
-            "start_screening": cls._start_screening,
-            "schedule_interview": cls._schedule_interview,
-            "complete_interview": cls._complete_interview,
+            "start_screening":     cls._start_screening,
+            "schedule_interview":  cls._schedule_interview,
+            "complete_interview":  cls._complete_interview,
             "submit_final_review": cls._submit_final_review,
-            "approve": cls._approve,
-            "reject": cls._reject,
-            "accept_offer": cls._accept_offer,
-            "decline_offer": cls._decline_offer,
-            "withdraw_offer": cls._withdraw_offer,
+            "approve":             cls._approve,
+            "reject":              cls._reject,
+            "accept_offer":        cls._accept_offer,
+            "decline_offer":       cls._decline_offer,
+            "withdraw_offer":      cls._withdraw_offer,
         }
 
         if action not in router:
@@ -54,6 +59,17 @@ class RecruitmentEngine:
 
         application.stage_updated_at = timezone.now()
         application.save()
+
+        RecruitmentTransitionLog.objects.create(
+            application=application,
+            action=action,
+            performed_by=actor,
+            previous_stage=previous_stage,
+            new_stage=application.current_stage,
+            previous_status=previous_status,
+            new_status=application.status,
+            payload_snapshot=payload if payload else None,
+        )
 
         # Write immutable audit trail
         AuditLog.objects.create(
@@ -66,9 +82,9 @@ class RecruitmentEngine:
 
         return application
 
-    # =====================================================
-    # WORKFLOW ACTIONS
-    # =====================================================
+        # =====================================================
+        # WORKFLOW ACTIONS
+        # =====================================================
 
     @staticmethod
     def _start_screening(application, actor, payload):
@@ -127,7 +143,60 @@ class RecruitmentEngine:
             raise InvalidTransition("Final review only allowed from final_review stage.")
 
         policy = RecruitmentEngine._get_active_policy()
-        evaluation = RecruitmentEngine._get_finalized_evaluation(application, "final_review")
+
+        # Auto-create and finalize the final_review evaluation if it doesn't exist.
+        # Final Review is a read-and-confirm stage — no separate scoring panel.
+        # The weighted score is derived from the average of screening and interview.
+        evaluation = RecruitmentEvaluation.objects.filter(
+            application=application,
+            stage="final_review",
+            is_finalized=True,
+        ).first()
+
+        if not evaluation:
+            screening_eval = RecruitmentEvaluation.objects.filter(
+                application=application,
+                stage="screening",
+                is_finalized=True,
+            ).order_by("-finalized_at").first()
+
+            interview_eval = RecruitmentEvaluation.objects.filter(
+                application=application,
+                stage="interview",
+                is_finalized=True,
+            ).order_by("-finalized_at").first()
+
+            if not screening_eval or not interview_eval:
+                raise InvalidTransition(
+                    "Finalized screening and interview evaluations are required "
+                    "before submitting the final review."
+                )
+
+            # Composite score: average of both weighted scores
+            composite_score = round(
+                (screening_eval.weighted_score + interview_eval.weighted_score) / 2, 2
+            )
+
+            # Check for an existing unfinalized record to avoid unique constraint clash
+            evaluation, _ = RecruitmentEvaluation.objects.get_or_create(
+                application=application,
+                stage="final_review",
+                reviewer=actor,
+                defaults={
+                    "weighted_score": composite_score,
+                    "is_finalized":   True,
+                    "finalized_at":   timezone.now(),
+                    "finalized_by":   actor,
+                }
+            )
+
+            # If it already existed but wasn't finalized, finalize it now
+            if not evaluation.is_finalized:
+                evaluation.weighted_score = composite_score
+                evaluation.is_finalized   = True
+                evaluation.finalized_at   = timezone.now()
+                evaluation.finalized_by   = actor
+                evaluation.save()
 
         if evaluation.weighted_score < policy.final_review_threshold:
             raise InvalidTransition(

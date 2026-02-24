@@ -1,17 +1,31 @@
-# human_resources/models/applicant.py
+# hr_workflows/models/applicant.py
 
 from django.db import models
 
 
-class Applicant(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+class GenderChoice(models.TextChoices):
+    MALE   = "male",   "Male"
+    FEMALE = "female", "Female"
+    OTHER  = "other",  "Other"
 
-    phone = models.CharField(max_length=20)
-    email = models.EmailField(blank=True, null=True)
+
+class Applicant(models.Model):
+    first_name  = models.CharField(max_length=100)
+    last_name   = models.CharField(max_length=100)
+
+    phone       = models.CharField(max_length=20)
+    email       = models.EmailField(blank=True, null=True)
     national_id = models.CharField(max_length=50, blank=True, null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    gender      = models.CharField(
+        max_length=10,
+        choices=GenderChoice.choices,
+        blank=True,
+        null=True,
+        help_text="Applicant's gender — used for personalised recommendation messaging.",
+    )
+
+    created_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [

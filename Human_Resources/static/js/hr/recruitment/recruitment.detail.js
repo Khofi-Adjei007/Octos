@@ -49,6 +49,7 @@ async function loadApplication(applicationId) {
     renderActionPanel(data);
     renderEvaluationPanel(data);
     renderFinalReview(data);
+    renderDecisionPanel(data);
     switchEvaluationPanel(data.current_stage);
     switchLayout(data.current_stage);
     renderResume(data);
@@ -89,7 +90,10 @@ function switchEvaluationPanel(stage) {
     document.getElementById('finalize-interview')
       ?.addEventListener('click', () => finalizeEvaluation());
 
-  } else if (stage === 'final_review' || stage === 'decision') {
+  } else if (stage === 'final_review') {
+    if (finalReviewPanel) finalReviewPanel.style.display = 'block';
+
+  } else if (stage === 'decision') {
     if (finalReviewPanel) finalReviewPanel.style.display = 'block';
 
   } else {
@@ -100,6 +104,7 @@ function switchEvaluationPanel(stage) {
       ?.addEventListener('click', () => finalizeEvaluation());
   }
 }
+
 
 /* =========================================================
    SWITCH LAYOUT
@@ -119,6 +124,7 @@ function switchLayout(stage) {
     rightPanel.className    = 'col-span-12 lg:col-span-5 flex flex-col overflow-hidden';
   }
 }
+
 
 /* =========================================================
    RENDER HEADER
@@ -367,7 +373,10 @@ function renderEvaluationPanel(data) {
 /* =========================================================
    RENDER FINAL REVIEW PANEL
 ========================================================= */
+
 function renderFinalReview(data) {
+  if (data.current_stage !== 'final_review') return;
+
   const se = data.screening_evaluation;
   const ie = data.interview_evaluation;
 
@@ -471,9 +480,9 @@ function renderFinalReview(data) {
   }
 
   // --- Actions ---
-const actions = document.getElementById('final-review-actions');
-  if (actions && data.current_stage === 'final_review') {
-   actions.innerHTML = `
+  const actions = document.getElementById('final-review-actions');
+  if (actions) {
+    actions.innerHTML = `
       <div class="flex items-center justify-between w-full">
 
         <div class="flex items-center gap-3 cursor-pointer" onclick="toggleFRConfirm()">
@@ -504,34 +513,372 @@ const actions = document.getElementById('final-review-actions');
 
       </div>
     `;
-
-    document.getElementById('fr-confirm-toggle')
-      ?.addEventListener('change', function() {
-        const btn   = document.getElementById('fr-submit-btn');
-        const label = document.getElementById('fr-toggle-label');
-        if (!btn) return;
-
-        if (this.checked) {
-          btn.disabled = false;
-          btn.onclick  = () => handleTransition('submit_final_review');
-          btn.className = 'px-5 py-2 text-sm font-semibold text-white rounded-lg bg-purple-600 hover:bg-purple-700 cursor-pointer transition-all duration-200';
-          if (label) label.className = 'text-xs text-purple-700 font-medium transition-colors';
-        } else {
-          btn.disabled = true;
-          btn.onclick  = null;
-          btn.className = 'px-5 py-2 text-sm font-semibold text-white rounded-lg bg-gray-300 cursor-not-allowed transition-all duration-200';
-          if (label) label.className = 'text-xs text-gray-400 font-medium transition-colors';
-        }
-      });
-
-  } else if (actions) {
-    actions.innerHTML = '';
   }
 }
+
+
+/* =========================================================
+   RENDER DECISION PANEL
+========================================================= */
+
+function renderDecisionPanel(data) {
+  if (data.current_stage !== 'decision') return;
+
+  const wrapper = document.getElementById('final-review-panel-wrapper');
+  if (!wrapper) return;
+
+  const se = data.screening_evaluation;
+  const ie = data.interview_evaluation;
+
+  const overallNum     = se && ie
+    ? (se.weighted_score + ie.weighted_score) / 2
+    : (se ? se.weighted_score : ie ? ie.weighted_score : 0);
+  const overall        = overallNum.toFixed(2);
+  const scoreTextColor = overallNum >= 7 ? '#15803d' : overallNum >= 4 ? '#b45309' : '#dc2626';
+  const scoreBg        = overallNum >= 7 ? '#dcfce7' : overallNum >= 4 ? '#fef3c7' : '#fee2e2';
+  const scoreBarColor  = overallNum >= 7 ? '#22c55e' : overallNum >= 4 ? '#f59e0b' : '#ef4444';
+
+  const message     = buildRecommendationMessage(data, overallNum, ie);
+  const topCriteria = getTopCriteria(ie);
+  const initials    = data.first_name.charAt(0) + data.last_name.charAt(0);
+
+  // Verdict left border color
+  const verdictBorder = overallNum >= 8 ? '#16a34a'
+    : overallNum >= 6 ? '#9333ea'
+    : overallNum >= 4 ? '#f59e0b'
+    : '#dc2626';
+
+  // Timeline
+  const logs     = data.transition_logs || [];
+  const timeline = buildTimeline(logs, data);
+
+  wrapper.innerHTML = `
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+      <!-- AVATAR + IDENTITY -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <div class="flex items-center gap-3">
+          <div style="
+            width:44px; height:44px; border-radius:50%;
+            background:linear-gradient(135deg,#e53935,#ef5350);
+            color:white; font-size:15px; font-weight:700;
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+          ">${initials}</div>
+          <div>
+            <div class="text-sm font-bold text-gray-900">${data.first_name} ${data.last_name}</div>
+            <div class="text-xs text-gray-500">${data.role_applied_for}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-gray-400">
+          <span>${data.email || '—'}</span>
+          <span>·</span>
+          <span>Reviewed by ${data.assigned_reviewer || '—'}</span>
+        </div>
+      </div>
+
+      <!-- SCORE PILLS -->
+      <div class="flex items-center gap-4 px-6 py-3 border-b border-gray-100">
+        <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl">
+          <span class="text-xs font-semibold text-blue-500 uppercase tracking-wide">Screening</span>
+          <span class="text-lg font-bold text-blue-600">${se ? se.weighted_score.toFixed(1) : '—'}</span>
+          <span class="text-xs text-blue-400">/ 10</span>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl">
+          <span class="text-xs font-semibold text-amber-500 uppercase tracking-wide">Interview</span>
+          <span class="text-lg font-bold text-amber-500">${ie ? ie.weighted_score.toFixed(1) : '—'}</span>
+          <span class="text-xs text-amber-400">/ 10</span>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-xl border"
+             style="background:${scoreBg}; border-color:${scoreTextColor}33;">
+          <span class="text-xs font-semibold uppercase tracking-wide" style="color:${scoreTextColor}">Overall</span>
+          <span class="text-lg font-bold" style="color:${scoreTextColor}">${overall}</span>
+          <span class="text-xs" style="color:${scoreTextColor}88">/ 10</span>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <div class="w-28 bg-gray-100 rounded-full h-2">
+            <div style="
+              height:100%; border-radius:99px;
+              width:${overallNum / 10 * 100}%;
+              background:${scoreBarColor};
+              transition:width 0.6s ease;
+            "></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN BODY: recommendation + timeline side by side -->
+      <div class="grid grid-cols-5 divide-x divide-gray-100">
+
+        <!-- LEFT: Octos Recommendation (3 cols) -->
+        <div class="col-span-3 p-6">
+          <div class="rounded-xl overflow-hidden border"
+               style="border-left: 4px solid ${verdictBorder}; border-color:${verdictBorder}33; border-left-color:${verdictBorder}; background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+
+            <!-- Card header -->
+            <div class="flex items-center gap-3 px-5 py-3 border-b border-purple-100"
+                 style="background:rgba(139,92,246,0.08);">
+              <div style="
+                width:26px; height:26px; border-radius:50%;
+                background:linear-gradient(135deg,#7c3aed,#9333ea);
+                display:flex; align-items:center; justify-content:center;
+                font-size:13px; flex-shrink:0;
+              ">⚡</div>
+              <span class="text-xs font-bold text-purple-700 uppercase tracking-widest">
+                Octos Recommendation
+              </span>
+              <span class="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style="background:${scoreBg}; color:${scoreTextColor};">
+                ${message.verdict}
+              </span>
+            </div>
+
+            <!-- Message -->
+            <div class="px-5 py-4">
+              <p class="text-sm text-gray-700 leading-relaxed" style="font-style:italic;">
+                "${message.text}"
+              </p>
+              ${topCriteria.length > 0 ? `
+              <div class="flex flex-wrap gap-2 mt-4">
+                ${topCriteria.map(c => `
+                  <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                       style="background:#ede9fe; color:#6d28d9;">
+                    <span>★</span><span>${c.label}</span>
+                    <span class="opacity-60">${c.score}/5</span>
+                  </div>
+                `).join('')}
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Stage Timeline (2 cols) -->
+        <div class="col-span-2 p-6">
+          <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+            Pipeline Journey
+          </div>
+          <div class="relative">
+            <!-- Vertical line -->
+            <div class="absolute left-3 top-0 bottom-0 w-px bg-gray-200"></div>
+            <div class="space-y-5">
+              ${timeline}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DECISION ACTIONS -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        ${data.status === 'active' ? `
+          <button type="button"
+                  onclick="handleTransition('reject')"
+                  class="px-5 py-2 text-sm font-semibold rounded-lg border border-red-200
+                         text-red-600 bg-white hover:bg-red-50 transition-all duration-200">
+            Reject
+          </button>
+          <button type="button"
+                  onclick="handleTransition('approve')"
+                  class="px-5 py-2 text-sm font-semibold text-white rounded-lg
+                         bg-green-600 hover:bg-green-700 transition-all duration-200">
+            Extend Offer →
+          </button>
+        ` : data.status === 'offer_extended' ? `
+          <button type="button"
+                  onclick="handleTransition('withdraw_offer')"
+                  class="px-5 py-2 text-sm font-semibold rounded-lg border border-orange-200
+                         text-orange-600 bg-white hover:bg-orange-50 transition-all duration-200">
+            Withdraw Offer
+          </button>
+          <button type="button"
+                  onclick="handleTransition('decline_offer')"
+                  class="px-5 py-2 text-sm font-semibold rounded-lg border border-red-200
+                         text-red-600 bg-white hover:bg-red-50 transition-all duration-200">
+            Declined by Candidate
+          </button>
+          <button type="button"
+                  onclick="handleTransition('accept_offer')"
+                  class="px-5 py-2 text-sm font-semibold text-white rounded-lg
+                         bg-green-600 hover:bg-green-700 transition-all duration-200">
+            Accepted by Candidate ✓
+          </button>
+        ` : `
+          <div class="text-sm font-medium text-gray-400 py-2">
+            This application has been closed.
+          </div>
+        `}
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   STAGE TIMELINE BUILDER
+========================================================= */
+
+function buildTimeline(logs, data) {
+  if (!logs || logs.length === 0) {
+    return `<p class="text-xs text-gray-400 pl-8">No transition history yet.</p>`;
+  }
+
+  const stageColors = {
+    submitted:    { dot: '#6b7280', bg: '#f3f4f6', text: '#374151' },
+    screening:    { dot: '#2563eb', bg: '#eff6ff', text: '#1d4ed8' },
+    interview:    { dot: '#f59e0b', bg: '#fffbeb', text: '#b45309' },
+    final_review: { dot: '#8b5cf6', bg: '#f5f3ff', text: '#6d28d9' },
+    decision:     { dot: '#ef4444', bg: '#fef2f2', text: '#dc2626' },
+  };
+
+  // Get score for each stage from evaluations
+  const stageScores = {
+    screening:    data.screening_evaluation?.weighted_score,
+    interview:    data.interview_evaluation?.weighted_score,
+    final_review: null,
+  };
+
+  return logs.map((log, index) => {
+    const colors   = stageColors[log.new_stage] || stageColors.submitted;
+    const label    = log.new_stage.replace(/_/g, ' ');
+    const date     = new Date(log.created_at).toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    });
+    const score    = stageScores[log.new_stage];
+    const duration = formatDuration(log.duration_seconds);
+    const isLast   = index === logs.length - 1;
+
+    return `
+      <div class="relative pl-8">
+        <!-- Dot -->
+        <div style="
+          position:absolute; left:0; top:3px;
+          width:14px; height:14px; border-radius:50%;
+          background:${colors.dot}; border:2px solid white;
+          box-shadow:0 0 0 2px ${colors.dot}33;
+          z-index:1;
+        "></div>
+
+        <!-- Content -->
+        <div class="mb-1 flex items-center gap-2 flex-wrap">
+          <span class="text-xs font-bold uppercase tracking-wide"
+                style="color:${colors.text};">${label}</span>
+          ${score != null ? `
+            <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                  style="background:${colors.bg}; color:${colors.text};">
+              ${score.toFixed(1)} / 10
+            </span>
+          ` : ''}
+        </div>
+        <div class="text-xs text-gray-500">${date}</div>
+        <div class="text-xs text-gray-400">by ${log.performed_by}</div>
+        <div class="text-xs text-gray-400 mt-0.5">
+          ⏱ ${duration} in previous stage
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+
+/* =========================================================
+   DURATION FORMATTER
+========================================================= */
+
+function formatDuration(seconds) {
+  if (seconds < 60)   return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  const days  = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+}
+
+
+/* =========================================================
+   RECOMMENDATION MESSAGE BUILDER
+========================================================= */
+
+function buildRecommendationMessage(data, overallNum, ie) {
+  const firstName      = data.first_name;
+  const fullName       = `${data.first_name} ${data.last_name}`;
+  const role           = data.role_applied_for || 'the role';
+  const branch         = data.branch_name || 'your branch';
+  const reviewer       = data.assigned_reviewer || 'the reviewer';
+  const reviewerFirst  = reviewer.split(' ')[0];
+
+  // Gender pronoun
+  const gender  = (data.gender || '').toLowerCase();
+  const pronoun = gender === 'female' ? 'She' : gender === 'male' ? 'He' : 'They';
+
+  // Verdict based on overall score
+  let verdict, opening;
+  if (overallNum >= 8) {
+    verdict = 'Strongly Recommended';
+    opening = `Octos strongly recommends ${fullName}.`;
+  } else if (overallNum >= 6) {
+    verdict = 'Recommended';
+    opening = `Octos recommends ${fullName} for consideration.`;
+  } else if (overallNum >= 4) {
+    verdict = 'Borderline';
+    opening = `Octos notes that ${fullName} presents a borderline profile.`;
+  } else {
+    verdict = 'Not Recommended';
+    opening = `Octos does not recommend advancing ${fullName} at this time.`;
+  }
+
+  // Best interview criterion
+  let strengthStatement = '';
+  if (ie) {
+    const interviewCriteria = [
+      { label: 'communication',   score: ie.communication_score   },
+      { label: 'attitude',        score: ie.attitude_score        },
+      { label: 'role knowledge',  score: ie.role_knowledge_score  },
+      { label: 'problem solving', score: ie.problem_solving_score },
+      { label: 'cultural fit',    score: ie.cultural_fit_score    },
+    ].filter(c => c.score != null);
+
+    if (interviewCriteria.length > 0) {
+      const best = interviewCriteria.reduce((a, b) => a.score >= b.score ? a : b);
+      strengthStatement = ` ${pronoun} demonstrated a strong sense of ${best.label} during the interview process.`;
+    }
+  }
+
+  const branchStatement  = ` ${firstName} could be a strong addition to ${branch} as ${role}.`;
+  const closingStatement = ` But the ball is in your court, ${reviewerFirst}.`;
+
+  return {
+    verdict,
+    text: opening + strengthStatement + branchStatement + closingStatement,
+  };
+}
+
+
+/* =========================================================
+   TOP CRITERIA EXTRACTOR
+   Returns top 3 interview criteria by score
+========================================================= */
+
+function getTopCriteria(ie) {
+  if (!ie) return [];
+
+  return [
+    { label: 'Communication',   score: ie.communication_score   },
+    { label: 'Attitude',        score: ie.attitude_score        },
+    { label: 'Role Knowledge',  score: ie.role_knowledge_score  },
+    { label: 'Problem Solving', score: ie.problem_solving_score },
+    { label: 'Cultural Fit',    score: ie.cultural_fit_score    },
+  ]
+  .filter(c => c.score != null && c.score >= 4)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 3);
+}
+
 
 /* =========================================================
    CRITERION ROW BUILDER
 ========================================================= */
+
 function buildCriterionRow(criterion) {
   const score = criterion.score || 0;
   const label = scoreLabel(score);
@@ -580,6 +927,12 @@ function renderActionPanel(data) {
   const stage  = data.current_stage;
   const status = data.status;
 
+  // Decision stage actions are now inside the decision panel itself
+  if (stage === 'decision') {
+    panel.innerHTML = '';
+    return;
+  }
+
   if (TERMINAL_STATUSES.includes(status)) {
     const messages = {
       hire_approved: "Candidate hired. Onboarding initiated.",
@@ -602,38 +955,8 @@ function renderActionPanel(data) {
         Start Screening
       </button>
     `;
-  } else if (stage === 'screening' || stage === 'interview') {
+  } else if (stage === 'screening' || stage === 'interview' || stage === 'final_review') {
     panel.innerHTML = '';
-  } else if (stage === 'final_review') {
-    panel.innerHTML = '';
-  } else if (stage === 'decision') {
-    if (status === 'active') {
-      panel.innerHTML = `
-        <button onclick="handleTransition('approve')"
-          class="action-btn bg-green-600 text-white hover:bg-green-700">
-          Extend Offer
-        </button>
-        <button onclick="handleTransition('reject')"
-          class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
-          Reject
-        </button>
-      `;
-    } else if (status === 'offer_extended') {
-      panel.innerHTML = `
-        <button onclick="handleTransition('accept_offer')"
-          class="action-btn bg-green-600 text-white hover:bg-green-700">
-          Accept Offer
-        </button>
-        <button onclick="handleTransition('decline_offer')"
-          class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
-          Decline Offer
-        </button>
-        <button onclick="handleTransition('withdraw_offer')"
-          class="action-btn bg-orange-100 text-orange-600 hover:bg-orange-200">
-          Withdraw Offer
-        </button>
-      `;
-    }
   }
 }
 
@@ -673,6 +996,7 @@ async function handleTransition(action, payload = {}) {
     renderActionPanel(updated);
     renderEvaluationPanel(updated);
     renderFinalReview(updated);
+    renderDecisionPanel(updated);
     switchEvaluationPanel(updated.current_stage);
     switchLayout(updated.current_stage);
     renderResume(updated);
@@ -1227,6 +1551,7 @@ function showToast(message) {
   }, 3000);
 }
 
+
 /* =========================================================
    FINAL REVIEW CONFIRM TOGGLE
 ========================================================= */
@@ -1260,17 +1585,6 @@ function toggleFRConfirm() {
   }
 }
 
-
-/* =========================================================
-   CSRF
-========================================================= */
-
-function getCSRFToken() {
-  return document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken="))
-    ?.split("=")[1];
-}
 
 /* =========================================================
    CSRF

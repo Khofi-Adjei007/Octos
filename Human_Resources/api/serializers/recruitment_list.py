@@ -6,8 +6,9 @@ class RecruitmentListSerializer(serializers.ModelSerializer):
 
     # Applicant info
     first_name = serializers.CharField(source="applicant.first_name")
-    last_name = serializers.CharField(source="applicant.last_name")
-    email = serializers.CharField(source="applicant.email", allow_null=True)
+    last_name  = serializers.CharField(source="applicant.last_name")
+    email      = serializers.CharField(source="applicant.email", allow_null=True)
+    gender     = serializers.CharField(source="applicant.gender", allow_null=True)
 
     # Role
     role_applied_for = serializers.CharField()
@@ -16,41 +17,42 @@ class RecruitmentListSerializer(serializers.ModelSerializer):
     branch_name = serializers.SerializerMethodField()
 
     # Recommendation info
-    recommender_name = serializers.SerializerMethodField()
+    recommender_name   = serializers.SerializerMethodField()
     recommender_branch = serializers.SerializerMethodField()
 
     # Status normalized (terminal)
     status = serializers.SerializerMethodField()
 
-    # NEW: workflow stage
+    # Workflow stage
     current_stage = serializers.SerializerMethodField()
 
-    # NEW: reviewer
+    # Reviewer
     assigned_reviewer = serializers.SerializerMethodField()
 
-    # NEW: interview schedule
+    # Interview schedule
     interview_date = serializers.DateTimeField(allow_null=True)
 
-    # NEW: priority
+    # Priority
     priority = serializers.CharField()
 
-    # NEW: stage timestamp
+    # Stage timestamp
     stage_updated_at = serializers.DateTimeField()
 
-    # NEW: freshness
+    # Freshness
     is_new = serializers.SerializerMethodField()
 
     # Resume
     resume_url = serializers.SerializerMethodField()
 
     class Meta:
-        model = RecruitmentApplication
+        model  = RecruitmentApplication
         fields = [
             "id",
             "first_name",
             "last_name",
-            "role_applied_for",
             "email",
+            "gender",
+            "role_applied_for",
             "branch_name",
             "source",
             "recommender_name",

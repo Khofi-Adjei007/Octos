@@ -19,6 +19,7 @@ class RecruitmentEvaluation(models.Model):
     - Weighted score auto-calculated
     - Screening uses CV-based criteria
     - Interview uses live assessment criteria
+    - Final Review is auto-finalized with composite score — no scoring panel
     """
 
     application = models.ForeignKey(
@@ -147,21 +148,26 @@ class RecruitmentEvaluation(models.Model):
     # Score Calculation
     # Screening — CV-based weighted average
     # Interview — Live assessment weighted average
+    # Final Review — composite score set externally, never recalculated here
     # Both scaled to 10
     # ---------------------------
 
     def calculate_weighted_score(self):
+        # Final Review score is a composite set by the engine — never recalculate it
+        if self.stage == 'final_review':
+            return
+
         if self.stage == 'interview':
             total = (
-                self.communication_score    * 0.25
-                + self.attitude_score       * 0.20
-                + self.role_knowledge_score * 0.25
+                self.communication_score     * 0.25
+                + self.attitude_score        * 0.20
+                + self.role_knowledge_score  * 0.25
                 + self.problem_solving_score * 0.20
-                + self.cultural_fit_score   * 0.10
+                + self.cultural_fit_score    * 0.10
             )
         else:
             total = (
-                self.career_score      * 0.2
+                self.career_score       * 0.2
                 + self.experience_score * 0.3
                 + self.stability_score  * 0.1
                 + self.education_score  * 0.2

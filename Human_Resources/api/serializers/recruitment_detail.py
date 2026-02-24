@@ -9,16 +9,37 @@ from hr_workflows.models import RecruitmentEvaluation
 
 class RecruitmentDetailSerializer(RecruitmentListSerializer):
 
-    evaluation        = serializers.SerializerMethodField()
+    evaluation           = serializers.SerializerMethodField()
     screening_evaluation = serializers.SerializerMethodField()
     interview_evaluation = serializers.SerializerMethodField()
+    transition_logs      = serializers.SerializerMethodField()
 
     class Meta(RecruitmentListSerializer.Meta):
         fields = RecruitmentListSerializer.Meta.fields + [
             "evaluation",
             "screening_evaluation",
             "interview_evaluation",
+            "transition_logs",
         ]
+
+    def get_transition_logs(self, obj):
+        logs = obj.transition_logs.order_by("created_at")
+        result = []
+        prev_time = obj.created_at
+
+        for log in logs:
+            duration_seconds = int((log.created_at - prev_time).total_seconds())
+            result.append({
+                "action":           log.action,
+                "new_stage":        log.new_stage,
+                "previous_stage":   log.previous_stage,
+                "performed_by":     f"{log.performed_by.first_name} {log.performed_by.last_name}" if log.performed_by else "—",
+                "created_at":       log.created_at,
+                "duration_seconds": duration_seconds,
+            })
+            prev_time = log.created_at
+
+        return result
 
     def get_evaluation(self, obj):
         evaluation = RecruitmentEvaluation.objects.filter(
@@ -47,13 +68,11 @@ class RecruitmentDetailSerializer(RecruitmentListSerializer):
 
     def _serialize_evaluation(self, evaluation):
         return {
-            # Meta
             "stage":          evaluation.stage,
             "is_finalized":   evaluation.is_finalized,
             "weighted_score": evaluation.weighted_score,
             "created_at":     evaluation.created_at,
 
-            # Screening criteria
             "career_score":      evaluation.career_score,
             "career_notes":      evaluation.career_notes,
             "experience_score":  evaluation.experience_score,
@@ -65,7 +84,6 @@ class RecruitmentDetailSerializer(RecruitmentListSerializer):
             "skills_score":      evaluation.skills_score,
             "skills_notes":      evaluation.skills_notes,
 
-            # Interview criteria
             "communication_score":   evaluation.communication_score,
             "communication_notes":   evaluation.communication_notes,
             "attitude_score":        evaluation.attitude_score,
