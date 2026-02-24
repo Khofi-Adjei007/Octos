@@ -17,6 +17,8 @@ class RecruitmentEvaluation(models.Model):
     - Stage must match application's current stage
     - Cannot edit after finalization
     - Weighted score auto-calculated
+    - Screening uses CV-based criteria
+    - Interview uses live assessment criteria
     """
 
     application = models.ForeignKey(
@@ -40,7 +42,8 @@ class RecruitmentEvaluation(models.Model):
     )
 
     # ---------------------------
-    # Scoring Dimensions
+    # Screening Scoring Dimensions
+    # CV-based evaluation
     # ---------------------------
 
     career_score = models.FloatField(default=0.0)
@@ -57,6 +60,30 @@ class RecruitmentEvaluation(models.Model):
 
     skills_score = models.FloatField(default=0.0)
     skills_notes = models.TextField(blank=True, null=True)
+
+    # ---------------------------
+    # Interview Scoring Dimensions
+    # Live assessment evaluation
+    # ---------------------------
+
+    communication_score = models.FloatField(default=0.0)
+    communication_notes = models.TextField(blank=True, null=True)
+
+    attitude_score = models.FloatField(default=0.0)
+    attitude_notes = models.TextField(blank=True, null=True)
+
+    role_knowledge_score = models.FloatField(default=0.0)
+    role_knowledge_notes = models.TextField(blank=True, null=True)
+
+    problem_solving_score = models.FloatField(default=0.0)
+    problem_solving_notes = models.TextField(blank=True, null=True)
+
+    cultural_fit_score = models.FloatField(default=0.0)
+    cultural_fit_notes = models.TextField(blank=True, null=True)
+
+    # ---------------------------
+    # Weighted Score
+    # ---------------------------
 
     weighted_score = models.FloatField(default=0.0)
 
@@ -118,16 +145,28 @@ class RecruitmentEvaluation(models.Model):
 
     # ---------------------------
     # Score Calculation
+    # Screening — CV-based weighted average
+    # Interview — Live assessment weighted average
+    # Both scaled to 10
     # ---------------------------
 
     def calculate_weighted_score(self):
-        total = (
-            self.career_score * 0.2
-            + self.experience_score * 0.3
-            + self.stability_score * 0.1
-            + self.education_score * 0.2
-            + self.skills_score * 0.2
-        )
+        if self.stage == 'interview':
+            total = (
+                self.communication_score    * 0.25
+                + self.attitude_score       * 0.20
+                + self.role_knowledge_score * 0.25
+                + self.problem_solving_score * 0.20
+                + self.cultural_fit_score   * 0.10
+            )
+        else:
+            total = (
+                self.career_score      * 0.2
+                + self.experience_score * 0.3
+                + self.stability_score  * 0.1
+                + self.education_score  * 0.2
+                + self.skills_score     * 0.2
+            )
         self.weighted_score = round(total * 2, 2)
 
     # ---------------------------

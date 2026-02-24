@@ -3,6 +3,8 @@ import { fetchApplications } from './recruitment.api.js';
 import { buildApplicationCard } from './recruitment.cards.js';
 import { applyRecruitmentFilter } from './recruitment.filters.js';
 
+const CLOSED_STATUSES = ['hire_approved', 'rejected', 'withdrawn', 'closed'];
+
 export async function loadRecruitment() {
 
   const list  = document.querySelector('#recruitment-items');
@@ -17,28 +19,57 @@ export async function loadRecruitment() {
 
   try {
 
-    console.log("STEP 1: fetching...");
     const response = await fetchApplications();
-    console.log("STEP 2: raw response:", response);
 
     if (!Array.isArray(response)) {
-      console.log("NOT ARRAY:", response);
       throw new Error("Response is not array");
     }
 
-    console.log("STEP 3: applying filter...");
+    // Inject counts into filter chips
+    updateFilterCounts(response);
+
     const filtered = applyRecruitmentFilter(response);
-    console.log("STEP 4: filtered:", filtered);
 
-    filtered.forEach(app => {
-      console.log("STEP 5: building card:", app.id);
-      const card = buildApplicationCard(app);
-      list.appendChild(card);
-    });
-
-    console.log("DONE RENDERING");
+    if (filtered.length === 0) {
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      filtered.forEach(app => {
+        const card = buildApplicationCard(app);
+        list.appendChild(card);
+      });
+    }
 
   } catch (error) {
-    console.error("🔥 REAL ERROR:", error);
+    console.error("Load error:", error);
   }
+}
+
+
+/* -----------------------------------------
+ * INJECT COUNTS INTO FILTER CHIPS
+ * ----------------------------------------- */
+function updateFilterCounts(applications) {
+
+  const counts = {
+    all:          applications.length,
+    submitted:    applications.filter(a => a.current_stage === 'submitted'    && !CLOSED_STATUSES.includes(a.status)).length,
+    screening:    applications.filter(a => a.current_stage === 'screening'    && !CLOSED_STATUSES.includes(a.status)).length,
+    interview:    applications.filter(a => a.current_stage === 'interview'    && !CLOSED_STATUSES.includes(a.status)).length,
+    final_review: applications.filter(a => a.current_stage === 'final_review' && !CLOSED_STATUSES.includes(a.status)).length,
+    decision:     applications.filter(a => a.current_stage === 'decision'     && !CLOSED_STATUSES.includes(a.status)).length,
+    closed:       applications.filter(a => CLOSED_STATUSES.includes(a.status)).length,
+  };
+
+  document.querySelectorAll('.recruitment-filters .filter-chip').forEach(btn => {
+    const filter = btn.dataset.filter;
+    const count  = counts[filter] ?? 0;
+
+    // Store original label once, never overwrite it
+    if (!btn.dataset.label) {
+      btn.dataset.label = btn.textContent.trim();
+    }
+
+    btn.innerHTML = `${btn.dataset.label} <span class="chip-count">${count}</span>`;
+  });
 }

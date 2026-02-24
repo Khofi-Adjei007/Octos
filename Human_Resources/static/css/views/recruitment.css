@@ -173,3 +173,22 @@
     cursor: pointer;
     transition: all 0.2s ease;
 }
+.chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 20px;
+  margin-left: 5px;
+}
+
+.filter-chip.active .chip-count {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}

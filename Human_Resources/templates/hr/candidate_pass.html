@@ -97,7 +97,7 @@
     <div class="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
 
   <!-- LEFT PANEL: CV -->
-<div class="col-span-12 lg:col-span-7 flex flex-col overflow-hidden">
+<div id="left-panel" class="col-span-12 lg:col-span-7 flex flex-col overflow-hidden">
 
     <div class="rounded-xl p-4 bg-blue-50/60 border border-blue-100 flex-1 flex flex-col overflow-hidden">
 
@@ -124,14 +124,29 @@
 </div>
 
 
-        <!-- RIGHT PANEL: Evaluation -->
-        <div class="col-span-12 lg:col-span-5 flex flex-col overflow-hidden">
+     <!-- RIGHT PANEL: Evaluation -->
+<div id="right-panel" class="col-span-12 lg:col-span-5 flex flex-col overflow-hidden">
 
-            <div class="flex-1 overflow-auto">
-                {% include "hr/screening_scores.html" %}
-            </div>
+    <div class="flex-1 overflow-auto">
 
+        <!-- Screening evaluation — shown at screening stage -->
+        <div id="screening-panel">
+            {% include "hr/screening_scores.html" %}
         </div>
+
+        <!-- Interview evaluation — shown at interview stage -->
+        <div id="interview-panel" style="display:none;">
+            {% include "hr/interview_scores.html" %}
+        </div>
+
+          <!-- Final Review — shown at final_review and decision stage -->
+        <div id="final-review-panel-wrapper" style="display:none;">
+            {% include "hr/final_review.html" %}
+        </div>
+
+    </div>
+
+</div>
 
     </div>
 
