@@ -13,6 +13,7 @@ from Human_Resources.api.views.onboarding import (
     OnboardingPhaseTwoAPI,
     OnboardingPhaseThreeAPI,
     OnboardingStatusAPI,
+    OnboardingCountAPI,
 )
 
 
@@ -49,6 +50,7 @@ urlpatterns = [
     path("onboarding/<int:pk>/phase-two/", OnboardingPhaseTwoAPI.as_view(), name="onboarding-phase-two"),
     path("onboarding/<int:pk>/phase-three/", OnboardingPhaseThreeAPI.as_view(), name="onboarding-phase-three"),
     path("onboarding/<int:pk>/status/", OnboardingStatusAPI.as_view(), name="onboarding-status"),
+    path("onboarding/count/", OnboardingCountAPI.as_view(), name="onboarding-count"),
     path("interviewers/", InterviewerListAPI.as_view(), name="interviewers"),
     path(
     "recruitment/<int:pk>/extend-offer/",

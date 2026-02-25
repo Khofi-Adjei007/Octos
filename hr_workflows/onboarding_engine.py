@@ -6,6 +6,8 @@ from django.utils import timezone
 from hr_workflows.models.onboarding_record import OnboardingRecord, OnboardingStatus
 from hr_workflows.models.onboarding_phase import OnboardingPhase, PhaseStatus
 from hr_workflows.models.guarantor_detail import GuarantorDetail
+# Create or update Employee record from onboarding data
+from employees.models import Employee
 
 
 class OnboardingError(Exception):
@@ -133,12 +135,20 @@ class OnboardingEngine:
         ]
         cls._validate_required(data, required)
 
-        if not data.get("contract_signed"):
+        # ── Coerce contract_signed to a real bool ──────────────────────────
+        # FormData always sends strings. Django BooleanField rejects "true"/"false".
+        raw_signed = data.get("contract_signed")
+        if isinstance(raw_signed, str):
+            contract_signed = raw_signed.lower() in ("true", "1", "yes")
+        else:
+            contract_signed = bool(raw_signed)
+
+        if not contract_signed:
             raise OnboardingError("Contract must be signed before proceeding.")
 
         # Apply documentation fields
-        phase.contract_signed = data.get("contract_signed")
-        phase.contract_signed_date = data.get("contract_signed_date")
+        phase.contract_signed = contract_signed
+        phase.contract_signed_date = data.get("contract_signed_date") or None
         phase.ghana_card_verification_status = data.get(
             "ghana_card_verification_status", "pending"
         )
@@ -147,6 +157,9 @@ class OnboardingEngine:
         phase.ssnit_number = data.get("ssnit_number", "")
         phase.tin_number = data.get("tin_number", "")
         phase.notes = data.get("notes", "")
+
+        if "contract_upload" in files:
+            phase.contract_upload = files["contract_upload"]
 
         if "ghana_card_upload" in files:
             phase.ghana_card_upload = files["ghana_card_upload"]
@@ -196,9 +209,74 @@ class OnboardingEngine:
         record.save()
 
         # Activate employee account
-        if record.employee:
-            record.employee.employment_status = "ACTIVE"
-            record.employee.save(update_fields=["employment_status"])
+    @classmethod
+    @transaction.atomic
+    def complete_phase_three(cls, record, actor):
+        """
+        Branch manager confirms employee has physically reported.
+        Marks employee fully active on completion.
+        """
+        cls._ensure_correct_phase(record, 3)
+
+        phase = cls._get_phase(record, 3)
+
+        phase.reported_confirmed = True
+        phase.confirmed_at = timezone.now()
+        phase.confirmed_by = actor
+        phase.status = PhaseStatus.COMPLETED
+        phase.completed_by = actor
+        phase.completed_at = timezone.now()
+        phase.save()
+
+        # Mark onboarding complete
+        record.status = OnboardingStatus.COMPLETED
+        record.completed_at = timezone.now()
+        record.save()
+
+
+        phase1 = cls._get_phase(record, 1)
+        phase2 = cls._get_phase(record, 2)
+        application = record.application
+        applicant = application.applicant
+
+        try:
+            job_offer = application.job_offer
+        except Exception:
+            job_offer = None
+
+        employee, created = Employee.objects.get_or_create(
+            personal_email=applicant.email,
+            defaults={
+                "first_name":          applicant.first_name,
+                "last_name":           applicant.last_name,
+                "phone_number":        applicant.phone,
+                "national_id_number":  applicant.national_id or "",
+                "gender":              applicant.gender or "",
+                "position_title":      application.role_applied_for,
+                "branch":              application.recommended_branch,
+                "hire_date":           job_offer.start_date if job_offer else None,
+                "current_salary":      job_offer.salary if job_offer else None,
+                "bank_name":           phase2.bank_name,
+                "bank_account_number": phase2.bank_account_number,
+                "ssnit_number":        phase2.ssnit_number,
+                "tin_number":          phase2.tin_number,
+                "employment_status":   "ACTIVE",
+                "is_active":           True,
+            }
+        )
+
+        if not created:
+            employee.employment_status = "ACTIVE"
+            employee.is_active = True
+            employee.branch = application.recommended_branch
+            employee.save(update_fields=["employment_status", "is_active", "branch"])
+
+        # Link employee back to onboarding record
+        record.employee = employee
+        record.save(update_fields=["employee"])
+        # Mark application as onboarding complete
+        application.status = "onboarding_complete"
+        application.save(update_fields=["status"])
 
         return record
 

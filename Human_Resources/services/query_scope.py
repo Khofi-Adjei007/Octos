@@ -63,14 +63,13 @@ def scoped_employee_queryset(user):
     return Employee.objects.none()
 
 
-
 def scoped_recruitment_queryset(user):
 
     # -------------------------
     # SUPERUSER
     # -------------------------
     if user.is_superuser:
-        return RecruitmentApplication.objects.all()
+        return RecruitmentApplication.objects.exclude(status="onboarding_complete")
 
     roles = user.authority_roles.all()
 
@@ -81,7 +80,7 @@ def scoped_recruitment_queryset(user):
     # SUPER ADMIN
     # -------------------------
     if roles.filter(code="SUPER_ADMIN").exists():
-        return RecruitmentApplication.objects.all()
+        return RecruitmentApplication.objects.exclude(status="onboarding_complete")
 
     # -------------------------
     # HR ADMIN (Region Scoped)
@@ -92,13 +91,13 @@ def scoped_recruitment_queryset(user):
         if user.branch and user.branch.region:
             return RecruitmentApplication.objects.filter(
                 recommended_branch__region=user.branch.region
-            )
+            ).exclude(status="onboarding_complete")
 
         # Region-based HR (no branch)
         if user.region:
             return RecruitmentApplication.objects.filter(
                 recommended_branch__region__name=user.region
-            )
+            ).exclude(status="onboarding_complete")
 
     # -------------------------
     # BELT OVERSEER
@@ -108,7 +107,7 @@ def scoped_recruitment_queryset(user):
         if user.branch and user.branch.region and user.branch.region.belt:
             return RecruitmentApplication.objects.filter(
                 recommended_branch__region__belt=user.branch.region.belt
-            )
+            ).exclude(status="onboarding_complete")
 
     # -------------------------
     # BRANCH MANAGER
@@ -118,6 +117,6 @@ def scoped_recruitment_queryset(user):
         if user.branch:
             return RecruitmentApplication.objects.filter(
                 recommended_branch=user.branch
-            )
+            ).exclude(status="onboarding_complete")
 
     return RecruitmentApplication.objects.none()

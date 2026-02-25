@@ -236,7 +236,7 @@ class RecruitmentEngine:
         application.status = RecruitmentDecision.REJECTED
         application.closed_at = timezone.now()
         return application
-
+    
     @staticmethod
     def _accept_offer(application, actor, payload):
         """
@@ -251,6 +251,13 @@ class RecruitmentEngine:
 
         application.status = RecruitmentDecision.HIRE_APPROVED
         application.closed_at = timezone.now()
+
+        # Copy branch from job offer → application
+        try:
+            if application.job_offer and application.job_offer.branch:
+                application.recommended_branch = application.job_offer.branch
+        except application.__class__.job_offer.RelatedObjectDoesNotExist:
+            pass
 
         # Trigger onboarding automatically
         from hr_workflows.onboarding_engine import OnboardingEngine

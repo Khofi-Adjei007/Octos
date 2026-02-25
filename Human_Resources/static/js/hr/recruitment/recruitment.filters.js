@@ -7,7 +7,7 @@ import { qa } from '../core.js';
 
 let currentFilter = 'all';
 
-const CLOSED_STATUSES = ['hire_approved', 'rejected', 'withdrawn', 'closed'];
+const CLOSED_STATUSES = ['hire_approved', 'rejected', 'withdrawn', 'closed', 'onboarding_complete'];
 
 
 /* -----------------------------------------
@@ -27,9 +27,9 @@ export function applyRecruitmentFilter(applications) {
     return applications;
   }
 
-  if (currentFilter === 'closed') {
+if (currentFilter === 'onboarding') {
     return applications.filter(app =>
-      CLOSED_STATUSES.includes(app.status)
+      app.status === 'hire_approved'
     );
   }
 

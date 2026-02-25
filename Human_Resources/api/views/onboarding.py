@@ -6,7 +6,7 @@ from rest_framework import permissions, status
 from rest_framework.generics import get_object_or_404
 
 from hr_workflows.models import RecruitmentApplication
-from hr_workflows.models.onboarding_record import OnboardingRecord
+from hr_workflows.models.onboarding_record import OnboardingRecord, OnboardingStatus
 from hr_workflows.onboarding_engine import OnboardingEngine, OnboardingError
 from Human_Resources.services.query_scope import scoped_recruitment_queryset
 
@@ -175,3 +175,12 @@ class OnboardingStatusAPI(APIView):
             "completed_at": record.completed_at,
             "phases": phase_data,
         }, status=status.HTTP_200_OK)
+
+class OnboardingCountAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        pending = OnboardingRecord.objects.exclude(
+            status=OnboardingStatus.COMPLETED
+        ).count()
+        return Response({"pending": pending})

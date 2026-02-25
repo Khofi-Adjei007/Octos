@@ -3,53 +3,145 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Employee Onboarding</title>
+    <title>Employee Onboarding — Octos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% tailwind_css %}
+
+    <!-- Remix Icon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+
+    <style>
+        /* ─── Field Groups ─────────────────────────────── */
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 0.875rem;
+            color: #111827;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .field-input:focus {
+            background: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .field-input[type="file"] {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        select.field-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        /* ─── Buttons ───────────────────────────────────── */
+        .onboarding-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+        }
+
+        .onboarding-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .onboarding-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ─── Phase Ribbon ──────────────────────────────── */
+        #phase-ribbon > div {
+            transition: background-color 0.3s;
+        }
+
+        /* ─── Subtle page animation ─────────────────────── */
+        #phase-content {
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
 
-<div class="max-w-4xl mx-auto px-6 pt-6 pb-12">
+<div class="max-w-4xl mx-auto px-6 pt-8 pb-16">
 
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+    <!-- ═══════════════════════════════════════════════════
+         HEADER CARD
+    ════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
 
-        <div class="grid grid-cols-3 items-center mb-4">
+        <div class="grid grid-cols-3 items-start mb-5">
 
-            <!-- Back -->
+            <!-- Back link -->
             <div>
                 <a href="/hr/"
-                   class="text-sm font-medium text-gray-700 hover:text-red-600 flex items-center gap-1">
-                    <i class="ri-arrow-left-line"></i>
+                   class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors">
+                    <i class="ri-arrow-left-line text-base"></i>
                     Back to Recruitment
                 </a>
             </div>
 
-            <!-- Name -->
+            <!-- Candidate name + role -->
             <div class="text-center">
+                <p class="text-xs font-semibold text-indigo-500 uppercase tracking-widest mb-1">
+                    Employee Onboarding
+                </p>
                 <h1 id="onboarding-name"
-                    class="text-xl font-semibold text-gray-900">—</h1>
+                    class="text-xl font-bold text-gray-900 leading-tight">—</h1>
                 <p id="onboarding-role"
                    class="text-sm text-gray-500 mt-1">—</p>
             </div>
 
-            <!-- Status Badge -->
+            <!-- Status badge -->
             <div class="flex justify-end">
                 <span id="onboarding-status-badge"
-                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase bg-blue-100 text-blue-700 border border-blue-200">
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border bg-indigo-50 text-indigo-700 border-indigo-200">
                     —
                 </span>
             </div>
 
         </div>
 
-        <!-- Phase Progress Bar -->
-        <div class="mt-4">
+        <!-- Phase Progress Ribbon -->
+        <div class="mt-2">
             <div id="phase-ribbon"
-                 class="flex overflow-hidden rounded-full text-xs font-semibold uppercase tracking-wide shadow-sm">
+                 class="flex overflow-hidden rounded-xl text-xs font-semibold uppercase tracking-wide shadow-inner border border-gray-100">
                 <!-- Rendered by onboarding.js -->
             </div>
         </div>
@@ -57,19 +149,25 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- ═══════════════════════════════════════════════════
          PHASE CONTENT AREA
-    ====================================================== -->
+    ════════════════════════════════════════════════════ -->
     <div id="phase-content"
-         class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <!-- Rendered dynamically by onboarding.js -->
-        <div class="text-center text-gray-400 py-12">
-            Loading onboarding record...
+         class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <!-- Loading state -->
+        <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+            <svg class="animate-spin h-8 w-8 mb-4 text-indigo-400"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                        stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <p class="text-sm">Loading onboarding record…</p>
         </div>
     </div>
 
 </div>
-
 
 <script src="{% static 'js/hr/recruitment/onboarding.js' %}"></script>
 

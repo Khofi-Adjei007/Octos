@@ -5,9 +5,9 @@
 ========================================================= */
 
 const PHASES = [
-    { number: 1, label: 'Setup',        owner: 'HR'             },
-    { number: 2, label: 'Documentation', owner: 'HR'            },
-    { number: 3, label: 'Confirmation', owner: 'Branch Manager' },
+    { number: 1, label: 'Setup',         owner: 'HR'             },
+    { number: 2, label: 'Documentation', owner: 'HR'             },
+    { number: 3, label: 'Confirmation',  owner: 'Branch Manager' },
 ];
 
 let currentRecord = null;
@@ -19,20 +19,14 @@ let applicationId  = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     applicationId = extractApplicationId();
-
-    // First initiate (safe — won't duplicate if already exists)
     await initiateOnboarding(applicationId);
-
-    // Then load status
     await loadOnboarding(applicationId);
 });
-
 
 function extractApplicationId() {
     const parts = window.location.pathname.split('/').filter(Boolean);
     return parts[parts.length - 1];
 }
-
 
 /* =========================================================
    INITIATE
@@ -51,7 +45,6 @@ async function initiateOnboarding(appId) {
         console.error('Initiate error:', err);
     }
 }
-
 
 /* =========================================================
    LOAD STATUS
@@ -79,17 +72,13 @@ async function loadOnboarding(appId) {
     }
 }
 
-
 /* =========================================================
    RENDER HEADER
 ========================================================= */
 
 function renderHeader(data) {
-    document.getElementById('onboarding-name').innerText =
-        data.applicant || '—';
-
-    document.getElementById('onboarding-role').innerText =
-        data.role || '—';
+    document.getElementById('onboarding-name').innerText = data.applicant || '—';
+    document.getElementById('onboarding-role').innerText = data.role || '—';
 
     const badge = document.getElementById('onboarding-status-badge');
     const statusColors = {
@@ -101,7 +90,6 @@ function renderHeader(data) {
     badge.className = `inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase border ${statusColors[data.status] || statusColors.pending}`;
     badge.innerText = (data.status || '—').replace(/_/g, ' ');
 }
-
 
 /* =========================================================
    RENDER PHASE RIBBON
@@ -129,7 +117,6 @@ function renderPhaseRibbon(data) {
     }).join('');
 }
 
-
 /* =========================================================
    RENDER PHASE CONTENT
 ========================================================= */
@@ -137,7 +124,6 @@ function renderPhaseRibbon(data) {
 function renderPhaseContent(data) {
     const container = document.getElementById('phase-content');
 
-    // Completed
     if (data.status === 'completed') {
         container.innerHTML = `
             <div class="text-center py-16">
@@ -155,12 +141,10 @@ function renderPhaseContent(data) {
     }
 
     const phase = data.current_phase;
-
     if (phase === 1) renderPhaseOne(data);
     else if (phase === 2) renderPhaseTwo(data);
     else if (phase === 3) renderPhaseThree(data);
 }
-
 
 /* =========================================================
    PHASE 1 — SETUP
@@ -170,9 +154,7 @@ function renderPhaseOne(data) {
     document.getElementById('phase-content').innerHTML = `
         <div class="mb-8">
             <h2 class="text-lg font-semibold text-gray-800">Phase 1 — Setup</h2>
-            <p class="text-sm text-gray-500 mt-1">
-                Complete personal information and branch assignment.
-            </p>
+            <p class="text-sm text-gray-500 mt-1">Complete personal information and branch assignment.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -224,46 +206,56 @@ function renderPhaseOne(data) {
     `;
 }
 
-
 /* =========================================================
    PHASE 2 — DOCUMENTATION
 ========================================================= */
 
 function renderPhaseTwo(data) {
-    // Check if cashier role — requires guarantor
     const role = (data.role || '').toUpperCase();
     const isCashier = role.includes('CASHIER');
 
     document.getElementById('phase-content').innerHTML = `
         <div class="mb-8">
             <h2 class="text-lg font-semibold text-gray-800">Phase 2 — Documentation</h2>
-            <p class="text-sm text-gray-500 mt-1">
-                Complete contract, verification, and banking details.
-            </p>
+            <p class="text-sm text-gray-500 mt-1">Complete contract, verification, and banking details.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+            <!-- Contract Status -->
             <div class="field-group">
                 <label class="field-label">Contract Signed</label>
                 <select id="f2-contract-signed" class="field-input">
-                    <option value="">Select...</option>
+                    <option value="">Select…</option>
                     <option value="true">Yes — Signed</option>
                     <option value="false">No — Pending</option>
                 </select>
             </div>
 
+            <!-- Contract Date -->
             <div class="field-group">
                 <label class="field-label">Contract Signed Date</label>
                 <input type="date" id="f2-contract-date" class="field-input" />
             </div>
 
+            <!-- Contract Upload — full width -->
+            <div class="field-group md:col-span-2">
+                <label class="field-label">Upload Signed Contract</label>
+                <div class="relative">
+                    <input type="file" id="f2-contract-upload" class="field-input"
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Accepted: PDF, Word, or image. Max 10MB.</p>
+            </div>
+
+            <!-- Ghana Card Upload -->
             <div class="field-group">
                 <label class="field-label">Ghana Card — Upload Photocopy</label>
                 <input type="file" id="f2-ghana-card-upload" class="field-input"
                        accept=".pdf,.jpg,.jpeg,.png" />
             </div>
 
+            <!-- Ghana Card Verification -->
             <div class="field-group">
                 <label class="field-label">Ghana Card Verification</label>
                 <select id="f2-ghana-card-status" class="field-input">
@@ -273,24 +265,28 @@ function renderPhaseTwo(data) {
                 </select>
             </div>
 
+            <!-- Bank Name -->
             <div class="field-group">
                 <label class="field-label">Bank Name</label>
                 <input type="text" id="f2-bank-name" class="field-input"
                        placeholder="e.g. GCB Bank" />
             </div>
 
+            <!-- Bank Account -->
             <div class="field-group">
                 <label class="field-label">Bank Account Number</label>
                 <input type="text" id="f2-bank-account" class="field-input"
                        placeholder="Account number" />
             </div>
 
+            <!-- SSNIT -->
             <div class="field-group">
                 <label class="field-label">SSNIT Number</label>
                 <input type="text" id="f2-ssnit" class="field-input"
                        placeholder="SSNIT number" />
             </div>
 
+            <!-- TIN -->
             <div class="field-group">
                 <label class="field-label">TIN Number</label>
                 <input type="text" id="f2-tin" class="field-input"
@@ -309,7 +305,6 @@ function renderPhaseTwo(data) {
         </div>
     `;
 }
-
 
 function guarantorSection() {
     return `
@@ -364,7 +359,6 @@ function guarantorSection() {
     `;
 }
 
-
 /* =========================================================
    PHASE 3 — REPORTING CONFIRMATION
 ========================================================= */
@@ -375,9 +369,7 @@ function renderPhaseThree(data) {
 
             <div style="font-size:56px; margin-bottom:20px;">📋</div>
 
-            <h2 class="text-xl font-semibold text-gray-800 mb-3">
-                Reporting Confirmation
-            </h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-3">Reporting Confirmation</h2>
 
             <p class="text-sm text-gray-500 max-w-sm mx-auto mb-2">
                 Confirm that <strong>${data.applicant}</strong> has physically
@@ -396,7 +388,6 @@ function renderPhaseThree(data) {
         </div>
     `;
 }
-
 
 /* =========================================================
    SUBMIT PHASE ONE
@@ -439,7 +430,6 @@ async function submitPhaseOne() {
     }
 }
 
-
 /* =========================================================
    SUBMIT PHASE TWO
 ========================================================= */
@@ -447,22 +437,27 @@ async function submitPhaseOne() {
 async function submitPhaseTwo(isCashier) {
     const formData = new FormData();
 
-    formData.append('contract_signed',              getValue('f2-contract-signed') === 'true');
-    formData.append('contract_signed_date',         getValue('f2-contract-date'));
+    formData.append('contract_signed',               getValue('f2-contract-signed'));
+    formData.append('contract_signed_date',          getValue('f2-contract-date'));
     formData.append('ghana_card_verification_status', getValue('f2-ghana-card-status'));
-    formData.append('bank_name',                    getValue('f2-bank-name'));
-    formData.append('bank_account_number',          getValue('f2-bank-account'));
-    formData.append('ssnit_number',                 getValue('f2-ssnit'));
-    formData.append('tin_number',                   getValue('f2-tin'));
+    formData.append('bank_name',                     getValue('f2-bank-name'));
+    formData.append('bank_account_number',           getValue('f2-bank-account'));
+    formData.append('ssnit_number',                  getValue('f2-ssnit'));
+    formData.append('tin_number',                    getValue('f2-tin'));
 
+    // Contract upload (optional)
+    const contractFile = document.getElementById('f2-contract-upload')?.files[0];
+    if (contractFile) formData.append('contract_upload', contractFile);
+
+    // Ghana card upload (optional)
     const ghanaCardFile = document.getElementById('f2-ghana-card-upload')?.files[0];
     if (ghanaCardFile) formData.append('ghana_card_upload', ghanaCardFile);
 
     if (isCashier) {
-        formData.append('guarantor_full_name',      getValue('f2-guarantor-name'));
-        formData.append('guarantor_ghana_card_number', getValue('f2-guarantor-ghana-card'));
-        formData.append('guarantor_house_address',  getValue('f2-guarantor-address'));
-        formData.append('guarantor_nearest_landmark', getValue('f2-guarantor-landmark'));
+        formData.append('guarantor_full_name',           getValue('f2-guarantor-name'));
+        formData.append('guarantor_ghana_card_number',   getValue('f2-guarantor-ghana-card'));
+        formData.append('guarantor_house_address',       getValue('f2-guarantor-address'));
+        formData.append('guarantor_nearest_landmark',    getValue('f2-guarantor-landmark'));
 
         const guarantorCard = document.getElementById('f2-guarantor-ghana-card-upload')?.files[0];
         if (guarantorCard) formData.append('guarantor_ghana_card_upload', guarantorCard);
@@ -495,7 +490,6 @@ async function submitPhaseTwo(isCashier) {
     }
 }
 
-
 /* =========================================================
    SUBMIT PHASE THREE
 ========================================================= */
@@ -526,7 +520,6 @@ async function submitPhaseThree() {
         showToast('Something went wrong.', 'error');
     }
 }
-
 
 /* =========================================================
    HELPERS

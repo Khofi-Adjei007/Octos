@@ -3,7 +3,7 @@ import { fetchApplications } from './recruitment.api.js';
 import { buildApplicationCard } from './recruitment.cards.js';
 import { applyRecruitmentFilter } from './recruitment.filters.js';
 
-const CLOSED_STATUSES = ['hire_approved', 'rejected', 'withdrawn', 'closed'];
+const CLOSED_STATUSES = ['hire_approved', 'rejected', 'withdrawn', 'closed', 'onboarding_complete'];
 
 export async function loadRecruitment() {
 
@@ -58,7 +58,7 @@ function updateFilterCounts(applications) {
     interview:    applications.filter(a => a.current_stage === 'interview'    && !CLOSED_STATUSES.includes(a.status)).length,
     final_review: applications.filter(a => a.current_stage === 'final_review' && !CLOSED_STATUSES.includes(a.status)).length,
     decision:     applications.filter(a => a.current_stage === 'decision'     && !CLOSED_STATUSES.includes(a.status)).length,
-    closed:       applications.filter(a => CLOSED_STATUSES.includes(a.status)).length,
+    onboarding:   applications.filter(a => a.status === 'hire_approved').length,
   };
 
   document.querySelectorAll('.recruitment-filters .filter-chip').forEach(btn => {

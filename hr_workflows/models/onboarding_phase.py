@@ -59,6 +59,11 @@ class OnboardingPhase(models.Model):
     # -----------------------------------------------
     contract_signed = models.BooleanField(default=False)
     contract_signed_date = models.DateField(null=True, blank=True)
+    contract_upload = models.FileField(
+        upload_to="onboarding/contracts/",
+        null=True,
+        blank=True,
+    )
     ghana_card_upload = models.FileField(
         upload_to="onboarding/ghana_cards/",
         null=True,
