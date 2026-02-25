@@ -9,7 +9,7 @@ RedirectDecision = Dict[str, Any]
 # {"type": "named", "name": "branches:manager-dashboard", "kwargs": {"branch_pk": 2}}
 # {"type": "url", "url": "/some/url/"}
 
-class EmployeeLogin:
+class employeesLogin:
     def __init__(self, request, user):
         self.request = request
         self.user = user
@@ -20,10 +20,16 @@ class EmployeeLogin:
     # Public API
     def resolve_redirect(self, next_url: Optional[str] = None) -> Optional[RedirectDecision]:
         """
-        Return a RedirectDecision or None. The view should still validate `next_url`
-        and handle it before calling this helper (preferred).
+        Return a RedirectDecision or None.
+
+        next_url is only honoured for superusers.
+        All other employees are routed by role via handlers.
         """
         try:
+            # Superusers: honour ?next= if provided
+            if getattr(self.user, "is_superuser", False) and next_url:
+                return {"type": "url", "url": next_url}
+
             # Handler order / precedence
             handlers = [
                 self._handle_superuser,
@@ -55,32 +61,20 @@ class EmployeeLogin:
         return None
 
     def _handle_branch_manager(self) -> Optional[RedirectDecision]:
-        """
-        Prefer direct managed_branch. Then validate employee.branch -> manager mapping.
-        Then fallback to group-based list view.
-        """
-        profile = self._get_profile()
         try:
-            branch = None
-            if profile is not None:
-                branch = getattr(profile, "managed_branch", None)
+            from Human_Resources.models.authority import AuthorityAssignment
+            assignment = AuthorityAssignment.objects.filter(
+                user=self.user,
+                role__code="BRANCH_MANAGER",
+                is_active=True,
+            ).select_related("branch").first()
 
-            # fallback: if employee.branch exists and branch.manager points to this employee
-            if branch is None and profile is not None and getattr(profile, "branch", None):
-                candidate = profile.branch
-                try:
-                    if getattr(candidate, "manager_id", None) == getattr(profile, "pk", None):
-                        branch = candidate
-                except Exception:
-                    branch = None
-
-            if branch is not None:
-                return {"type": "named", "name": "branches:manager-dashboard", "kwargs": {"branch_pk": branch.pk}}
-
-            # group fallback: send to branches:list (manager landing)
-            if self.user.groups.filter(name="Branch Managers").exists():
-                # safe named route; view should provide branches:list
-                return {"type": "named", "name": "branches:list", "kwargs": {}}
+            if assignment and assignment.branch:
+                return {
+                    "type": "named",
+                    "name": "branches:manager-dashboard",
+                    "kwargs": {"branch_pk": assignment.branch.pk},
+                }
         except Exception as exc:
             logger.debug("Error in branch manager handler: %s", exc)
         return None
@@ -118,7 +112,6 @@ class EmployeeLogin:
             return self._profile
 
         try:
-            # If user is already Employee instance
             from employees.models import Employee
             if isinstance(self.user, Employee):
                 self._profile = self.user
@@ -126,7 +119,6 @@ class EmployeeLogin:
         except Exception:
             pass
 
-        # try common reverse attributes
         for attr in ("userprofile", "employee", "profile"):
             try:
                 val = getattr(self.user, attr, None)
@@ -136,7 +128,6 @@ class EmployeeLogin:
             except Exception:
                 continue
 
-        # fallback to query by PK (safe for custom user models)
         try:
             from employees.models import Employee
             pk = getattr(self.user, "pk", None)
@@ -146,7 +137,6 @@ class EmployeeLogin:
         except Exception:
             pass
 
-        # last resort: try lookup by email
         try:
             from employees.models import Employee
             email = getattr(self.user, "email", None) or getattr(self.user, "employee_email", None)

@@ -1,3 +1,15 @@
 octos_env/
 node_modules/
 .venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Media uploads
+media/
+
+# OS
+.DS_Store
+Thumbs.db

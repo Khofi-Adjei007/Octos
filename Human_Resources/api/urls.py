@@ -7,6 +7,7 @@ from Human_Resources.api.views.branches import BranchListAPI
 from .views.recruitment_transition import RecruitmentTransitionAPI
 from Human_Resources.api.views.interviewers import InterviewerListAPI
 from Human_Resources.api.views.job_offer import ExtendOfferAPI
+from Human_Resources.api.views.employees import EmployeeListAPI, EmployeeApproveAPI
 from Human_Resources.api.views.onboarding import (
     OnboardingInitiateAPI,
     OnboardingPhaseOneAPI,
@@ -52,11 +53,9 @@ urlpatterns = [
     path("onboarding/<int:pk>/status/", OnboardingStatusAPI.as_view(), name="onboarding-status"),
     path("onboarding/count/", OnboardingCountAPI.as_view(), name="onboarding-count"),
     path("interviewers/", InterviewerListAPI.as_view(), name="interviewers"),
-    path(
-    "recruitment/<int:pk>/extend-offer/",
-    ExtendOfferAPI.as_view(),
-    name="extend-offer",
-),
+    path("recruitment/<int:pk>/extend-offer/", ExtendOfferAPI.as_view(),name="extend-offer",),
+    path("employees/", EmployeeListAPI.as_view(), name="employee-list"),
+    path("employees/<int:pk>/approve/", EmployeeApproveAPI.as_view(), name="employee-approve"),
 ]
 
 

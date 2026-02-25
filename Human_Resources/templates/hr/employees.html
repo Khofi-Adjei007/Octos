@@ -37,6 +37,10 @@
     Inactive
   </button>
 
+  <button class="filter-chip" data-filter="pending">
+    Pending
+  </button>
+
   <button class="filter-chip" data-filter="unassigned">
     Unassigned
   </button>
@@ -49,21 +53,12 @@
 ===================================================== -->
 <section class="employees-list">
 
-  <!-- Empty / Loading state -->
-  <div class="employees-empty" id="employees-empty">
+  <!-- Empty state -->
+  <div class="employees-empty hidden" id="employees-empty">
     No employees found.
   </div>
 
-  <!-- Employee rows injected by JS -->
-  <div class="employee-row">
-    <div class="employee-main">
-      <strong class="employee-name">—</strong>
-      <span class="employee-meta">—</span>
-    </div>
-
-    <div class="employee-status">
-      <span class="badge status-approved">Approved</span>
-    </div>
-  </div>
+  <!-- Employee cards injected by JS -->
+  <div id="employees-list-items"></div>
 
 </section>

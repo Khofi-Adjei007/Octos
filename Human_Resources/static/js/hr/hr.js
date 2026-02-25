@@ -12,6 +12,7 @@ import { bindRecruitmentFilters } from './recruitment/recruitment.filters.js';
 
 import { applyBranchGradients } from './branches.js';
 
+import { loadEmployees } from './employees.js';
 
 /* -----------------------------------------
  * TEMP: PAYROLL LOADER
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* -----------------------------
      CORE CONTEXT ROUTING
   ------------------------------ */
-  initApp({
+initApp({
     onOverview: loadOverview,
     onRecruitment: () => {
       loadRecruitment();
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadRecruitment();
       });
     },
+    onEmployees: loadEmployees,
     onPayroll: loadPayroll,
   });
 

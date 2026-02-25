@@ -1095,3 +1095,198 @@ main{
 .payroll-table tbody tr:hover {
   transform: scale(1.01);
 }
+/* =====================================================
+   EMPLOYEES
+===================================================== */
+
+.employees-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.employees-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.employees-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 4px 0 0;
+}
+
+.employees-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.employees-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.employees-empty {
+  text-align: center;
+  color: #aaa;
+  padding: 48px 0;
+  font-size: 14px;
+}
+
+/* Employee Card */
+.employee-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.employee-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+
+.employee-card-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.employee-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.employee-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.employee-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.employee-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+.employee-branch {
+  color: #c0392b;
+  font-weight: 500;
+}
+
+.employee-email {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 2px;
+}
+
+.employee-card-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Approve Button */
+.btn-approve {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-approve:hover {
+  background: #c0392b;
+}
+
+.btn-approve:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Status badges */
+.badge.status-pending {
+  background: #fff8e6;
+  color: #e67e22;
+  border: 1px solid #f5cba7;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.status-active {
+  background: #eafaf1;
+  color: #27ae60;
+  border: 1px solid #a9dfbf;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.status-inactive {
+  background: #fdf2f2;
+  color: #c0392b;
+  border: 1px solid #f5c6cb;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+
+.toast-success { background: #27ae60; }
+.toast-error   { background: #c0392b; }
+
+.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}

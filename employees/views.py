@@ -7,12 +7,6 @@ Responsibilities:
 - Employee registration
 - Employee login & logout
 - Post-login routing
-- Basic employee homepage
-
-Notes:
-- Authentication is handled via Django auth
-- Authorization decisions are delegated to EmployeeLogin helper
-- This file does NOT decide business permissions (manager vs attendant)
 """
 
 import logging
@@ -20,27 +14,15 @@ import logging
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, logout
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.db import IntegrityError
+from django.core.exceptions import PermissionDenied
 
 from .models import Employee
 from .employeeForms import EmployeeLoginForm, EmployeeRegistrationForm
-from .utils.employee_login import EmployeeLogin
-from django.shortcuts import redirect
-from django.core.exceptions import PermissionDenied
-
 from employees.auth.guards import require_employee_login
 from employees.auth.permissions import employee_has_permission
-
-from django.shortcuts import redirect
-from django.core.exceptions import PermissionDenied
-
-from employees.auth.context import EmployeeContext
-from employees.auth.permissions import employee_has_permission
-
-from jobs.services import branch_service
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +32,6 @@ logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------
 @never_cache
 def employeeregistration(request):
-    """
-    Register a new employee account.
-
-    This creates an Employee record and associated auth credentials.
-    Approval / activation is handled elsewhere.
-    """
     if request.method == "POST":
         form = EmployeeRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -67,11 +43,7 @@ def employeeregistration(request):
     else:
         form = EmployeeRegistrationForm()
 
-    return render(
-        request,
-        "employeeregistration.html",
-        {"form": form},
-    )
+    return render(request, "employeeregistration.html", {"form": form})
 
 
 # -------------------------------------------------------------------
@@ -79,146 +51,76 @@ def employeeregistration(request):
 # -------------------------------------------------------------------
 @never_cache
 def employeesLogin(request):
-    """
-    Authenticate employee and establish session.
-
-    Responsibilities:
-    - Delegate authentication decisions to the form
-    - Create session on success
-    - Perform safe redirection only
-
-    DOES NOT:
-    - Decide dashboard
-    - Inspect roles
-    - Enforce permissions
-    """
     if request.method == "POST":
         form = EmployeeLoginForm(request.POST, request=request)
 
         if form.is_valid():
-            # --------------------------------------------------
-            # Case 1: Authenticated user (approved + active)
-            # --------------------------------------------------
             if form.user:
                 login(request, form.user)
-                logger.info(
-                    "User %s logged in successfully",
-                    form.user.employee_email,
-                )
+                logger.info("User %s logged in successfully", form.user.employee_email)
 
-                # Safe ?next= handling
-                next_url = request.POST.get("next") or request.GET.get("next")
-                if next_url and url_has_allowed_host_and_scheme(
-                    next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure(),
-                ):
-                    return redirect(next_url)
+                # Superusers only — honour ?next=
+                if form.user.is_superuser:
+                    next_url = request.POST.get("next") or request.GET.get("next")
+                    if next_url and url_has_allowed_host_and_scheme(
+                        next_url,
+                        allowed_hosts={request.get_host()},
+                        require_https=request.is_secure(),
+                    ):
+                        return redirect(next_url)
 
                 return redirect("employeeHomepage")
 
-            # --------------------------------------------------
-            # Case 2: Valid form but blocked by business rules
-            # --------------------------------------------------
             if getattr(form, "pending_message", None):
                 messages.warning(request, form.pending_message)
             else:
                 messages.error(request, "Invalid email or password.")
-
         else:
             messages.error(request, "Invalid email or password.")
-
     else:
         form = EmployeeLoginForm(request=request)
 
     return render(request, "employeesLogin.html", {"form": form})
 
 
-
-
-
 # -------------------------------------------------------------------
 # Employee Logout
 # -------------------------------------------------------------------
 def employee_logout(request):
-    """
-    Log out the current employee.
-    """
     logout(request)
     return redirect("employeesLogin")
 
 
-## -------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Employee Homepage (Post-login Router)
 # -------------------------------------------------------------------
 @never_cache
 @require_employee_login
 def employeeHomepage(request):
-    """
-    Canonical post-login router.
+    context = request.employee_context
 
-    Resolves the correct dashboard based on:
-    1. Employee activity
-    2. Permission priority
-    3. Branch scope
-
-    Dashboards themselves only ENFORCE access.
-    Routing happens here, once.
-    """
-
-    user = request.user
-    context = request.employee_context  # already attached by guard
-
-    # --------------------------------------------------
-    # 1. Active employee guard
-    # --------------------------------------------------
     if not context.is_active_employee:
         raise PermissionDenied("Inactive employee account.")
 
-    # --------------------------------------------------
-    # 2. Manager-level permission check (highest priority)
-    # --------------------------------------------------
-    manager_permissions = (
-        "manage_branch",
-        "close_day",
-        "view_branch_reports",
-    )
+    role_code = context.role_code  # from AuthorityAssignment via EmployeeContext
 
-    if any(employee_has_permission(user, p) for p in manager_permissions):
-        branches = branch_service.get_user_branches(user) or []
-
-        if not branches:
+    # Branch Manager
+    if role_code == "BRANCH_MANAGER":
+        branch_id = context.branch_id
+        if not branch_id:
             raise PermissionDenied("No branch assigned for manager access.")
+        return redirect("branches:manager-dashboard", branch_pk=branch_id)
 
-        # Single branch → go straight in
-        if len(branches) == 1:
-            return redirect(
-                "branches:manager-dashboard",
-                branch_pk=branches[0]["id"],
-            )
-
-        # Multiple branches → selector (future-safe)
-        return redirect("branches:list")
-
-    # --------------------------------------------------
-    # 3. Attendant permission check
-    # --------------------------------------------------
-    if employee_has_permission(user, "record_job"):
-        return redirect("jobs:attendant-dashboard")
-    
-    # --------------------------------------------------
-    # 4. HR routing (cross-branch, non-operational)
-    # --------------------------------------------------
-    if user.role and user.role.code in {
-        "HR_MANAGER",
-        "HR_MANAGER_SOUTH",
-        "HR_MANAGER_MID",
-        "HR_MANAGER_NORTH",
-    }:
+    # HR roles
+    if role_code in {"HR_MANAGER", "HR_MANAGER_SOUTH", "HR_MANAGER_MID", "HR_MANAGER_NORTH"}:
         return redirect("human_resources:dashboard")
 
-    # --------------------------------------------------
-    # 5. Absolute fallback (authenticated but unauthorized)
-    # --------------------------------------------------
-    raise PermissionDenied("No dashboard available for this role.")
+    # Attendant
+    if role_code == "ATTENDANT":
+        return redirect("jobs:attendant-dashboard")
 
+    # Superuser
+    if request.user.is_superuser:
+        return redirect("admin:index")
+
+    raise PermissionDenied("No dashboard available for this role.")

@@ -1,21 +1,26 @@
 # employees/auth/permissions.py
-
-from Human_Resources.models import RolePermission
+from Human_Resources.models import RolePermission, Role
+from Human_Resources.models.authority import AuthorityAssignment
 
 
 def employee_has_permission(employee, permission_code: str) -> bool:
-    """
-    Returns True if the employee's role grants the given permission.
+    assignment = (
+        AuthorityAssignment.objects
+        .filter(user=employee, is_active=True)
+        .select_related('role')
+        .first()
+    )
 
-    This function is intentionally explicit and database-backed.
-    Caching can be added later without changing call sites.
-    """
+    if not assignment or not assignment.role:
+        return False
 
-    if not employee.role_id:
+    # AuthorityAssignment.role is AuthorityRole — bridge to Role via name match
+    role = Role.objects.filter(name=assignment.role.name).first()
+    if not role:
         return False
 
     return RolePermission.objects.filter(
-        role_id=employee.role_id,
+        role=role,
         permission__code=permission_code,
         permission__is_active=True
     ).exists()

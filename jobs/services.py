@@ -919,7 +919,31 @@ class BranchService(BaseService):
     The queue summary returns list of lightweight job dicts for display in UI.
     """
     def get_user_branches(self, user) -> list:
-        # Try facade-friendly fast queries, fall back to scanning
+        # Primary: AuthorityAssignment (Octos authority system)
+        try:
+            from Human_Resources.models.authority import AuthorityAssignment
+            assignments = (
+                AuthorityAssignment.objects
+                .filter(user=user, is_active=True)
+                .select_related('branch')
+            )
+            results = []
+            seen = set()
+            for a in assignments:
+                if a.branch and a.branch.pk not in seen:
+                    seen.add(a.branch.pk)
+                    results.append({
+                        "id": a.branch.pk,
+                        "name": a.branch.name,
+                        "city": getattr(a.branch, "branch_city", "") or "",
+                        "is_manager": True,
+                    })
+            if results:
+                return results
+        except Exception:
+            logger.debug("BranchService.get_user_branches: AuthorityAssignment lookup failed", exc_info=True)
+
+        # Fallback: legacy branch model relations
         Branch = None
         try:
             from django.apps import apps
@@ -932,21 +956,17 @@ class BranchService(BaseService):
             return results
 
         seen = set()
-        # 1) Try queries using common related names (fast if they exist)
         try:
             qs = Branch.objects.none()
-            # manager patterns
             try:
                 qs = qs.union(Branch.objects.filter(Q(manager__pk=getattr(user, "pk", None)) | Q(manager__user__pk=getattr(user, "pk", None))))
             except Exception:
                 logger.debug("BranchService.get_user_branches: manager-based query not available", exc_info=True)
-            # employees/staff/users patterns
             try:
                 qs = qs.union(Branch.objects.filter(Q(employees__user__pk=getattr(user, "pk", None)) | Q(staff__user__pk=getattr(user, "pk", None)) | Q(users__pk=getattr(user, "pk", None))))
             except Exception:
                 logger.debug("BranchService.get_user_branches: employees/staff/users-based query not available", exc_info=True)
 
-            # If qs contains results, use them
             if qs.exists():
                 for b in qs.distinct():
                     bid = b.pk
@@ -962,50 +982,6 @@ class BranchService(BaseService):
                 return results
         except Exception:
             logger.debug("BranchService.get_user_branches: fast query path failed", exc_info=True)
-            # fall through to slower scan
-
-        # 2) Fallback: iterate over all branches and detect relations by attribute access (safe)
-        try:
-            for b in Branch.objects.all():
-                bid = b.pk
-                if bid in seen:
-                    continue
-                is_related = False
-                try:
-                    # common patterns
-                    if getattr(b, "manager", None):
-                        mgr = getattr(b, "manager", None)
-                        if mgr == user or getattr(mgr, "user", None) == user or getattr(mgr, "pk", None) == getattr(user, "pk", None):
-                            is_related = True
-                    # employee relations
-                    try:
-                        emps = getattr(b, "employees", None)
-                        if emps is not None:
-                            if emps.filter(user__pk=getattr(user, "pk", None)).exists():
-                                is_related = True
-                    except Exception:
-                        pass
-                    # users many-to-many
-                    try:
-                        users_q = getattr(b, "users", None)
-                        if users_q is not None and users_q.filter(pk=getattr(user, "pk", None)).exists():
-                            is_related = True
-                    except Exception:
-                        pass
-                    if is_related:
-                        seen.add(bid)
-                        results.append({
-                            "id": bid,
-                            "name": getattr(b, "name", str(b)),
-                            "city": getattr(b, "branch_city", "") or getattr(getattr(b, "city", None), "name", "") or "",
-                            "is_manager": self._is_manager_of_branch(user, b),
-                        })
-                except Exception:
-                    # skip problematic branch rows
-                    logger.debug("BranchService.get_user_branches: skipping branch %s due to inspection error", getattr(b, "pk", None), exc_info=True)
-                    continue
-        except Exception:
-            logger.exception("BranchService.get_user_branches: failed to iterate branches", exc_info=True)
 
         return results
 
