@@ -607,10 +607,10 @@ function renderDecisionPanel(data) {
       </div>
 
       <!-- MAIN BODY: recommendation + timeline side by side -->
-      <div class="grid grid-cols-5 divide-x divide-gray-100">
+      <div class="grid grid-cols-3 divide-x divide-gray-100">
 
         <!-- LEFT: Octos Recommendation (3 cols) -->
-        <div class="col-span-3 p-6">
+        <div class="col-span-1 p-6">
           <div class="rounded-xl overflow-hidden border"
                style="border-left: 4px solid ${verdictBorder}; border-color:${verdictBorder}33; border-left-color:${verdictBorder}; background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
 
@@ -678,7 +678,7 @@ function renderDecisionPanel(data) {
             Reject
           </button>
           <button type="button"
-                  onclick="handleTransition('approve')"
+                  onclick="openOfferModal()"
                   class="px-5 py-2 text-sm font-semibold text-white rounded-lg
                          bg-green-600 hover:bg-green-700 transition-all duration-200">
             Extend Offer →
@@ -702,11 +702,17 @@ function renderDecisionPanel(data) {
                          bg-green-600 hover:bg-green-700 transition-all duration-200">
             Accepted by Candidate ✓
           </button>
-        ` : `
-          <div class="text-sm font-medium text-gray-400 py-2">
-            This application has been closed.
-          </div>
-        `}
+        ` : data.status === 'hire_approved' ? `
+  <a href="/hr/onboarding/${data.id}/"
+     class="px-5 py-2 text-sm font-semibold text-white rounded-lg
+            bg-purple-600 hover:bg-purple-700 transition-all duration-200">
+    Open Onboarding →
+  </a>
+` : `
+  <div class="text-sm font-medium text-gray-400 py-2">
+    This application has been closed.
+  </div>
+`}
       </div>
 
     </div>
@@ -1595,4 +1601,318 @@ function getCSRFToken() {
     .split("; ")
     .find(row => row.startsWith("csrftoken="))
     ?.split("=")[1];
+}
+/* =========================================================
+   EXTEND OFFER MODAL
+========================================================= */
+
+function openOfferModal() {
+  const existing = document.getElementById('offer-modal');
+  if (existing) existing.remove();
+
+  // Pre-fill branch from application
+  const branchName = currentApp.branch_name || '';
+  const branchId   = currentApp.recommended_branch_id || '';
+
+  const modal = document.createElement('div');
+  modal.id = 'offer-modal';
+  modal.style.cssText = `
+    position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    display:flex; align-items:center; justify-content:center;
+    z-index:1000; opacity:0; transition:opacity 0.3s ease;
+  `;
+
+  modal.innerHTML = `
+    <div id="offer-modal-card" style="
+      background:white; border-radius:16px; padding:36px 32px;
+      max-width:720px; width:90%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+      transform:translateY(20px); transition:transform 0.3s ease;
+      max-height:90vh; overflow-y:auto;
+    ">
+
+      <!-- Header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:800; color:#111; margin:0 0 4px 0;">
+            Extend Offer
+          </h2>
+          <p style="font-size:13px; color:#6b7280; margin:0;">
+            ${currentApp.first_name} ${currentApp.last_name} &middot; ${currentApp.role_applied_for}
+          </p>
+        </div>
+        <button onclick="closeOfferModal()" style="
+          background:none; border:none; cursor:pointer;
+          font-size:20px; color:#9ca3af; padding:4px;
+        ">✕</button>
+      </div>
+
+      <!-- Form -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Salary -->
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+            Salary (GHS) <span style="color:#ef4444;">*</span>
+          </label>
+          <div style="display:flex; align-items:center; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;">
+            <span style="
+              background:#f9fafb; padding:10px 14px;
+              font-size:13px; font-weight:600; color:#6b7280;
+              border-right:1px solid #e5e7eb;
+            ">GHS</span>
+            <input id="offer-salary" type="number" min="0" placeholder="e.g. 3500"
+                   style="flex:1; border:none; outline:none; padding:10px 14px; font-size:14px; color:#111;" />
+          </div>
+        </div>
+
+        <!-- Employment Type -->
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+            Employment Type <span style="color:#ef4444;">*</span>
+          </label>
+          <select id="offer-employment-type" style="
+            width:100%; border:1px solid #e5e7eb; border-radius:8px;
+            padding:10px 14px; font-size:14px; color:#111;
+            background:white; outline:none; cursor:pointer;
+          ">
+            <option value="">Select type...</option>
+            <option value="full_time">Full Time</option>
+            <option value="part_time">Part Time</option>
+            <option value="contract">Contract</option>
+          </select>
+        </div>
+
+        <!-- Start Date + Offer Expiry side by side -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+              Start Date <span style="color:#ef4444;">*</span>
+            </label>
+            <input id="offer-start-date" type="date" style="
+              width:100%; border:1px solid #e5e7eb; border-radius:8px;
+              padding:10px 14px; font-size:14px; color:#111;
+              outline:none; box-sizing:border-box;
+            " />
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+              Offer Expiry Date
+            </label>
+            <input id="offer-expiry-date" type="date" style="
+              width:100%; border:1px solid #e5e7eb; border-radius:8px;
+              padding:10px 14px; font-size:14px; color:#111;
+              outline:none; box-sizing:border-box;
+            " />
+          </div>
+        </div>
+
+        <!-- Branch -->
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+            Branch Assignment
+          </label>
+          <select id="offer-branch" style="
+            width:100%; border:1px solid #e5e7eb; border-radius:8px;
+            padding:10px 14px; font-size:14px; color:#111;
+            background:white; outline:none; cursor:pointer;
+          ">
+            <option value="">Loading branches...</option>
+          </select>
+        </div>
+
+        <!-- Probation Period -->
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+            Probation Period
+          </label>
+          <select id="offer-probation" style="
+            width:100%; border:1px solid #e5e7eb; border-radius:8px;
+            padding:10px 14px; font-size:14px; color:#111;
+            background:white; outline:none; cursor:pointer;
+          ">
+            <option value="none">None</option>
+            <option value="1_month">1 Month</option>
+            <option value="3_months" selected>3 Months</option>
+            <option value="6_months">6 Months</option>
+          </select>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">
+            Notes to Candidate
+          </label>
+          <textarea id="offer-notes" rows="3" placeholder="Any additional information for the candidate..."
+                    style="
+                      width:100%; border:1px solid #e5e7eb; border-radius:8px;
+                      padding:10px 14px; font-size:14px; color:#111;
+                      outline:none; resize:vertical; box-sizing:border-box;
+                      font-family:inherit;
+                    "></textarea>
+        </div>
+
+      </div>
+
+      <!-- Error message -->
+      <div id="offer-error" style="
+        display:none; margin-top:12px;
+        background:#fef2f2; border:1px solid #fecaca;
+        border-radius:8px; padding:10px 14px;
+        font-size:13px; color:#dc2626;
+      "></div>
+
+      <!-- Actions -->
+      <div style="display:flex; gap:12px; margin-top:24px;">
+        <button onclick="closeOfferModal()" style="
+          flex:1; padding:12px; border:1px solid #e5e7eb;
+          border-radius:8px; font-size:14px; font-weight:600;
+          color:#6b7280; background:white; cursor:pointer;
+        ">Cancel</button>
+        <button id="offer-confirm-btn" onclick="submitOffer()" style="
+          flex:2; padding:12px; border:none;
+          border-radius:8px; font-size:14px; font-weight:700;
+          color:white; background:#16a34a; cursor:pointer;
+          transition:background 0.2s;
+        ">Extend Offer →</button>
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    modal.style.opacity = '1';
+    document.getElementById('offer-modal-card').style.transform = 'translateY(0)';
+  });
+
+  // Close on backdrop click
+  modal.addEventListener('click', e => { if (e.target === modal) closeOfferModal(); });
+
+  // Load branches into select
+  loadOfferBranches();
+}
+
+
+function closeOfferModal() {
+  const modal = document.getElementById('offer-modal');
+  if (!modal) return;
+  modal.style.opacity = '0';
+  setTimeout(() => modal.remove(), 300);
+}
+
+
+async function loadOfferBranches() {
+  try {
+    const response = await fetch('/hr/api/branches/');
+    if (!response.ok) return;
+
+    const { branches } = await response.json();
+    const select   = document.getElementById('offer-branch');
+    if (!select) return;
+
+    select.innerHTML = `<option value="">No specific branch</option>` +
+      branches.map(b => `
+        <option value="${b.id}" ${b.name === currentApp.branch_name ? 'selected' : ''}>
+          ${b.name}
+        </option>
+      `).join('');
+
+  } catch (err) {
+    console.error('Failed to load branches:', err);
+  }
+}
+
+
+async function submitOffer() {
+  const salary         = document.getElementById('offer-salary')?.value;
+  const employmentType = document.getElementById('offer-employment-type')?.value;
+  const startDate      = document.getElementById('offer-start-date')?.value;
+  const expiryDate     = document.getElementById('offer-expiry-date')?.value;
+  const branchId       = document.getElementById('offer-branch')?.value;
+  const probation      = document.getElementById('offer-probation')?.value;
+  const notes          = document.getElementById('offer-notes')?.value;
+  const errorDiv       = document.getElementById('offer-error');
+  const confirmBtn     = document.getElementById('offer-confirm-btn');
+
+  // Validate
+  if (!salary) {
+    showOfferError('Please enter a salary amount.'); return;
+  }
+  if (!employmentType) {
+    showOfferError('Please select an employment type.'); return;
+  }
+  if (!startDate) {
+    showOfferError('Please select a start date.'); return;
+  }
+
+  // Loading state
+  confirmBtn.innerText    = 'Extending offer...';
+  confirmBtn.disabled     = true;
+  confirmBtn.style.background = '#86efac';
+
+  try {
+    const response = await fetch(
+      `/hr/api/recruitment/${currentApp.id}/extend-offer/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({
+          salary,
+          employment_type:   employmentType,
+          start_date:        startDate,
+          offer_expiry_date: expiryDate || null,
+          branch_id:         branchId   || null,
+          probation_period:  probation,
+          notes:             notes || '',
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      showOfferError(error.detail || 'Failed to extend offer.');
+      confirmBtn.innerText        = 'Extend Offer →';
+      confirmBtn.disabled         = false;
+      confirmBtn.style.background = '#16a34a';
+      return;
+    }
+
+    const updated = await response.json();
+    currentApp = updated;
+
+    closeOfferModal();
+    showToast('Offer extended successfully.');
+
+    // Re-render page
+    renderHeader(updated);
+    renderProgressRibbon(updated);
+    renderActionPanel(updated);
+    renderEvaluationPanel(updated);
+    renderFinalReview(updated);
+    renderDecisionPanel(updated);
+    switchEvaluationPanel(updated.current_stage);
+    switchLayout(updated.current_stage);
+    renderResume(updated);
+
+  } catch (err) {
+    console.error(err);
+    showOfferError('Something went wrong. Please try again.');
+    confirmBtn.innerText        = 'Extend Offer →';
+    confirmBtn.disabled         = false;
+    confirmBtn.style.background = '#16a34a';
+  }
+}
+
+
+function showOfferError(message) {
+  const errorDiv = document.getElementById('offer-error');
+  if (!errorDiv) return;
+  errorDiv.style.display = 'block';
+  errorDiv.innerText     = message;
 }

@@ -7,3 +7,4 @@ from .recruitment_transition_log import RecruitmentTransitionLog
 from .onboarding_record import OnboardingRecord, OnboardingStatus
 from .onboarding_phase import OnboardingPhase, PhaseStatus
 from .guarantor_detail import GuarantorDetail
+from .job_offer import JobOffer, EmploymentType, ProbationPeriod

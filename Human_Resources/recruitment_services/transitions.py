@@ -30,8 +30,6 @@ class RecruitmentEngine:
 
     @classmethod
     @transaction.atomic
-    @classmethod
-    @transaction.atomic
     def perform_action(cls, application: RecruitmentApplication, action: str, actor, payload=None):
 
         cls._ensure_not_terminal(application)
