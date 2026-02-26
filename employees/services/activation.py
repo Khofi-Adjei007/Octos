@@ -60,11 +60,26 @@ class AccountActivationService:
         # 3. Create AuthorityAssignment
         authority_role, branch = cls._create_authority_assignment(employee, application)
 
+        # 4. Generate employee ID
+        from employees.services.employee_id import EmployeeIDService
+        try:
+            job_offer = application.job_offer
+            hire_year = job_offer.start_date.year if job_offer and job_offer.start_date else None
+        except Exception:
+            hire_year = None
+
+        EmployeeIDService.generate(
+            employee=employee,
+            branch=application.recommended_branch,
+            hire_year=hire_year,
+        )
+
         logger.info(
-            "AccountActivationService: activated employee %s | role=%s | branch=%s",
+            "AccountActivationService: activated employee %s | role=%s | branch=%s | id=%s",
             employee.employee_email,
             authority_role.code if authority_role else None,
             branch.name if branch else None,
+            employee.employee_id,
         )
 
         return {
