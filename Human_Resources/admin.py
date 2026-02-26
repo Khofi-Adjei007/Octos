@@ -6,7 +6,6 @@ from Human_Resources.models import (
     Department,
     Role,
     Permission,
-    RolePermission,
     AuditLog,
 )
 
@@ -39,14 +38,6 @@ class PermissionAdmin(admin.ModelAdmin):
     search_fields = ("code", "name")
     list_filter = ("is_active",)
     ordering = ("code",)
-
-
-@admin.register(RolePermission)
-class RolePermissionAdmin(admin.ModelAdmin):
-    list_display = ("role", "permission", "granted_at")
-    list_filter = ("role",)
-    search_fields = ("role__name", "permission__code")
-    ordering = ("role__name",)
 
 
 # ============================================================

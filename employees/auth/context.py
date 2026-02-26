@@ -20,15 +20,7 @@ class EmployeeContext:
             .select_related('role', 'branch')
             .first()
         )
-
-        # AuthorityRole has 'name' not 'code' — normalise to uppercase for matching
-        if self._assignment and self._assignment.role:
-            role_name = self._assignment.role.name or ""
-            # Convert "Branch Manager" → "BRANCH_MANAGER"
-            self.role_code = role_name.strip().upper().replace(" ", "_")
-        else:
-            self.role_code = None
-
+        self.role_code = self._assignment.role.code if self._assignment and self._assignment.role else None
         self.branch_id = self._assignment.branch_id if self._assignment else employee.branch_id
         self.role_id = self._assignment.role_id if self._assignment else employee.role_id
         self.primary_role = self.role_code

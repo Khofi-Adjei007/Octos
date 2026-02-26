@@ -112,7 +112,7 @@ def employeeHomepage(request):
         return redirect("branches:manager-dashboard", branch_pk=branch_id)
 
     # HR roles
-    if role_code in {"HR_MANAGER", "HR_MANAGER_SOUTH", "HR_MANAGER_MID", "HR_MANAGER_NORTH"}:
+    if role_code in {"HR_ADMIN", "BELT_HR_OVERSEER", "SUPER_ADMIN"}:
         return redirect("human_resources:dashboard")
 
     # Attendant
