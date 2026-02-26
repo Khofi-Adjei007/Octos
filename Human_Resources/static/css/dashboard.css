@@ -1459,3 +1459,164 @@ main{
   padding: 2px 8px;
   border-radius: 12px;
 }
+
+/* -----------------------------------------
+   EMPLOYEE CARDS — REDESIGN
+----------------------------------------- */
+:root {
+  --status-active:   #27ae60;
+  --status-inactive: #e74c3c;
+  --status-pending:  #f39c12;
+}
+
+#employees-list-items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.employee-card {
+  display: flex;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+  min-height: 80px;
+}
+
+.employee-card:hover {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
+
+.emp-card-border {
+  display: none;
+}
+
+.emp-card-avatar {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.employee-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #C0392B;
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emp-card-body {
+  flex: 1;
+  padding: 8px 12px 8px 0;
+  min-width: 0;
+}
+
+.emp-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.emp-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.emp-status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+}
+
+.emp-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px 16px;
+  margin-bottom: 6px;
+}
+
+.emp-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-meta-item i {
+  color: #aaa;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.emp-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emp-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+
+/* -----------------------------------------
+   EMPLOYEES FILTER BAR
+----------------------------------------- */
+.employees-filters-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.employees-filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.employees-filter-dropdowns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-dropdown {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #444;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.filter-dropdown:focus {
+  border-color: #C0392B;
+}

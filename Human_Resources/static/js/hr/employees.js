@@ -7,8 +7,102 @@ const CSRF = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || "";
 
 let allEmployees = [];
 let currentFilter = "all";
+let currentBranch = "";
+let currentRole   = "";
+let currentType   = "";
 let roleOptions = { roles: [], branches: [], regions: [] };
 
+/* -----------------------------------------
+ * FILTER
+ * ----------------------------------------- */
+function applyFilter(employees) {
+  return employees.filter(e => {
+    // Status chip filter
+    const statusMatch = (() => {
+      switch (currentFilter) {
+        case "active":     return e.is_active && e.approved;
+        case "inactive":   return !e.is_active;
+        case "pending":    return !e.approved;
+        case "unassigned": return !e.has_assignment;
+        default:           return true;
+      }
+    })();
+
+    // Dropdown filters
+    const branchMatch = !currentBranch || e.branch === currentBranch;
+    const roleMatch   = !currentRole   || e.authority_role === currentRole;
+    const typeMatch   = !currentType   || e.employee_type === currentType;
+
+    return statusMatch && branchMatch && roleMatch && typeMatch;
+  });
+}
+
+function updateFilterCounts(employees) {
+  const counts = {
+    all:        employees.length,
+    active:     employees.filter(e => e.is_active && e.approved).length,
+    inactive:   employees.filter(e => !e.is_active).length,
+    pending:    employees.filter(e => !e.approved).length,
+    unassigned: employees.filter(e => !e.has_assignment).length,
+  };
+
+  document.querySelectorAll(".employees-filter-chips .filter-chip").forEach(btn => {
+    const filter = btn.dataset.filter;
+    const count  = counts[filter] ?? 0;
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent.trim();
+    btn.innerHTML = `${btn.dataset.label} <span class="chip-count">${count}</span>`;
+  });
+}
+
+function populateDropdowns(employees) {
+  // Branches
+  const branches = [...new Set(employees.map(e => e.branch).filter(Boolean))].sort();
+  const branchSel = document.getElementById("filter-branch");
+  if (branchSel) {
+    const current = branchSel.value;
+    branchSel.innerHTML = `<option value="">All Branches</option>` +
+      branches.map(b => `<option value="${b}" ${b === current ? "selected" : ""}>${b}</option>`).join("");
+  }
+
+  // Roles
+  const roles = [...new Set(employees.map(e => e.authority_role).filter(Boolean))].sort();
+  const roleSel = document.getElementById("filter-role");
+  if (roleSel) {
+    const current = roleSel.value;
+    roleSel.innerHTML = `<option value="">All Roles</option>` +
+      roles.map(r => `<option value="${r}" ${r === current ? "selected" : ""}>${r}</option>`).join("");
+  }
+}
+
+function bindFilters() {
+  // Status chips
+  document.querySelectorAll(".employees-filter-chips .filter-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentFilter = btn.dataset.filter;
+      document.querySelectorAll(".employees-filter-chips .filter-chip")
+        .forEach(b => b.classList.toggle("active", b === btn));
+      renderEmployees(applyFilter(allEmployees));
+    });
+  });
+
+  // Branch dropdown
+  document.getElementById("filter-branch")?.addEventListener("change", function () {
+    currentBranch = this.value;
+    renderEmployees(applyFilter(allEmployees));
+  });
+
+  // Role dropdown
+  document.getElementById("filter-role")?.addEventListener("change", function () {
+    currentRole = this.value;
+    renderEmployees(applyFilter(allEmployees));
+  });
+
+  // Type dropdown
+  document.getElementById("filter-type")?.addEventListener("change", function () {
+    currentType = this.value;
+    renderEmployees(applyFilter(allEmployees));
+  });
+}
 
 /* -----------------------------------------
  * BOOT
@@ -27,6 +121,7 @@ async function fetchAndRender() {
     const res = await fetch("/hr/api/employees/");
     allEmployees = await res.json();
     updateFilterCounts(allEmployees);
+    populateDropdowns(allEmployees);
     renderEmployees(applyFilter(allEmployees));
   } catch (e) {
     console.error("Failed to load employees:", e);
@@ -41,49 +136,6 @@ async function fetchRoleOptions() {
     console.error("Failed to load role options:", e);
   }
 }
-
-
-/* -----------------------------------------
- * FILTER
- * ----------------------------------------- */
-function applyFilter(employees) {
-  switch (currentFilter) {
-    case "active":     return employees.filter(e => e.is_active && e.approved);
-    case "inactive":   return employees.filter(e => !e.is_active);
-    case "pending":    return employees.filter(e => !e.approved);
-    case "unassigned": return employees.filter(e => !e.has_assignment);
-    default:           return employees;
-  }
-}
-
-function updateFilterCounts(employees) {
-  const counts = {
-    all:        employees.length,
-    active:     employees.filter(e => e.is_active && e.approved).length,
-    inactive:   employees.filter(e => !e.is_active).length,
-    pending:    employees.filter(e => !e.approved).length,
-    unassigned: employees.filter(e => !e.has_assignment).length,
-  };
-
-  document.querySelectorAll(".employees-filters .filter-chip").forEach(btn => {
-    const filter = btn.dataset.filter;
-    const count  = counts[filter] ?? 0;
-    if (!btn.dataset.label) btn.dataset.label = btn.textContent.trim();
-    btn.innerHTML = `${btn.dataset.label} <span class="chip-count">${count}</span>`;
-  });
-}
-
-function bindFilters() {
-  document.querySelectorAll(".employees-filters .filter-chip").forEach(btn => {
-    btn.addEventListener("click", () => {
-      currentFilter = btn.dataset.filter;
-      document.querySelectorAll(".employees-filters .filter-chip")
-        .forEach(b => b.classList.toggle("active", b === btn));
-      renderEmployees(applyFilter(allEmployees));
-    });
-  });
-}
-
 
 /* -----------------------------------------
  * RENDER
@@ -106,11 +158,16 @@ function buildEmployeeCard(e) {
   card.className = "employee-card";
   card.dataset.id = e.id;
 
-  const statusBadge = e.approved
-    ? e.is_active
-      ? `<span class="badge status-active">Active</span>`
-      : `<span class="badge status-inactive">Inactive</span>`
-    : `<span class="badge status-pending">Pending Approval</span>`;
+  // Status color must be defined BEFORE using it
+  const statusColor = e.approved
+    ? e.is_active ? "#27ae60" : "#e74c3c"
+    : "#f39c12";
+
+  const statusLabel = e.approved
+    ? e.is_active ? "Active" : "Inactive"
+    : "Pending";
+
+  card.style.borderLeft = `5px solid ${statusColor}`;
 
   const roleBadge = e.authority_role
     ? `<span class="badge role-badge">${e.authority_role}</span>`
@@ -122,32 +179,56 @@ function buildEmployeeCard(e) {
        </button>`
     : "";
 
-  const assignRoleBtn = `
-    <button class="btn-assign-role" data-id="${e.id}">
-      <i class="ri-user-settings-line"></i> Assign Role
-    </button>`;
-
   card.innerHTML = `
-    <div class="employee-card-left">
+    <div class="emp-card-avatar">
       <div class="employee-avatar">
         ${e.first_name.charAt(0)}${e.last_name.charAt(0)}
       </div>
-      <div class="employee-info">
-        <div class="employee-name">${e.first_name} ${e.last_name}</div>
-        <div class="employee-meta">
-          ${e.position_title || "—"}
-          ${e.branch ? ` · <span class="employee-branch">${e.branch}</span>` : ""}
+    </div>
+
+    <div class="emp-card-body">
+      <div class="emp-card-top">
+        <span class="emp-name">${e.first_name} ${e.last_name}</span>
+        <span class="emp-status-badge" style="background:${statusColor}20; color:${statusColor}; border:1px solid ${statusColor}">
+          ${statusLabel}
+        </span>
+      </div>
+
+      <div class="emp-card-meta">
+        <div class="emp-meta-item">
+          <i class="ri-id-card-line"></i>
+          <span>${e.employee_id || "—"}</span>
         </div>
-        ${e.employee_email ? `<div class="employee-email">${e.employee_email}</div>` : ""}
-        <div class="employee-role-row">${roleBadge}</div>
+        <div class="emp-meta-item">
+          <i class="ri-map-pin-line"></i>
+          <span>${e.branch || "No branch"}</span>
+        </div>
+        <div class="emp-meta-item">
+          <i class="ri-mail-line"></i>
+          <span>${e.employee_email || "—"}</span>
+        </div>
+        <div class="emp-meta-item">
+          <i class="ri-briefcase-line"></i>
+          <span>${e.position_title || "—"}</span>
+        </div>
+        <div class="emp-meta-item">
+        </div>
+        <div class="emp-meta-item">
+          <i class="ri-phone-line"></i>
+          <span>${e.phone_number || "—"}</span>
+        </div>
+      </div>
+
+      <div class="emp-card-footer">
+        ${roleBadge}
       </div>
     </div>
-    <div class="employee-card-right">
-      ${statusBadge}
-      <div class="employee-actions">
-        ${approveBtn}
-        ${assignRoleBtn}
-      </div>
+
+    <div class="emp-card-actions">
+      ${approveBtn}
+      <button class="btn-assign-role" data-id="${e.id}">
+        <i class="ri-user-settings-line"></i> Assign Role
+      </button>
     </div>
   `;
 
@@ -163,7 +244,6 @@ function buildEmployeeCard(e) {
 
   return card;
 }
-
 
 /* -----------------------------------------
  * APPROVE

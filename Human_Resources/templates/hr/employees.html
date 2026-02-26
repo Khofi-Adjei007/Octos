@@ -2,63 +2,57 @@
      EMPLOYEES · HEADER & ACTIONS
 ===================================================== -->
 <section class="employees-header">
-
   <div class="employees-header-left">
     <h2>Employees</h2>
     <p class="employees-subtitle">
       Showing all staff across Greater Accra Region
     </p>
   </div>
-
   <div class="employees-header-right">
     <button class="btn-primary" id="add-employee-btn">
       <i class="ri-user-add-line"></i>
       Add Employee
     </button>
   </div>
-
 </section>
-
 
 <!-- =====================================================
-     EMPLOYEES · STATUS FILTERS
+     EMPLOYEES · STATUS FILTERS + DROPDOWNS
 ===================================================== -->
-<section class="employees-filters">
+<section class="employees-filters-bar">
+  <!-- Status chips -->
+  <div class="employees-filter-chips">
+    <button class="filter-chip active" data-filter="all">All</button>
+    <button class="filter-chip" data-filter="active">Active</button>
+    <button class="filter-chip" data-filter="inactive">Inactive</button>
+    <button class="filter-chip" data-filter="pending">Pending</button>
+    <button class="filter-chip" data-filter="unassigned">Unassigned</button>
+  </div>
 
-  <button class="filter-chip active" data-filter="all">
-    All
-  </button>
-
-  <button class="filter-chip" data-filter="active">
-    Active
-  </button>
-
-  <button class="filter-chip" data-filter="inactive">
-    Inactive
-  </button>
-
-  <button class="filter-chip" data-filter="pending">
-    Pending
-  </button>
-
-  <button class="filter-chip" data-filter="unassigned">
-    Unassigned
-  </button>
-
+  <!-- Dropdown filters -->
+  <div class="employees-filter-dropdowns">
+    <select id="filter-branch" class="filter-dropdown">
+      <option value="">All Branches</option>
+    </select>
+    <select id="filter-role" class="filter-dropdown">
+      <option value="">All Roles</option>
+    </select>
+    <select id="filter-type" class="filter-dropdown">
+      <option value="">All Types</option>
+      <option value="PERMANENT">Permanent</option>
+      <option value="CONTRACTOR">Contractor</option>
+      <option value="TEMPORARY">Temporary</option>
+      <option value="INTERN">Intern</option>
+    </select>
+  </div>
 </section>
-
 
 <!-- =====================================================
      EMPLOYEES · LIST
 ===================================================== -->
 <section class="employees-list">
-
-  <!-- Empty state -->
   <div class="employees-empty hidden" id="employees-empty">
     No employees found.
   </div>
-
-  <!-- Employee cards injected by JS -->
   <div id="employees-list-items"></div>
-
 </section>

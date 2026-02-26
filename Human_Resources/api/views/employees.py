@@ -42,6 +42,7 @@ class EmployeeListAPI(APIView):
                 "authority_role_code": assignment.role.code if assignment and assignment.role else None,
                 "has_assignment":    assignment is not None,
                 "employee_id":       e.employee_id or "—",
+                "phone_number":      e.phone_number or "—",
             })
 
         return Response(employees)
