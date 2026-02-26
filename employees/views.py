@@ -90,6 +90,38 @@ def employee_logout(request):
     logout(request)
     return redirect("employeesLogin")
 
+# -------------------------------------------------------------------
+# Force Password Change
+# -------------------------------------------------------------------
+@never_cache
+@require_employee_login
+def force_password_change(request):
+    """
+    Shown when must_change_password=True.
+    Employee cannot access any other page until this is complete.
+    """
+    from .employeeForms import ForcePasswordChangeForm
+
+    if not request.user.must_change_password:
+        return redirect("employeeHomepage")
+
+    if request.method == "POST":
+        form = ForcePasswordChangeForm(request.POST)
+        if form.is_valid():
+            request.user.set_password(form.cleaned_data["new_password"])
+            request.user.must_change_password = False
+            request.user.save(update_fields=["password", "must_change_password"])
+
+            # Re-authenticate to prevent session invalidation
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, request.user)
+
+            messages.success(request, "Password changed successfully. Welcome to Octos!")
+            return redirect("employeeHomepage")
+    else:
+        form = ForcePasswordChangeForm()
+
+    return render(request, "force_password_change.html", {"form": form})
 
 # -------------------------------------------------------------------
 # Employee Homepage (Post-login Router)
@@ -115,9 +147,9 @@ def employeeHomepage(request):
     if role_code in {"HR_ADMIN", "BELT_HR_OVERSEER", "SUPER_ADMIN"}:
         return redirect("human_resources:dashboard")
 
-    # Attendant
-    if role_code == "ATTENDANT":
-        return redirect("jobs:attendant-dashboard")
+    # Attendant / Staff
+    if role_code in {"ATTENDANT", "STAFF"}:
+        return redirect("attendant_dashboard")
 
     # Superuser
     if request.user.is_superuser:

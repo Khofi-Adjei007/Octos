@@ -107,6 +107,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'employees.middleware.ForcePasswordChangeMiddleware',
 ]
 
 # CORS: restrictable via .env

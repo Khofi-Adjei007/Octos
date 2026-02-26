@@ -268,3 +268,49 @@ def employee_logout(request):
     from django.contrib.auth import logout
     logout(request)
     return redirect("employeesLogin")
+
+
+# ============================================================
+# Force Password Change Form
+# ============================================================
+class ForcePasswordChangeForm(forms.Form):
+    new_password = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": (
+                    "mt-1 block w-full px-3 py-2 border border-gray-300 "
+                    "rounded-md shadow-sm focus:outline-none focus:ring-red-500 "
+                    "focus:border-red-500 sm:text-sm"
+                ),
+                "placeholder": "Enter new password",
+            }
+        ),
+    )
+
+    confirm_password = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": (
+                    "mt-1 block w-full px-3 py-2 border border-gray-300 "
+                    "rounded-md shadow-sm focus:outline-none focus:ring-red-500 "
+                    "focus:border-red-500 sm:text-sm"
+                ),
+                "placeholder": "Confirm new password",
+            }
+        ),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get("new_password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if new_password and confirm_password:
+            if new_password != confirm_password:
+                raise forms.ValidationError("Passwords do not match.")
+            if len(new_password) < 8:
+                raise forms.ValidationError("Password must be at least 8 characters.")
+
+        return cleaned_data

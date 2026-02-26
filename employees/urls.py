@@ -19,4 +19,5 @@ urlpatterns = [
     # Employee management
     # --------------------------------------------------
     path("register/", views.employeeregistration, name="employeeregistration"),
+    path("password-change/", views.force_password_change, name="force_password_change"),
 ]
