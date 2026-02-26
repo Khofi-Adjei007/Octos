@@ -2,12 +2,12 @@
 
 from django.db import transaction
 from django.utils import timezone
-
 from hr_workflows.models.onboarding_record import OnboardingRecord, OnboardingStatus
 from hr_workflows.models.onboarding_phase import OnboardingPhase, PhaseStatus
 from hr_workflows.models.guarantor_detail import GuarantorDetail
-# Create or update Employee record from onboarding data
 from employees.models import Employee
+from employees.services.activation import AccountActivationService, ActivationError
+from employees.services.email_service import EmployeeEmailService
 
 
 class OnboardingError(Exception):
@@ -243,17 +243,23 @@ class OnboardingEngine:
             employee.is_active = True
             employee.branch = application.recommended_branch
             employee.save(update_fields=["employment_status", "is_active", "branch"])
-
         # Activate account — sets employee_email, temp password, AuthorityAssignment
-        from employees.services.activation import AccountActivationService, ActivationError
+      
         try:
             activation_payload = AccountActivationService.activate(
                 employee=employee,
                 application=application,
             )
-            record.activation_payload = activation_payload  # carry for email step later
+
+            # Send welcome email with credentials
+            EmployeeEmailService.send_welcome_email(
+                employee=employee,
+                temp_password=activation_payload["temp_password"],
+                branch=activation_payload["branch"],
+                role=activation_payload["role"],
+            )
+
         except ActivationError as e:
-            # Log but don't block onboarding completion
             import logging
             logger = logging.getLogger(__name__)
             logger.error("AccountActivationService failed for employee %s: %s", employee.pk, e)
@@ -267,7 +273,6 @@ class OnboardingEngine:
         application.save(update_fields=["status"])
 
         return record
-
 
 
     # =====================================================

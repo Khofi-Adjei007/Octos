@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to Farhat Printing Press</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background-color: #C0392B; padding: 32px 40px; text-align: center; }
+    .header img { height: 48px; }
+    .header h1 { color: #ffffff; font-size: 22px; margin: 12px 0 0; letter-spacing: 0.5px; }
+    .body { padding: 40px; color: #333333; }
+    .body h2 { font-size: 20px; color: #C0392B; margin-top: 0; }
+    .body p { font-size: 15px; line-height: 1.7; color: #444444; }
+    .credentials { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px 24px; margin: 24px 0; }
+    .credentials table { width: 100%; border-collapse: collapse; }
+    .credentials td { padding: 8px 0; font-size: 15px; }
+    .credentials td:first-child { color: #888888; width: 40%; }
+    .credentials td:last-child { font-weight: bold; color: #222222; }
+    .cta { text-align: center; margin: 32px 0; }
+    .cta a { background-color: #C0392B; color: #ffffff; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: bold; display: inline-block; }
+    .notice { background: #fff8e1; border-left: 4px solid #f0a500; padding: 14px 18px; border-radius: 4px; font-size: 14px; color: #555; margin: 24px 0; }
+    .footer { background: #f4f4f4; padding: 24px 40px; text-align: center; font-size: 13px; color: #aaaaaa; }
+    .footer a { color: #C0392B; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Farhat Printing Press</h1>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <h2>Welcome aboard, {{ first_name }}! 🎉</h2>
+
+      <p>
+        We are delighted to welcome you to the Farhat Printing Press family.
+        Your onboarding has been completed and your employee account is now active.
+      </p>
+
+      <p>Below are your login credentials to access the Octos employee portal:</p>
+
+      <!-- Credentials -->
+      <div class="credentials">
+        <table>
+          <tr>
+            <td>Email</td>
+            <td>{{ employee_email }}</td>
+          </tr>
+          <tr>
+            <td>Temporary Password</td>
+            <td>{{ temp_password }}</td>
+          </tr>
+          <tr>
+            <td>Branch</td>
+            <td>{{ branch_name }}</td>
+          </tr>
+          <tr>
+            <td>Role</td>
+            <td>{{ role_name }}</td>
+          </tr>
+          <tr>
+            <td>Employee ID</td>
+            <td>{{ employee_id }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Warning -->
+      <div class="notice">
+        ⚠️ You will be required to change your password on your first login.
+        Please keep your credentials safe and do not share them with anyone.
+      </div>
+
+      <!-- CTA -->
+      <div class="cta">
+        <a href="{{ login_url }}">Login to Octos Portal</a>
+      </div>
+
+      <p>
+        If you have any questions or need assistance, please contact the HR department
+        or reach out to your branch manager.
+      </p>
+
+      <p>We look forward to working with you.</p>
+
+      <p>
+        Warm regards,<br/>
+        <strong>Human Resources</strong><br/>
+        Farhat Printing Press
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>This is an automated message from the Octos HR System. Please do not reply to this email.</p>
+      <p>© 2026 Farhat Printing Press. All rights reserved.</p>
+    </div>
+
+  </div>
+</body>
+</html>

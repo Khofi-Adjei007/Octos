@@ -13,3 +13,5 @@ media/
 # OS
 .DS_Store
 Thumbs.db
+
+.env
