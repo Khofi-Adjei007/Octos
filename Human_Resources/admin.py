@@ -69,3 +69,27 @@ class AuditLogAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+from Human_Resources.models.authority import AuthorityRole, AuthorityAssignment, RoleMapping
+
+
+@admin.register(RoleMapping)
+class RoleMappingAdmin(admin.ModelAdmin):
+    list_display = ("role_title", "authority_role", "is_active", "created_at")
+    list_filter = ("is_active", "authority_role")
+    search_fields = ("role_title",)
+    ordering = ("role_title",)
+
+
+@admin.register(AuthorityRole)
+class AuthorityRoleAdmin(admin.ModelAdmin):
+    list_display = ("code", "name", "is_system_role")
+    search_fields = ("code", "name")
+    filter_horizontal = ("permissions",)
+
+
+@admin.register(AuthorityAssignment)
+class AuthorityAssignmentAdmin(admin.ModelAdmin):
+    list_display = ("user", "role", "scope_type", "branch", "region", "is_active", "created_at")
+    list_filter = ("scope_type", "is_active", "role")
+    search_fields = ("user__employee_email", "role__code")

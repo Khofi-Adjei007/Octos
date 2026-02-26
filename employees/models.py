@@ -177,6 +177,7 @@ class Employee(AbstractBaseUser, PermissionsMixin):
     # AUTH & ADMIN
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(default=False,help_text="Force password change on next login")
     approved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

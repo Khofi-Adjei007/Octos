@@ -183,13 +183,12 @@ class OnboardingEngine:
     # =====================================================
     # PHASE 3 — REPORTING CONFIRMATION
     # =====================================================
-
     @classmethod
     @transaction.atomic
     def complete_phase_three(cls, record, actor):
         """
         Branch manager confirms employee has physically reported.
-        Marks employee fully active on completion.
+        Creates AuthorityAssignment and activates employee account.
         """
         cls._ensure_correct_phase(record, 3)
 
@@ -208,33 +207,7 @@ class OnboardingEngine:
         record.completed_at = timezone.now()
         record.save()
 
-        # Activate employee account
-    @classmethod
-    @transaction.atomic
-    def complete_phase_three(cls, record, actor):
-        """
-        Branch manager confirms employee has physically reported.
-        Marks employee fully active on completion.
-        """
-        cls._ensure_correct_phase(record, 3)
-
-        phase = cls._get_phase(record, 3)
-
-        phase.reported_confirmed = True
-        phase.confirmed_at = timezone.now()
-        phase.confirmed_by = actor
-        phase.status = PhaseStatus.COMPLETED
-        phase.completed_by = actor
-        phase.completed_at = timezone.now()
-        phase.save()
-
-        # Mark onboarding complete
-        record.status = OnboardingStatus.COMPLETED
-        record.completed_at = timezone.now()
-        record.save()
-
-
-        phase1 = cls._get_phase(record, 1)
+        # Build employee record from onboarding data
         phase2 = cls._get_phase(record, 2)
         application = record.application
         applicant = application.applicant
@@ -271,14 +244,31 @@ class OnboardingEngine:
             employee.branch = application.recommended_branch
             employee.save(update_fields=["employment_status", "is_active", "branch"])
 
+        # Activate account — sets employee_email, temp password, AuthorityAssignment
+        from employees.services.activation import AccountActivationService, ActivationError
+        try:
+            activation_payload = AccountActivationService.activate(
+                employee=employee,
+                application=application,
+            )
+            record.activation_payload = activation_payload  # carry for email step later
+        except ActivationError as e:
+            # Log but don't block onboarding completion
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("AccountActivationService failed for employee %s: %s", employee.pk, e)
+
         # Link employee back to onboarding record
         record.employee = employee
         record.save(update_fields=["employee"])
+
         # Mark application as onboarding complete
         application.status = "onboarding_complete"
         application.save(update_fields=["status"])
 
         return record
+
+
 
     # =====================================================
     # STALL CHECKING

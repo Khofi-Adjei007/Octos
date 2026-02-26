@@ -156,3 +156,35 @@ class AuthorityAssignment(models.Model):
 
     def __str__(self):
         return f"{self.user} → {self.role.code} ({self.scope_type})"
+
+
+class RoleMapping(models.Model):
+    """
+    Maps a job title string (from recruitment) to an AuthorityRole.
+    This allows auto-assignment of AuthorityRole during employee activation
+    without hardcoding mappings in Python.
+
+    Managed via Django admin — no code deployment needed when roles change.
+    """
+    role_title = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="Job title string as it appears in recruitment e.g. 'Branch Manager'",
+    )
+    authority_role = models.ForeignKey(
+        AuthorityRole,
+        on_delete=models.PROTECT,
+        related_name="role_mappings",
+        help_text="The AuthorityRole this title maps to",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Inactive mappings are ignored during auto-assignment",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["role_title"]
+
+    def __str__(self):
+        return f"{self.role_title} → {self.authority_role.code}"
