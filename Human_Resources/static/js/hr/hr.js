@@ -14,6 +14,9 @@ import { applyBranchGradients } from './branches.js';
 
 import { loadEmployees } from './employees.js';
 
+import { initNotifications, bindMarkAllRead } from './notifications.js';
+
+
 /* -----------------------------------------
  * TEMP: PAYROLL LOADER
  * ----------------------------------------- */
@@ -35,6 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
  * ----------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Boot notifications — bell badge + dropdown
+  initNotifications();
+  bindMarkAllRead();
+
   /* -----------------------------
      REVIEW BUTTON (Event Delegation)
      Navigates directly to detail page.
@@ -53,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* -----------------------------
      CORE CONTEXT ROUTING
   ------------------------------ */
-initApp({
+  initApp({
     onOverview: loadOverview,
     onRecruitment: () => {
       loadRecruitment();
@@ -71,7 +78,7 @@ initApp({
 /* -----------------------------------------
    PROFILE DROPDOWN
 ----------------------------------------- */
-const profile = document.getElementById('userProfile');
+const profile  = document.getElementById('userProfile');
 const dropdown = document.getElementById('profileDropdown');
 
 if (profile && dropdown) {
@@ -82,23 +89,5 @@ if (profile && dropdown) {
 
   document.addEventListener('click', () => {
     dropdown.classList.remove('open');
-  });
-}
-
-
-/* -----------------------------------------
-   NOTIFICATION DROPDOWN
------------------------------------------ */
-const notificationWrapper = document.getElementById('notificationWrapper');
-const notificationDropdown = document.getElementById('notificationDropdown');
-
-if (notificationWrapper && notificationDropdown) {
-  notificationWrapper.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notificationDropdown.classList.toggle('open');
-  });
-
-  document.addEventListener('click', () => {
-    notificationDropdown.classList.remove('open');
   });
 }

@@ -11,9 +11,19 @@ from hr_workflows.models.recruitment_application import RecruitmentApplication, 
 from Human_Resources.constants import RecruitmentSource
 from branches.models import Branch
 from Human_Resources.models.job_position import JobPosition
+from notifications.services import notify_many
 
 
 logger = logging.getLogger(__name__)
+
+
+def _hr_managers(excluding=None):
+    """Return all active HR managers to notify. Extend this as your HR role model grows."""
+    from employees.models import Employee
+    qs = Employee.objects.filter(is_active=True, role__icontains="hr")
+    if excluding:
+        qs = qs.exclude(pk=excluding.pk)
+    return list(qs)
 
 
 class RecommendCandidateAPI(APIView):
@@ -23,7 +33,6 @@ class RecommendCandidateAPI(APIView):
     def post(self, request):
         data = request.data
 
-        # Safe display name for any user model
         def user_display(u):
             fn = getattr(u, "get_full_name", None)
             name = fn() if callable(fn) else None
@@ -38,7 +47,6 @@ class RecommendCandidateAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Must have either position_id or role_applied_for
         if not data.get("position_id") and not data.get("role_applied_for"):
             return Response(
                 {"error": "Please select a position."},
@@ -52,10 +60,7 @@ class RecommendCandidateAPI(APIView):
             try:
                 branch = Branch.objects.get(pk=branch_id)
             except Branch.DoesNotExist:
-                return Response(
-                    {"error": "Invalid branch."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return Response({"error": "Invalid branch."}, status=status.HTTP_400_BAD_REQUEST)
 
         # --- Resolve position FK ---
         position = None
@@ -64,10 +69,7 @@ class RecommendCandidateAPI(APIView):
             try:
                 position = JobPosition.objects.get(pk=position_id, is_active=True)
             except JobPosition.DoesNotExist:
-                return Response(
-                    {"error": "Invalid position selected."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return Response({"error": "Invalid position selected."}, status=status.HTTP_400_BAD_REQUEST)
 
         # --- Create Applicant ---
         applicant = Applicant.objects.create(
@@ -92,7 +94,6 @@ class RecommendCandidateAPI(APIView):
             priority           = "high",
         )
 
-        # Attach CV if uploaded
         if "resume" in request.FILES:
             application.resume = request.FILES["resume"]
 
@@ -107,6 +108,19 @@ class RecommendCandidateAPI(APIView):
             application.pk,
         )
 
+        # --- Notify HR managers ---
+        branch_label = branch.name if branch else "a branch"
+        notify_many(
+            recipients = _hr_managers(excluding=request.user),
+            verb       = "recommendation_submitted",
+            message    = (
+                f"{user_display(request.user)} recommended {applicant.first_name} {applicant.last_name} "
+                f"for {application.role_applied_for} from {branch_label}."
+            ),
+            link  = f"/hr/api/applications/{application.pk}/",
+            actor = request.user,
+        )
+
         return Response({
             "success":        True,
             "application_id": application.pk,
@@ -116,6 +130,7 @@ class RecommendCandidateAPI(APIView):
             "recommended_by": user_display(request.user),
         }, status=status.HTTP_201_CREATED)
 
+
 class RecommendationListAPI(APIView):
     """Returns recommendations made by the current user."""
     permission_classes = [permissions.IsAuthenticated]
@@ -123,26 +138,24 @@ class RecommendationListAPI(APIView):
     def get(self, request):
         applications = (
             RecruitmentApplication.objects
-            .filter(
-                source=RecruitmentSource.RECOMMENDATION,
-                recommended_by=request.user,
-            )
+            .filter(source=RecruitmentSource.RECOMMENDATION, recommended_by=request.user)
             .select_related("applicant", "recommended_branch")
             .order_by("-created_at")
         )
 
-        results = []
-        for app in applications:
-            results.append({
-                "id":           app.pk,
-                "applicant":    str(app.applicant),
-                "role":         app.role_applied_for,
-                "branch":       app.recommended_branch.name if app.recommended_branch else "—",
-                "stage":        app.current_stage,
-                "status":       app.status,
-                "priority":     app.priority,
-                "created_at":   app.created_at.strftime("%d %b %Y"),
-            })
+        results = [
+            {
+                "id":         app.pk,
+                "applicant":  str(app.applicant),
+                "role":       app.role_applied_for,
+                "branch":     app.recommended_branch.name if app.recommended_branch else "—",
+                "stage":      app.current_stage,
+                "status":     app.status,
+                "priority":   app.priority,
+                "created_at": app.created_at.strftime("%d %b %Y"),
+            }
+            for app in applications
+        ]
 
         return Response(results)
 
@@ -152,6 +165,7 @@ class JobPositionListAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        from Human_Resources.models.job_position import JobPosition
         positions = (
             JobPosition.objects
             .filter(is_active=True)

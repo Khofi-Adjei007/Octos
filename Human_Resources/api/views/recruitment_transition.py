@@ -11,13 +11,9 @@ from Human_Resources.recruitment_services.transitions import RecruitmentEngine
 from Human_Resources.recruitment_services.exceptions import InvalidTransition
 from Human_Resources.recruitment_services.permissions import RecruitmentPermissions
 from Human_Resources.api.serializers.recruitment_detail import RecruitmentDetailSerializer
+from Human_Resources.api.views._notify_helpers import get_hr_managers, user_display
+from notifications.services import notify, notify_many
 
-
-# =====================================================
-# ACTION → PERMISSION MAP
-# Every action requires a specific permission code.
-# No action is executable without the right role.
-# =====================================================
 
 ACTION_PERMISSION_MAP = {
     "start_screening":     RecruitmentPermissions.ADVANCE,
@@ -31,16 +27,23 @@ ACTION_PERMISSION_MAP = {
     "withdraw_offer":      RecruitmentPermissions.HIRE,
 }
 
+# Human-readable label for each action used in notification messages
+ACTION_LABEL_MAP = {
+    "start_screening":     "moved to Screening",
+    "schedule_interview":  "scheduled for Interview",
+    "complete_interview":  "completed Interview",
+    "submit_final_review": "moved to Final Review",
+    "approve":             "approved for hire",
+    "reject":              "rejected",
+    "accept_offer":        "accepted the offer",
+    "decline_offer":       "declined the offer",
+    "withdraw_offer":      "had their offer withdrawn",
+}
+
 
 def user_has_recruitment_permission(user, permission_code):
-    """
-    Returns True if the user holds any authority role
-    that grants the given permission code.
-    Superusers bypass all checks.
-    """
     if user.is_superuser:
         return True
-
     return user.authority_roles.filter(
         permissions__code=permission_code,
         permissions__is_active=True,
@@ -48,25 +51,10 @@ def user_has_recruitment_permission(user, permission_code):
 
 
 class RecruitmentTransitionAPI(APIView):
-    """
-    Recruitment Transition Endpoint
-
-    This layer does NOT contain business logic.
-    It delegates entirely to RecruitmentEngine.
-
-    Security layers in order:
-    1. Must be authenticated
-    2. Must have scope access to the application (query scope)
-    3. Must have role permission for the specific action
-    4. RecruitmentEngine enforces stage/state validity
-    5. Every successful transition is written to AuditLog
-    """
-
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
 
-        # Layer 1 — Scope: can this user see this application at all?
         queryset = scoped_recruitment_queryset(request.user)
         application = get_object_or_404(queryset, pk=pk)
 
@@ -78,7 +66,6 @@ class RecruitmentTransitionAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Layer 2 — Action validity: is this a known action?
         required_permission = ACTION_PERMISSION_MAP.get(action)
         if required_permission is None:
             return Response(
@@ -86,14 +73,12 @@ class RecruitmentTransitionAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Layer 3 — Permission: does this user's role allow this action?
         if not user_has_recruitment_permission(request.user, required_permission):
             return Response(
                 {"detail": "You do not have permission to perform this action."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # Layer 4 — Business logic: is this transition valid at this stage?
         try:
             RecruitmentEngine.perform_action(
                 application=application,
@@ -108,6 +93,27 @@ class RecruitmentTransitionAPI(APIView):
             )
 
         application.refresh_from_db()
+
+        # --- Notify ---
+        applicant_name = str(application.applicant)
+        action_label   = ACTION_LABEL_MAP.get(action, action.replace("_", " "))
+        message        = f"{applicant_name} has been {action_label} by {user_display(request.user)}."
+        link           = f"/hr/api/applications/{application.pk}/"
+
+        recipients = get_hr_managers(excluding=request.user)
+
+        # Also notify assigned reviewer if different from actor
+        reviewer = application.assigned_reviewer
+        if reviewer and reviewer.pk != request.user.pk:
+            recipients.append(reviewer)
+
+        notify_many(
+            recipients=recipients,
+            verb="stage_changed",
+            message=message,
+            link=link,
+            actor=request.user,
+        )
 
         serializer = RecruitmentDetailSerializer(
             application,

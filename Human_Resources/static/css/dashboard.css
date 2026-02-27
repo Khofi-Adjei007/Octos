@@ -862,98 +862,6 @@ main{
   pointer-events: auto;
   visibility: visible;
 }
-/* =========================================
-   NOTIFICATIONS
-========================================= */
-
-.notification-wrapper {
-  position: relative;
-}
-
-.notification-bell {
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 20px;
-  cursor: pointer;
-  position: relative;
-}
-
-.notification-bell:hover {
-  opacity: 0.85;
-}
-
-.notification-count {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  background: #ffffff;
-  color: #ff1e1e;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 20px;
-}
-.notification-dropdown {
-  position: absolute;
-  right: 0;
-  top: 38px;
-  width: 280px;
-  background: #ffffff;
-  color: #1f2937;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
-  transition: all 0.25s ease;
-  z-index: 2000;
-}
-
-.notification-wrapper.active .notification-dropdown {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.notification-header {
-  padding: 14px 16px;
-  font-weight: 600;
-  font-size: 14px;
-  border-bottom: 1px solid #f1f1f1;
-}
-
-.notification-item {
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.notification-item:hover {
-  background: #f9fafb;
-}
-
-.notification-item.unread strong {
-  font-weight: 600;
-}
-
-.notification-item span {
-  font-size: 11px;
-  color: #6b7280;
-}
-
-.notification-footer {
-  padding: 12px 16px;
-  font-size: 12px;
-  text-align: center;
-  border-top: 1px solid #f1f1f1;
-  cursor: pointer;
-}
-
 
 .mobile-menu-toggle {
   display: none;
@@ -1619,4 +1527,226 @@ main{
 
 .filter-dropdown:focus {
   border-color: #C0392B;
+}
+/* =========================================================
+   NOTIFICATION DROPDOWN — full styles
+========================================================= */
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-bell {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.notification-bell:hover {
+  opacity: 0.85;
+}
+
+.notification-count {
+  position: absolute;
+  top: -6px;
+  right: 18px;
+  background: #ffffff;
+  color: #ff1e1e;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Caret — sits next to bell icon */
+.notif-caret {
+  font-size: 14px;
+  color: #ffffff;
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.notif-caret.rotated {
+  transform: rotate(180deg);
+}
+
+/* ---- Dropdown panel ---- */
+.notification-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: 380px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.13);
+  z-index: 2000;
+  overflow: hidden;
+}
+
+.notification-dropdown.open {
+  display: block !important;
+}
+
+/* Pointer arrow above dropdown */
+.notif-arrow {
+  position: absolute;
+  top: -8px;
+  right: 18px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-left: 1px solid #e5e7eb;
+  border-top: 1px solid #e5e7eb;
+  transform: rotate(45deg);
+  border-radius: 2px 0 0 0;
+}
+
+/* ---- Header ---- */
+.notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #111;
+  border-bottom: 1px solid #f3f4f6;
+  position: relative;
+  z-index: 1;
+  background: #fff;
+}
+
+.notif-mark-all {
+  font-size: 11px;
+  font-weight: 500;
+  color: #dc2626;
+  text-decoration: none;
+}
+
+.notif-mark-all:hover {
+  text-decoration: underline;
+}
+
+/* ---- Body / scroll area ---- */
+.notification-body {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+/* ---- Section labels (Today / Earlier) ---- */
+.notif-section-label {
+  padding: 8px 16px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  background: #f9fafb;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* ---- Individual items ---- */
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f9fafb;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background: #f9fafb;
+}
+
+.notification-item.unread {
+  background: #fef9f9;
+  border-left: 3px solid #dc2626;
+}
+
+.notification-item.unread:hover {
+  background: #fef2f2;
+}
+
+.notif-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-verb {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+
+.notif-message {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #111827;
+  line-height: 1.45;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.notif-link {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #dc2626;
+  text-decoration: none;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.notif-link:hover {
+  text-decoration: underline;
+}
+
+/* ---- Empty / loading states ---- */
+.notification-empty,
+.notification-loading {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* ---- Footer ---- */
+.notification-footer {
+  padding: 10px 16px;
+  text-align: center;
+  border-top: 1px solid #f3f4f6;
+  font-size: 12px;
+}
+
+.notification-footer a {
+  color: #dc2626;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.notification-footer a:hover {
+  text-decoration: underline;
 }

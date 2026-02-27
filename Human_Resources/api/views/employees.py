@@ -9,6 +9,8 @@ from Human_Resources.services.query_scope import scoped_employee_queryset
 from Human_Resources.models import AuthorityRole
 from Human_Resources.models.authority import AuthorityAssignment
 from branches.models import Branch, Region
+from Human_Resources.api.views._notify_helpers import get_branch_manager, user_display
+from notifications.services import notify
 
 
 class EmployeeListAPI(APIView):
@@ -19,7 +21,6 @@ class EmployeeListAPI(APIView):
 
         employees = []
         for e in queryset.select_related("branch", "role"):
-            # Get current AuthorityAssignment
             assignment = (
                 AuthorityAssignment.objects
                 .filter(user=e, is_active=True)
@@ -69,11 +70,25 @@ class EmployeeApproveAPI(APIView):
             )
 
         employee.approved_at = timezone.now()
-        employee.is_active = True
+        employee.is_active   = True
         employee.save(update_fields=["approved_at", "is_active"])
 
+        # --- Notify the employee's branch manager ---
+        branch_manager = get_branch_manager(employee.branch)
+        if branch_manager:
+            notify(
+                recipient=branch_manager,
+                verb="employee_approved",
+                message=(
+                    f"{employee.first_name} {employee.last_name} has been approved "
+                    f"and is now active at {employee.branch.name}."
+                ),
+                link=f"/hr/api/employees/{employee.pk}/",
+                actor=request.user,
+            )
+
         return Response({
-            "success": True,
+            "success":     True,
             "employee_id": employee.pk,
             "approved_at": employee.approved_at.isoformat(),
         })
@@ -130,17 +145,14 @@ class EmployeeAssignRoleAPI(APIView):
         except AuthorityRole.DoesNotExist:
             return Response({"error": "Invalid role."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate scope
         if scope_type not in (role.allowed_scopes or []):
             return Response(
                 {"error": f"Role '{role.name}' does not allow scope '{scope_type}'."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Deactivate existing assignments
         AuthorityAssignment.objects.filter(user=employee, is_active=True).update(is_active=False)
 
-        # Build new assignment
         assignment = AuthorityAssignment(
             user=employee,
             role=role,
@@ -167,9 +179,9 @@ class EmployeeAssignRoleAPI(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
-            "success": True,
+            "success":    True,
             "employee_id": employee.pk,
-            "role": role.name,
-            "role_code": role.code,
-            "scope_type": scope_type,
+            "role":        role.name,
+            "role_code":   role.code,
+            "scope_type":  scope_type,
         })

@@ -10,6 +10,8 @@ from Human_Resources.recruitment_services.exceptions import InvalidTransition
 from Human_Resources.recruitment_services.permissions import RecruitmentPermissions
 from Human_Resources.api.views.recruitment_transition import user_has_recruitment_permission
 from Human_Resources.api.serializers.recruitment_detail import RecruitmentDetailSerializer
+from Human_Resources.api.views._notify_helpers import get_hr_managers, user_display
+from notifications.services import notify_many
 
 
 class ExtendOfferAPI(APIView):
@@ -20,14 +22,12 @@ class ExtendOfferAPI(APIView):
         queryset    = scoped_recruitment_queryset(request.user)
         application = get_object_or_404(queryset, pk=pk)
 
-        # Permission check
         if not user_has_recruitment_permission(request.user, RecruitmentPermissions.HIRE):
             return Response(
                 {"detail": "You do not have permission to extend offers."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # Validate required fields
         required = ['salary', 'employment_type', 'start_date']
         for field in required:
             if not request.data.get(field):
@@ -36,7 +36,6 @@ class ExtendOfferAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        # Save offer details
         JobOffer.objects.update_or_create(
             application=application,
             defaults={
@@ -51,7 +50,6 @@ class ExtendOfferAPI(APIView):
             }
         )
 
-        # Trigger approve transition — pass a plain dict, not request.data
         try:
             RecruitmentEngine.perform_action(
                 application=application,
@@ -66,6 +64,19 @@ class ExtendOfferAPI(APIView):
             )
 
         application.refresh_from_db()
+
+        # --- Notify HR managers ---
+        notify_many(
+            recipients=get_hr_managers(excluding=request.user),
+            verb="offer_extended",
+            message=(
+                f"{user_display(request.user)} extended an offer to "
+                f"{application.applicant} for {application.role_applied_for}."
+            ),
+            link=f"/hr/api/applications/{application.pk}/",
+            actor=request.user,
+        )
+
         serializer = RecruitmentDetailSerializer(
             application,
             context={"request": request},

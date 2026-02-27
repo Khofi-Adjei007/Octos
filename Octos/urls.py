@@ -30,6 +30,7 @@ urlpatterns = [
     path("api/", include("branches.urls")),
     path("api/jobs/", include("jobs.urls")),
     path("api/jobs/", include(("jobs.api.urls", "jobs_api"), namespace="jobs_api")),
+    path("notifications/api/", include(("notifications.urls", "notifications"), namespace="notifications")),
 ]
 if settings.DEBUG:
     urlpatterns += [
