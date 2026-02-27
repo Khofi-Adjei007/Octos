@@ -17,7 +17,7 @@ def get_hr_managers(excluding=None):
     qs = User.objects.filter(
         is_active=True,
         authority_assignments__is_active=True,
-        authority_assignments__role__code__icontains="HR",
+        authority_assignments__role__code__in=["HR_ADMIN", "BELT_HR_OVERSEER"],
     ).distinct()
     if excluding:
         qs = qs.exclude(pk=excluding.pk)

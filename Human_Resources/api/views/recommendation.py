@@ -18,13 +18,15 @@ logger = logging.getLogger(__name__)
 
 
 def _hr_managers(excluding=None):
-    """Return all active HR managers to notify. Extend this as your HR role model grows."""
     from employees.models import Employee
-    qs = Employee.objects.filter(is_active=True, role__icontains="hr")
+    qs = Employee.objects.filter(
+        is_active=True,
+        authority_assignments__is_active=True,
+        authority_assignments__role__code__in=["HR_ADMIN", "BELT_HR_OVERSEER"],
+    ).distinct()
     if excluding:
         qs = qs.exclude(pk=excluding.pk)
     return list(qs)
-
 
 class RecommendCandidateAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
