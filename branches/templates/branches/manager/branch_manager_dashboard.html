@@ -10,31 +10,41 @@
 </head>
 <body class="bg-gray-50 text-slate-800 antialiased">
 
-  <!-- Sticky header (Farhat theme: red + white) -->
+  <!-- ================================================
+       STICKY HEADER
+  ================================================ -->
   <header class="sticky top-0 z-50 bg-white border-b shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-4">
-          <a href="#" class="inline-flex items-center gap-3">
-            <img src="{% static 'images/farhat-logo-small.png' %}" alt="Farhat" class="h-12 w-12 object-contain">
-            <div class="leading-tight">
-              <div class="text-base font-semibold text-red-700">Farhat</div>
-              <div class="text-xs text-slate-500">{{ branch_display|default:"Branch Dashboard" }}</div>
-            </div>
-          </a>
-        </div>
 
-        <!-- right: quick actions + profile -->
+      <!-- Top row: logo + actions -->
+      <div class="flex items-center justify-between h-16">
+
+        <!-- Logo -->
+        <a href="#" class="inline-flex items-center gap-3">
+          <img src="{% static 'images/farhat-logo-small.png' %}" alt="Farhat" class="h-12 w-12 object-contain">
+          <div class="leading-tight">
+            <div class="text-base font-semibold text-red-700">Farhat</div>
+            <div class="text-xs text-slate-500">{{ branch_display|default:"Branch Dashboard" }}</div>
+          </div>
+        </a>
+
+        <!-- Right: quick actions + profile -->
         <div class="flex items-center gap-3">
-          <button id="openQuickJobBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-600 text-white text-sm shadow-sm hover:bg-red-700">
+          <button id="openQuickJobBtn"
+            class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-600 text-white text-sm shadow-sm hover:bg-red-700">
             + Outsource
           </button>
+          <button id="btn-recommend-candidate" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white text-red-700 border border-red-300 text-sm shadow-sm hover:bg-red-50">
+          + Recommend
+        </button>
 
-          <!-- profile / avatar -->
+          <!-- Profile avatar + dropdown -->
           <div class="relative" id="profileRoot">
-            <button id="profileBtn" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300">
+            <button id="profileBtn" aria-haspopup="true" aria-expanded="false"
+              class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300">
               {% if profile_picture_url %}
-                <img src="{{ profile_picture_url }}" alt="Profile" class="h-10 w-10 rounded-full object-cover border">
+                <img src="{{ profile_picture_url }}" alt="Profile"
+                  class="h-10 w-10 rounded-full object-cover border">
               {% else %}
                 <div class="h-10 w-10 rounded-full bg-red-100 text-red-700 font-semibold flex items-center justify-center border">
                   {{ request.user.first_name|default:""|slice:":1" }}{{ request.user.last_name|default:""|slice:":1" }}
@@ -42,69 +52,102 @@
               {% endif %}
             </button>
 
-            <!-- popup: hidden by default -->
-            <div id="profilePopup" class="hidden absolute right-0 mt-2 w-44 bg-white border rounded-md shadow-lg py-2 z-50">
+            <div id="profilePopup"
+              class="hidden absolute right-0 mt-2 w-44 bg-white border rounded-md shadow-lg py-2 z-50">
               <div class="px-3 py-2 text-sm text-slate-800">
                 <div class="font-medium">{{ request.user.first_name }} {{ request.user.last_name }}</div>
-                <div class="text-xs text-slate-500">{{ request.user.email }}</div>
+                <div class="text-xs text-slate-500">{{ request.user.employee_email }}</div>
               </div>
               <div class="border-t"></div>
               <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-50">Profile</a>
               <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-50">Settings</a>
-              <a href="{{ logout_url|default:'#' }}" class="block px-3 py-2 text-sm text-red-600 hover:bg-gray-50">Sign out</a>
+              <a href="{{ logout_url|default:'#' }}"
+                class="block px-3 py-2 text-sm text-red-600 hover:bg-gray-50">Sign out</a>
             </div>
           </div>
         </div>
       </div>
 
-   {# Mobile tabs under header's first row but still inside header so sticky #}
-<div class="md:hidden py-2 bg-red-600">
-  <div class="relative">
-    <!-- compact mobile nav: smaller padding & font to reduce overflow -->
-    <nav id="mobileTabNav" class="flex gap-2 overflow-x-auto no-scrollbar px-1" aria-label="Mobile branch tabs">
-      <button data-tab="overview" class="tab-btn px-2 py-1 text-xs rounded-full bg-red-600 text-white" aria-pressed="true">Overview</button>
-      <button data-tab="sheets"  class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Daily Sheets</button>
-      <button data-tab="queue"   class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Queue</button>
-      <button data-tab="team"    class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Team</button>
-      <button data-tab="reports" class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">Reports</button>
-      <button data-tab="history" class="tab-btn px-2 py-1 text-xs rounded-full bg-white border">History</button>
-    </nav>
-
-    <!-- mobile underline (same behavior as desktop's) -->
-    <div id="mobileTabUnderline" aria-hidden="true" class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left" style="width:0; left:0;"></div>
-  </div>
-</div>
+      <!-- Mobile tab nav -->
+      <div class="md:hidden py-2 bg-red-600">
+        <div class="relative">
+          <nav id="mobileTabNav"
+            class="flex gap-2 overflow-x-auto no-scrollbar px-1"
+            aria-label="Mobile branch tabs">
+            <button data-tab="overview"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-white text-red-700 font-semibold"
+              aria-pressed="true">Overview</button>
+            <button data-tab="sheets"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-transparent text-white border border-white/40">Daily Sheets</button>
+            <button data-tab="queue"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-transparent text-white border border-white/40">Queue</button>
+            <button data-tab="team"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-transparent text-white border border-white/40">Team</button>
+            <button data-tab="reports"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-transparent text-white border border-white/40">Reports</button>
+            <button data-tab="history"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-transparent text-white border border-white/40">History</button>
+            <button data-tab="profile"
+              class="tab-btn px-2 py-1 text-xs rounded-full bg-transparent text-white border border-white/40">Profile</button>
+          </nav>
+          <div id="mobileTabUnderline" aria-hidden="true"
+            class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left"
+            style="width:0; left:0;"></div>
+        </div>
+      </div>
 
     </div>
   </header>
 
-<!-- Sticky secondary tab bar (desktop only) - with sliding yellow underline -->
-<div class="hidden md:block sticky top-16 z-40 bg-red-600 text-white border-b shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="relative">
-      <nav id="managerTabNav" class="flex items-center gap-3 h-12 relative z-10">
-        <button data-tab="overview" class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Overview</button>
-        <button data-tab="sheets"  class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Daily Sheets</button>
-        <button data-tab="queue"   class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Queue</button>
-        <button data-tab="team"    class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Team</button>
-        <button data-tab="reports" class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">Reports</button>
-        <button data-tab="history" class="tab-btn px-3 py-1 rounded-full text-sm bg-transparent " aria-pressed="false">History</button>
-      </nav>
-
-      <!-- sliding indicator: positioned at bottom of nav; will translate/resize via JS -->
-      <div id="tabUnderline" aria-hidden="true" class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left" style="width:0; left:0;"></div>
+  <!-- ================================================
+       STICKY DESKTOP TAB BAR
+  ================================================ -->
+  <div class="hidden md:block sticky top-16 z-40 bg-red-600 text-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="relative">
+        <nav id="managerTabNav" class="flex items-center gap-1 h-12 relative z-10">
+          <button data-tab="overview"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white"
+            aria-pressed="true">Overview</button>
+          <button data-tab="sheets"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white/80"
+            aria-pressed="false">Daily Sheets</button>
+          <button data-tab="queue"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white/80"
+            aria-pressed="false">Queue</button>
+          <button data-tab="team"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white/80"
+            aria-pressed="false">Team</button>
+          <button data-tab="reports"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white/80"
+            aria-pressed="false">Reports</button>
+          <button data-tab="history"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white/80"
+            aria-pressed="false">History</button>
+          <button data-tab="profile"
+            class="tab-btn px-4 py-1 rounded-full text-sm font-medium bg-transparent text-white/80"
+            aria-pressed="false">Profile</button>
+        </nav>
+        <div id="tabUnderline" aria-hidden="true"
+          class="absolute bottom-0 h-1 bg-yellow-400 rounded transition-transform duration-200 ease-in-out transform origin-left"
+          style="width:0; left:0;"></div>
+      </div>
     </div>
   </div>
-</div>
 
-
-  <!-- Page content flows under header -->
+  <!-- ================================================
+       MAIN CONTENT
+  ================================================ -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-4">
 
-    <!-- Overview Tab Panel -->
+    <!-- ----------------------------------------
+         OVERVIEW TAB
+    ---------------------------------------- -->
     <section id="tab-overview" class="tab-panel">
-      <!-- Top KPI row -->
+
+      <!-- KPI row -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
         <div class="bg-white rounded-2xl p-4 shadow-sm border">
           <div class="flex items-center justify-between">
             <div class="text-sm text-slate-500">Today's Jobs</div>
@@ -151,23 +194,36 @@
             <div class="text-xs text-slate-500">awaiting settlement</div>
           </div>
         </div>
+
       </div>
 
-      <!-- Queue + right column -->
+      <!-- Queue + sidebar -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
         <div class="lg:col-span-2 space-y-6">
+
           <!-- Quick action bar -->
           <div class="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border">
             <div class="flex items-center gap-3">
-              <button id="openQuickJobBtnInner" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 text-white text-sm">
-                + Record job
+              <button id="openQuickJobBtnInner"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700">
+                + Record Job
               </button>
-              <button id="overviewNewSheetBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border text-sm hover:bg-slate-50">New Sheet</button>
-              <button class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border text-sm hover:bg-slate-50">Print</button>
+              <button id="overviewNewSheetBtn"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border text-sm hover:bg-slate-50">
+                New Sheet
+              </button>
+              <button
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border text-sm hover:bg-slate-50">
+                Print
+              </button>
             </div>
-            <div class="text-sm text-slate-600">Last sync: <span class="font-medium">a few seconds ago</span></div>
+            <div class="text-sm text-slate-600">
+              Last sync: <span class="font-medium">a few seconds ago</span>
+            </div>
           </div>
 
+          <!-- Jobs queue table -->
           <div class="bg-white rounded-xl p-4 shadow-sm border">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-medium">Jobs Queue</h3>
@@ -175,62 +231,85 @@
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
-                <thead class="text-slate-500 text-left uppercase tracking-wider">
+                <thead class="text-slate-500 text-left uppercase tracking-wider text-xs">
                   <tr>
-                    <th class="py-2">#</th><th class="py-2">Customer</th><th class="py-2">Service</th>
-                    <th class="py-2">Qty</th><th class="py-2">Amount</th><th class="py-2">Status</th><th class="py-2">Actions</th>
+                    <th class="py-2">#</th>
+                    <th class="py-2">Customer</th>
+                    <th class="py-2">Service</th>
+                    <th class="py-2">Qty</th>
+                    <th class="py-2">Amount</th>
+                    <th class="py-2">Status</th>
+                    <th class="py-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% if queue_items %}
                     {% for job in queue_items %}
-                      <tr class="border-t">
+                      <tr class="border-t hover:bg-slate-50">
                         <td class="py-3">{{ forloop.counter }}</td>
-                        <td class="py-3">{% if job.customer_name %}{{ job.customer_name }}{% else %}{{ job.customer_phone }}{% endif %}</td>
+                        <td class="py-3">
+                          {% if job.customer_name %}{{ job.customer_name }}{% else %}{{ job.customer_phone }}{% endif %}
+                        </td>
                         <td class="py-3">{{ job.service_name }}</td>
                         <td class="py-3">{{ job.quantity }}</td>
                         <td class="py-3">GHS {{ job.total_amount }}</td>
                         <td class="py-3">
-                          <span class="px-2 py-1 rounded-full text-xs {% if job.status == 'OPEN' %}bg-yellow-100 text-yellow-800{% elif job.status == 'DONE' %}bg-green-100 text-green-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ job.status }}</span>
+                          <span class="px-2 py-1 rounded-full text-xs
+                            {% if job.status == 'OPEN' %}bg-yellow-100 text-yellow-800
+                            {% elif job.status == 'DONE' %}bg-green-100 text-green-800
+                            {% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {{ job.status }}
+                          </span>
                         </td>
                         <td class="py-3">
-                          <div class="flex gap-2"><a href="#" class="text-sm text-sky-600 hover:underline">Open</a><a href="#" class="text-sm text-slate-600">Print</a></div>
+                          <div class="flex gap-2">
+                            <a href="#" class="text-sm text-sky-600 hover:underline">Open</a>
+                            <a href="#" class="text-sm text-slate-600 hover:underline">Print</a>
+                          </div>
                         </td>
                       </tr>
                     {% endfor %}
                   {% else %}
-                    <tr class="border-t"><td colspan="7" class="py-6 text-center text-slate-500">No jobs in queue</td></tr>
+                    <tr class="border-t">
+                      <td colspan="7" class="py-6 text-center text-slate-500">No jobs in queue</td>
+                    </tr>
                   {% endif %}
                 </tbody>
               </table>
             </div>
           </div>
 
+          <!-- Recent activity -->
           <div class="bg-white rounded-xl p-4 shadow-sm border">
-            <h3 class="text-lg font-medium mb-3">Recent activity</h3>
+            <h3 class="text-lg font-medium mb-3">Recent Activity</h3>
             <ul class="space-y-3 text-sm text-slate-600">
               {% for event in recent_messages %}
-                <li class="flex items-start gap-3"><div class="w-2 h-2 mt-2 rounded-full bg-slate-400"></div>
-                  <div><div class="text-slate-800">{{ event.title }}</div><div class="text-xs text-slate-500">{{ event.created_at }}</div></div>
+                <li class="flex items-start gap-3">
+                  <div class="w-2 h-2 mt-2 rounded-full bg-slate-400 flex-shrink-0"></div>
+                  <div>
+                    <div class="text-slate-800">{{ event.title }}</div>
+                    <div class="text-xs text-slate-500">{{ event.created_at }}</div>
+                  </div>
                 </li>
               {% empty %}
                 <li class="text-slate-500">No recent activity</li>
               {% endfor %}
             </ul>
           </div>
+
         </div>
 
+        <!-- Sidebar -->
         <aside class="space-y-6">
 
-            <!-- WhatsApp messages (skeleton) -->
           <div class="bg-white rounded-xl p-4 shadow-sm border">
             <h4 class="text-sm font-medium mb-3">WhatsApp Messages</h4>
             <div class="text-xs text-slate-500 mb-2">Messages for this branch (live)</div>
-            <div class="h-36 overflow-auto text-sm text-slate-600"><div class="space-y-3"><div class="text-xs text-slate-500">No messages</div></div></div>
+            <div class="h-36 overflow-auto text-sm text-slate-600">
+              <div class="text-xs text-slate-500">No messages</div>
+            </div>
           </div>
-          <!-- end of WhatsApp messages -->
 
-          <!--Shortcuts-->
           <div class="bg-white rounded-xl p-4 shadow-sm border">
             <h4 class="text-sm font-medium mb-3">Shortcuts</h4>
             <div class="grid grid-cols-2 gap-2">
@@ -240,35 +319,127 @@
               <a href="#" class="px-3 py-2 rounded-md bg-slate-50 hover:bg-slate-100 text-sm">Export</a>
             </div>
           </div>
-          <!-- end of Shortcuts -->
+
         </aside>
       </div>
     </section>
 
-    <!-- Daily Sheets tab panel (inline partial) -->
+    <!-- ----------------------------------------
+         DAILY SHEETS TAB
+    ---------------------------------------- -->
     {% include 'branches/manager/_daysheet_panel.html' %}
 
-    
-    <!-- History tab (skeleton) -->
-    <section id="tab-history" class="tab-panel hidden">
-      <div class="bg-white rounded-xl p-4 shadow-sm border mb-6">
-        <h3 class="text-lg font-medium">Activity History</h3>
-        <p class="text-sm text-slate-500 mt-2">Showing most recent branch activities and job events.</p>
+    <!-- ----------------------------------------
+         QUEUE TAB
+    ---------------------------------------- -->
+    <section id="tab-queue" class="tab-panel hidden">
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <h3 class="text-lg font-medium">Live Queue</h3>
+        <p class="text-sm text-slate-500 mt-2">Real-time job queue for this branch.</p>
       </div>
     </section>
 
-    <!-- Settings tab (skeleton) -->
-    <section id="tab-settings" class="tab-panel hidden">
+    <!-- ----------------------------------------
+         TEAM TAB
+    ---------------------------------------- -->
+    <section id="tab-team" class="tab-panel hidden">
       <div class="bg-white rounded-xl p-4 shadow-sm border">
-        <h3 class="text-lg font-medium">Settings</h3>
-        <p class="text-sm text-slate-500 mt-2">Branch-specific settings and preferences.</p>
+        <h3 class="text-lg font-medium">Team</h3>
+        <p class="text-sm text-slate-500 mt-2">Branch staff and shift assignments.</p>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------
+         REPORTS TAB
+    ---------------------------------------- -->
+    <section id="tab-reports" class="tab-panel hidden">
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <h3 class="text-lg font-medium">Reports</h3>
+        <p class="text-sm text-slate-500 mt-2">Branch performance reports and exports.</p>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------
+         HISTORY TAB
+    ---------------------------------------- -->
+    <section id="tab-history" class="tab-panel hidden">
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <h3 class="text-lg font-medium">Activity History</h3>
+        <p class="text-sm text-slate-500 mt-2">Most recent branch activities and job events.</p>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------
+         PROFILE TAB
+    ---------------------------------------- -->
+    <section id="tab-profile" class="tab-panel hidden">
+      <div class="max-w-3xl mx-auto py-6">
+        {% include 'components/employee_id_card.html' %}
       </div>
     </section>
 
   </main>
 
-  <!-- Safe JS -->
-<script src="{% static 'branch/main_branch_file.js' %}"></script>
-
+  
+  <script src="{% static 'branch/main_branch_file.js' %}"></script>
+<style>
+  .tab-panel {
+    display: block !important;
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+  .tab-panel.active {
+    opacity: 1;
+    visibility: visible;
+    height: auto;
+    overflow: visible;
+    pointer-events: all;
+  }
+</style>
+<script type="module">
+  import { initRecommend } from "{% static 'branch/recommend.js' %}";
+  initRecommend();
+</script>
+<style>
+.rec-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.rec-modal-box{background:#fff;border-radius:12px;width:100%;max-width:560px;box-shadow:0 12px 40px rgba(0,0,0,0.2);overflow:hidden}
+.rec-modal-header{background:linear-gradient(135deg,#C0392B,#922b21);padding:18px 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.rec-modal-header h3{color:#fff;font-size:16px;font-weight:bold;margin:0 0 4px 0}
+.rec-modal-header p{color:rgba(255,255,255,0.8);font-size:12px;margin:0}
+.rec-modal-close{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0;opacity:0.8}
+.rec-modal-close:hover{opacity:1}
+.rec-modal-body{padding:20px 24px}
+.rec-form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.rec-form-group{display:flex;flex-direction:column;gap:5px}
+.rec-form-full{margin-bottom:14px}
+.rec-form-group label{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.4px}
+.rec-required{color:#C0392B}
+.rec-form-group input,.rec-form-group select,.rec-form-group textarea{padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;color:#333;outline:none;transition:border-color 0.15s;width:100%;box-sizing:border-box}
+.rec-form-group input:focus,.rec-form-group select:focus,.rec-form-group textarea:focus{border-color:#C0392B}
+.rec-form-group textarea{resize:vertical;min-height:80px}
+.rec-error{background:#fdecea;border-left:4px solid #C0392B;padding:10px 14px;font-size:13px;color:#C0392B;border-radius:4px;margin-top:8px}
+.rec-success{background:#eafaf1;border-left:4px solid #27ae60;padding:10px 14px;font-size:13px;color:#1e8449;border-radius:4px;margin-top:8px}
+.rec-modal-footer{padding:14px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:10px}
+.rec-btn-cancel{background:#f4f4f4;border:1px solid #ddd;color:#555;padding:9px 20px;border-radius:6px;font-size:14px;cursor:pointer}
+.rec-btn-submit{background:#C0392B;border:none;color:#fff;padding:9px 24px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600}
+.rec-btn-submit:hover{background:#a93226}
+.rec-btn-submit:disabled{background:#ccc;cursor:not-allowed}
+.rec-form-group input[type="file"] {
+  padding: 6px;
+  border: 1px dashed #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #fafafa;
+}
+.rec-form-group input[type="file"]:hover {
+  border-color: #C0392B;
+  background: #fdecea;
+}
+</style>
 </body>
 </html>

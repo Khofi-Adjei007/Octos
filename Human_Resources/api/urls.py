@@ -7,6 +7,7 @@ from Human_Resources.api.views.branches import BranchListAPI
 from .views.recruitment_transition import RecruitmentTransitionAPI
 from Human_Resources.api.views.interviewers import InterviewerListAPI
 from Human_Resources.api.views.job_offer import ExtendOfferAPI
+from Human_Resources.api.views.recommendation import RecommendCandidateAPI, RecommendationListAPI
 from Human_Resources.api.views.employees import (
     EmployeeListAPI,
     EmployeeApproveAPI,
@@ -21,7 +22,11 @@ from Human_Resources.api.views.onboarding import (
     OnboardingStatusAPI,
     OnboardingCountAPI,
 )
-
+from Human_Resources.api.views.recommendation import (
+    RecommendCandidateAPI,
+    RecommendationListAPI,
+    JobPositionListAPI,
+)
 app_name = "hr_api"
 
 urlpatterns = [
@@ -43,4 +48,7 @@ urlpatterns = [
     path("employees/<int:pk>/approve/", EmployeeApproveAPI.as_view(), name="employee-approve"),
     path("employees/<int:pk>/assign-role/", EmployeeAssignRoleAPI.as_view(), name="employee-assign-role"),
     path("employees/role-options/", EmployeeRoleOptionsAPI.as_view(), name="employee-role-options"),
+    path("recommendations/", RecommendCandidateAPI.as_view(), name="recommend-candidate"),
+    path("recommendations/list/", RecommendationListAPI.as_view(), name="recommendation-list"),
+    path("positions/", JobPositionListAPI.as_view(), name="job-positions"),
 ]

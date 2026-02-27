@@ -3,3 +3,4 @@ from .role import Role
 from .permission import Permission, RolePermission
 from .audit import AuditLog
 from .authority import Belt, AuthorityRole, AuthorityAssignment, RoleMapping
+from .job_position import JobPosition

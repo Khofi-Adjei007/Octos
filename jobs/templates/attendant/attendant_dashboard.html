@@ -79,6 +79,7 @@
     <button data-tab="job" class="tab-btn px-2 md:px-3 py-1 text-xs md:text-[13px] font-medium rounded-full bg-transparent text-white" aria-pressed="false">▶️ Job</button>
     <button data-tab="overview" class="tab-btn px-2 md:px-3 py-1 text-xs md:text-[13px] font-medium rounded-full bg-transparent text-white" aria-pressed="false">📊 Overview</button>
     <button data-tab="history" class="tab-btn px-2 md:px-3 py-1 text-xs md:text-[13px] font-medium rounded-full bg-transparent text-white" aria-pressed="false">🕘 History</button>
+    <button data-tab="profile" class="tab-btn ...">Profile</button>
   </nav>
 
   <!-- updated underline -->
@@ -102,6 +103,7 @@
       <button data-tab="job" class="tab-btn px-2 py-1 text-xs font-medium rounded-full bg-white text-red-700" aria-pressed="true">▶️ Job</button>
       <button data-tab="overview" class="tab-btn px-2 py-1 text-xs font-medium rounded-full bg-red-50 text-gray-700">📊 Overview</button>
       <button data-tab="history" class="tab-btn px-2 py-1 text-xs font-medium rounded-full bg-red-50 text-gray-700">🕘 History</button>
+      <button data-tab="profile" class="tab-btn ...">Profile</button>
     </nav>
 
     <div id="attMobileUnderline"
@@ -224,7 +226,12 @@
     <p class="text-xs text-gray-600">Press Record Job for quick logs. Use Create Walk-In Job for detailed entries.</p>
   </div>
 </aside>
-
+<!-- Profile tab panel -->
+<section id="tab-profile" class="tab-panel hidden">
+  <div class="max-w-2xl mx-auto py-6">
+    {% include 'components/employee_id_card.html' %}
+  </div>
+</section>
   </main>
   {% include 'attendant/quick_record_modal.html' %}
   <!-- WALK-IN modal (detailed form) -->

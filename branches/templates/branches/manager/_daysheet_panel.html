@@ -1,4 +1,5 @@
 {# branches/templates/branches/manager/_daysheet_panel.html #}
+<section id="tab-sheets" class="tab-panel hidden">
 <div class="bg-white rounded-xl p-5 shadow-sm border space-y-6">
 
   <!-- Header -->
@@ -85,7 +86,6 @@
         </thead>
 
         <tbody id="shiftsTbody">
-          
           {% if recent_shifts %}
             {% for s in recent_shifts %}
               <tr class="border-t">
@@ -139,3 +139,4 @@
   </div>
 
 </div>
+</section>

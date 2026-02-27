@@ -1,0 +1,469 @@
+<!-- templates/components/employee_id_card.html -->
+
+
+<div class="id-card-wrapper" id="id-card-wrapper">
+
+  <!-- ID CARD -->
+  <div class="id-card" id="digital-id-card">
+
+    <!-- Card Header -->
+    <div class="id-card-header">
+      <div class="id-card-company">
+        <div class="id-card-logo">FPP</div>
+        <div class="id-card-company-info">
+          <div class="id-card-company-name">Farhat Printing Press</div>
+          <div class="id-card-company-sub">Employee Identification Card</div>
+        </div>
+      </div>
+      <div class="id-card-status-dot" id="id-card-status-dot"></div>
+    </div>
+
+    <!-- Card Body -->
+    <div class="id-card-body">
+
+      <!-- Left: Avatar -->
+      <div class="id-card-avatar-section">
+        <div class="id-card-avatar" id="id-card-avatar">
+          <span id="id-card-initials">--</span>
+          <img id="id-card-photo" src="" alt="" style="display:none"/>
+        </div>
+        <!-- QR Code -->
+        <div class="id-card-qr">
+          <img id="id-card-qr-img" src="" alt="QR Code"/>
+        </div>
+      </div>
+
+      <!-- Right: Info -->
+      <div class="id-card-info">
+        <div class="id-card-name" id="id-card-name">— —</div>
+        <div class="id-card-role" id="id-card-role">—</div>
+
+        <div class="id-card-divider"></div>
+
+        <div class="id-card-meta-row">
+          <span class="id-card-meta-label">ID</span>
+          <span class="id-card-meta-value" id="id-card-emp-id">—</span>
+        </div>
+        <div class="id-card-meta-row">
+          <span class="id-card-meta-label">Branch</span>
+          <span class="id-card-meta-value" id="id-card-branch">—</span>
+        </div>
+        <div class="id-card-meta-row">
+          <span class="id-card-meta-label">Dept</span>
+          <span class="id-card-meta-value" id="id-card-dept">—</span>
+        </div>
+        <div class="id-card-meta-row">
+          <span class="id-card-meta-label">Type</span>
+          <span class="id-card-meta-value" id="id-card-type">—</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Card Footer -->
+    <div class="id-card-footer">
+      <span id="id-card-footer-id">FPP-XX-XXXX-XXXX-X</span>
+      <span class="id-card-footer-year">© 2026 Farhat Printing Press</span>
+    </div>
+
+  </div>
+  <!-- END ID CARD -->
+
+  <!-- Profile details panel -->
+  <div class="id-profile-details">
+    <h4 class="id-profile-title">Profile Details</h4>
+
+    <div class="id-profile-row">
+      <i class="ri-mail-line"></i>
+      <div>
+        <div class="id-profile-label">Email</div>
+        <div class="id-profile-value" id="id-profile-email">—</div>
+      </div>
+    </div>
+    <div class="id-profile-row">
+      <i class="ri-phone-line"></i>
+      <div>
+        <div class="id-profile-label">Phone</div>
+        <div class="id-profile-value" id="id-profile-phone">—</div>
+      </div>
+    </div>
+    <div class="id-profile-row">
+      <i class="ri-building-line"></i>
+      <div>
+        <div class="id-profile-label">Branch</div>
+        <div class="id-profile-value" id="id-profile-branch">—</div>
+      </div>
+    </div>
+    <div class="id-profile-row">
+      <i class="ri-shield-user-line"></i>
+      <div>
+        <div class="id-profile-label">Role</div>
+        <div class="id-profile-value" id="id-profile-role">—</div>
+      </div>
+    </div>
+    <div class="id-profile-row">
+      <i class="ri-id-card-line"></i>
+      <div>
+        <div class="id-profile-label">Employment Type</div>
+        <div class="id-profile-value" id="id-profile-type">—</div>
+      </div>
+    </div>
+    <div class="id-profile-row">
+      <i class="ri-checkbox-circle-line"></i>
+      <div>
+        <div class="id-profile-label">Status</div>
+        <div class="id-profile-value" id="id-profile-status">—</div>
+      </div>
+    </div>
+
+    <div class="id-profile-actions">
+      <button class="id-action-btn" onclick="window.print()">
+        <i class="ri-printer-line"></i> Print Card
+      </button>
+      <a href="/employees/password-change/" class="id-action-btn id-action-btn-outline">
+        <i class="ri-lock-password-line"></i> Change Password
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* =============================================
+   DIGITAL ID CARD — SELF-CONTAINED STYLES
+============================================= */
+.id-card-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* --- The Card --- */
+.id-card {
+  width: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  background: #fff;
+  flex-shrink: 0;
+  font-family: Arial, sans-serif;
+}
+
+.id-card-header {
+  background: linear-gradient(135deg, #C0392B 0%, #922b21 100%);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.id-card-company {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.id-card-logo {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.id-card-company-name {
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.id-card-company-sub {
+  color: rgba(255,255,255,0.75);
+  font-size: 10px;
+}
+
+.id-card-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.id-card-body {
+  padding: 16px 18px;
+  display: flex;
+  gap: 14px;
+  background: #fff;
+}
+
+.id-card-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.id-card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C0392B, #922b21);
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid #f0f0f0;
+  position: relative;
+}
+
+.id-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.id-card-qr {
+  width: 64px;
+  height: 64px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.id-card-qr img {
+  width: 100%;
+  height: 100%;
+}
+
+.id-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.id-card-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1a1a1a;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.id-card-role {
+  font-size: 11px;
+  color: #C0392B;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.id-card-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.id-card-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.id-card-meta-label {
+  font-size: 10px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.id-card-meta-value {
+  font-size: 11px;
+  color: #333;
+  font-weight: 500;
+  text-align: right;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id-card-footer {
+  background: #1a1a1a;
+  padding: 8px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.id-card-footer span {
+  color: rgba(255,255,255,0.7);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+
+/* --- Profile Details Panel --- */
+.id-profile-details {
+  flex: 1;
+  min-width: 240px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+
+.id-profile-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.id-profile-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.id-profile-row i {
+  color: #C0392B;
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.id-profile-label {
+  font-size: 11px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.id-profile-value {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+}
+
+.id-profile-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.id-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #C0392B;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.id-action-btn:hover {
+  background: #a93226;
+  color: #fff;
+}
+
+.id-action-btn-outline {
+  background: #fff;
+  color: #C0392B;
+  border: 1px solid #C0392B;
+}
+
+.id-action-btn-outline:hover {
+  background: #fdecea;
+}
+
+/* Print styles */
+@media print {
+  body * { visibility: hidden; }
+  .id-card, .id-card * { visibility: visible; }
+  .id-card { position: fixed; top: 20mm; left: 20mm; }
+  .id-profile-details { display: none; }
+}
+</style>
+
+<script>
+(function() {
+  async function loadIdCard() {
+    try {
+      const res = await fetch("/employees/api/id-card/");
+      const d   = await res.json();
+
+      // Avatar
+      if (d.profile_pic_url) {
+        const img = document.getElementById("id-card-photo");
+        img.src = d.profile_pic_url;
+        img.style.display = "block";
+        document.getElementById("id-card-initials").style.display = "none";
+      } else {
+        document.getElementById("id-card-initials").textContent = d.initials;
+      }
+
+      // QR
+      document.getElementById("id-card-qr-img").src = `data:image/png;base64,${d.qr_code}`;
+
+      // Card fields
+      document.getElementById("id-card-name").textContent    = d.full_name;
+      document.getElementById("id-card-role").textContent    = d.authority_role;
+      document.getElementById("id-card-emp-id").textContent  = d.employee_id;
+      document.getElementById("id-card-branch").textContent  = d.branch;
+      document.getElementById("id-card-dept").textContent    = d.department;
+      document.getElementById("id-card-type").textContent    = d.employment_type;
+      document.getElementById("id-card-footer-id").textContent = d.employee_id;
+
+      // Status dot color
+      const dot = document.getElementById("id-card-status-dot");
+      dot.style.background = d.employment_status === "Active" ? "#2ecc71" : "#e74c3c";
+      dot.style.boxShadow  = `0 0 6px ${dot.style.background}`;
+
+      // Profile panel
+      document.getElementById("id-profile-email").textContent  = d.email;
+      document.getElementById("id-profile-phone").textContent  = d.phone;
+      document.getElementById("id-profile-branch").textContent = d.branch;
+      document.getElementById("id-profile-role").textContent   = d.authority_role;
+      document.getElementById("id-profile-type").textContent   = d.employment_type;
+      document.getElementById("id-profile-status").textContent = d.employment_status;
+
+    } catch(err) {
+      console.error("ID card load failed:", err);
+    }
+  }
+
+  // Load when DOM ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadIdCard);
+  } else {
+    loadIdCard();
+  }
+})();
+</script>

@@ -81,10 +81,19 @@ class RecruitmentApplication(models.Model):
         on_delete=models.SET_NULL,
         related_name="recommended_applications",
     )
-
     role_applied_for = models.CharField(
-        max_length=150,
-        db_index=True,
+            max_length=150,
+            db_index=True,
+            blank=True,
+            null=True,
+        )
+    position = models.ForeignKey(
+        "Human_Resources.JobPosition",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="applications",
+        help_text="Structured job position — preferred over role_applied_for string",
     )
 
     resume = models.FileField(

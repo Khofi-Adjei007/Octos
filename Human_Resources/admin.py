@@ -1,7 +1,7 @@
 # Human_Resources/admin.py
 
 from django.contrib import admin
-
+from Human_Resources.models.job_position import JobPosition
 from Human_Resources.models import (
     Department,
     Role,
@@ -93,3 +93,11 @@ class AuthorityAssignmentAdmin(admin.ModelAdmin):
     list_display = ("user", "role", "scope_type", "branch", "region", "is_active", "created_at")
     list_filter = ("scope_type", "is_active", "role")
     search_fields = ("user__employee_email", "role__code")
+
+
+@admin.register(JobPosition)
+class JobPositionAdmin(admin.ModelAdmin):
+    list_display  = ("title", "code", "department", "is_active", "created_at")
+    list_filter   = ("is_active", "department")
+    search_fields = ("title", "code")
+    ordering      = ("title",)

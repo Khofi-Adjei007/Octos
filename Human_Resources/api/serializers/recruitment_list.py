@@ -8,6 +8,7 @@ class RecruitmentListSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="applicant.first_name")
     last_name  = serializers.CharField(source="applicant.last_name")
     email      = serializers.CharField(source="applicant.email", allow_null=True)
+    phone      = serializers.CharField(source="applicant.phone", allow_null=True)
     gender     = serializers.CharField(source="applicant.gender", allow_null=True)
 
     # Role
@@ -51,6 +52,7 @@ class RecruitmentListSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "phone",
             "gender",
             "role_applied_for",
             "branch_name",
